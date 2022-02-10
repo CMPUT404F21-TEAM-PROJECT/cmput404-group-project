@@ -1,7 +1,7 @@
 from django.db import models
 
 class Author(models.Model):
-    id = models.CharField(max_length=200)
+    id = models.CharField(max_length=200, primary_key=True)
     url = models.CharField(max_length=200)
     host = models.CharField(max_length=200)
     displayName = models.CharField(max_length=30)
