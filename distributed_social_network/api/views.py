@@ -5,17 +5,26 @@ from django.http import JsonResponse, HttpResponse
 from .models import Author
 from .serializers import AuthorSerializer
 
-# Routes the request to be deleted or updated
-@api_view(['DELETE', 'PATCH'])
-def change_author(request, id):
+# Routes the request for a single author
+@api_view(['DELETE', 'PATCH', 'GET'])
+def route_single_author(request, id):
     if request.method == 'DELETE':
         return delete_author(request, id)
     elif request.method == 'PATCH':
         return update_author(request, id)
+    elif request.method == 'GET':
+        return get_single_author(request, id)
+
+# Routes the request for multiple authors
+@api_view(['POST', 'GET'])
+def route_multiple_authors(request):
+    if request.method == 'POST':
+        return add_author(request)
+    elif request.method == 'GET':
+        return get_multiple_authors(request)
 
 # Adds a new author to the database.
 # Expects JSON request body with author attributes.
-@api_view(['POST'])
 def add_author(request):
     # Serialize a new Author object
     serializer = AuthorSerializer(data = request.data)
@@ -37,9 +46,8 @@ def delete_author(request, id):
     response = HttpResponse()
 
     # Find the author with the given id
-    try:
-        author = Author.objects.get(id=id)
-    except ObjectDoesNotExist:
+    author = find_author(id)
+    if author == None:
         response.status_code = 404
         return response
 
@@ -54,9 +62,8 @@ def update_author(request, id):
     response = HttpResponse()
 
     # Find the author with the given id
-    try:
-        author = Author.objects.get(id=id)
-    except ObjectDoesNotExist:
+    author = find_author(id)
+    if author == None:
         response.status_code = 404
         return response
 
@@ -72,3 +79,45 @@ def update_author(request, id):
     # If the data is not valid, do not save the updated object to the database
     response.status_code = 400
     return response
+
+# Get the author with id 'id' in the database
+def get_single_author(request, id):
+    response = HttpResponse()
+
+    # Find the author with the given id
+    author = find_author(id)
+    if author == None:
+        response.status_code = 404
+        return response
+    
+    # Create the JSON response dictionary
+    serializer = AuthorSerializer(author)
+    responseDict = serializer.data
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
+
+# Get all authors
+def get_multiple_authors(request):
+    # Get all authors
+    authors = Author.objects.all()
+
+    # Create the JSON response dictionary
+    serializer = AuthorSerializer(authors, many=True)
+    items = serializer.data
+    responseDict = {'type' : 'authors', 'items' : items}
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
+
+# Returns the author object if found, otherwise returns None
+def find_author(id):
+    # Find the author with the given id
+    try:
+        return Author.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return None
