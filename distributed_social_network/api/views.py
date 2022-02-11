@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from django.http import JsonResponse, HttpResponse
 from .models import Author
 from .serializers import AuthorSerializer
@@ -101,8 +102,13 @@ def get_single_author(request, id):
 
 # Get all authors
 def get_multiple_authors(request):
-    # Get all authors
-    authors = Author.objects.all()
+    # Initialize paginator
+    paginator = PageNumberPagination()
+    paginator.page_query_param = 'page'
+    paginator.page_size_query_param = 'size'
+
+    # Get all authors, paginated
+    authors = paginator.paginate_queryset(Author.objects.all(), request)
 
     # Create the JSON response dictionary
     serializer = AuthorSerializer(authors, many=True)
