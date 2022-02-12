@@ -8,3 +8,13 @@ class Author(models.Model):
     github = models.CharField(max_length=100)
     profileImage = models.CharField(max_length=200) # this will likely be a url or file path
     #friends = models.CharField(max_length=200) # not sure about this attribute yet
+
+class FollowRequest(models.Model):
+    summary = models.CharField(max_length=200)
+    actor = models.ForeignKey('Author',
+                              on_delete=models.CASCADE,
+                              related_name='actor')
+    object = models.ForeignKey('Author',
+                               on_delete=models.CASCADE,
+                               related_name='object')
+    accepted = models.BooleanField(default=False)
