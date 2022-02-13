@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Author
+from .models import Author, Like
 
 class AuthorSerializer(serializers.ModelSerializer):
     type = serializers.CharField(read_only = True, default = 'author')
