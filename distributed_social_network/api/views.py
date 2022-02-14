@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from django.http import JsonResponse, HttpResponse
 from .models import Author
-from .serializers import AuthorSerializer
+from .serializers import AuthorSerializer, LikeSerializer
 
 # Routes the request for a single author
 @api_view(['DELETE', 'PATCH', 'GET'])
@@ -158,19 +158,74 @@ Note: be careful here private information could be disclosed.
 
 
 
-#@api_view(["POST"])
+# The @api_view decorator will wrap the view so that only HTTP methods that are listed in the decorator will get executed.
+@api_view(["POST"])
 def send_like(request, authorID):
-    
-    pass
+    serializer = LikeSerializer(data = request.data)
+    response = HttpResponse()
 
+    if find_author(authorID) is None: 
+        # If author not found, return 404
+        response.status_code = 404  
+    else:
+        if serializer.is_valid():
+            # If given data is valid, save the object to the database
+            serializer.save()
+            response.status_code = 201
+        else:
+            # If the data is not valid, do not save the object to the database
+            response.status_code = 400
+        
+    return response
+  
+@api_view(["GET"])
 def get_post_likes(request, authorID, postID):
-    pass
+    response = HttpResponse()
+
+    # Find the author and post with the given id's
+    author = find_author(authorID)
+    post = find_post(postID)
+    if author is None or post is None:
+        response.status_code = 404
+        return response
+
+    #TODO find way to get list of likes
+    '''
+    # Create the JSON response dictionary
+    serializer = LikeSerializer(many=True)
+    responseDict = serializer.data
+    '''
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
 
 def get_comment_likes(request, authorID, postID, commentID):
     pass
 
 def get_author_likes(request, authorID):
     pass
+
+
+# Returns Post object if found, otherwise returns None
+def find_post(id):
+    return None # TODO Remove once Post is implmented 
+    
+    try:
+        return Post.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return None
+
+
+# Returns Comment object if found, otherwise returns None
+def find_comment(id):
+    return None # TODO Remove once Comment is implmented 
+    
+    try:
+        return Comment.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return None
 
 
 ##################### END LIKE VIEWS #####################
