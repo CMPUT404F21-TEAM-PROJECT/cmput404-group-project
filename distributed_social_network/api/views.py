@@ -127,3 +127,50 @@ def find_author(id):
         return Author.objects.get(id=id)
     except ObjectDoesNotExist:
         return None
+
+
+##################### START LIKE VIEWS ##################### 
+
+'''
+LIKE
+
+You can like posts and comments
+Send them to the inbox of the author of the post or comment
+
+URL: ://service/authors/{AUTHOR_ID}/inbox/
+    POST [local, remote]: send a like object to AUTHOR_ID
+URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
+    GET [local, remote] a list of likes from other authors on AUTHOR_ID's post POST_ID
+URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
+    GET [local, remote] a list of likes from other authors on AUTHOR_ID's post POST_ID comment COMMENT_ID
+
+'''
+
+'''
+LIKED
+
+URL: ://service/authors/{AUTHOR_ID}/liked
+    GET [local, remote] list what public things AUTHOR_ID liked.
+
+It's a list of of likes originating from this author
+Note: be careful here private information could be disclosed.
+'''
+
+
+
+#@api_view(["POST"])
+def send_like(request, authorID):
+    
+    pass
+
+def get_post_likes(request, authorID, postID):
+    pass
+
+def get_comment_likes(request, authorID, postID, commentID):
+    pass
+
+def get_author_likes(request, authorID):
+    pass
+
+
+##################### END LIKE VIEWS #####################
