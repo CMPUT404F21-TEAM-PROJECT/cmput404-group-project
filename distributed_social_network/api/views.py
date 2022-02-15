@@ -132,55 +132,28 @@ def find_author(id):
 
 ##################### START LIKE VIEWS ##################### 
 
-'''
-LIKE
-
-You can like posts and comments
-Send them to the inbox of the author of the post or comment
-
-URL: ://service/authors/{AUTHOR_ID}/inbox/
-    POST [local, remote]: send a like object to AUTHOR_ID
-URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
-    GET [local, remote] a list of likes from other authors on AUTHOR_ID's post POST_ID
-URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
-    GET [local, remote] a list of likes from other authors on AUTHOR_ID's post POST_ID comment COMMENT_ID
-
-'''
-
-'''
-LIKED
-
-URL: ://service/authors/{AUTHOR_ID}/liked
-    GET [local, remote] list what public things AUTHOR_ID liked.
-
-It's a list of of likes originating from this author
-Note: be careful here private information could be disclosed.
-'''
-
-
-
-# The @api_view decorator will wrap the view so that only HTTP methods that are listed in the decorator will get executed.
+# Sends a like to inbox of an author
 @api_view(["POST"])
 def send_like(request, authorID):
     serializer = LikeSerializer(data = request.data)
     response = HttpResponse()
 
     if find_author(authorID) is None: 
-        # If author not found, return 404
+        # If author is not found, return 404
         response.status_code = 404  
+    elif serializer.is_valid():
+        # If given data is valid, save the object to the database
+        serializer.save()
+        response.status_code = 201
     else:
-        if serializer.is_valid():
-            # If given data is valid, save the object to the database
-            serializer.save()
-            response.status_code = 201
-        else:
-            # If the data is not valid, do not save the object to the database
-            response.status_code = 400
-        
+        # If the data is not valid, do not save the object to the database
+        response.status_code = 400
+
     return response
-  
+
+# Gets all the likes on an author's post
 @api_view(["GET"])
-def get_post_likes(authorID, postID):
+def get_post_likes(request, authorID, postID):
     response = HttpResponse()
 
     # Find the author and post with the given id's
@@ -190,12 +163,12 @@ def get_post_likes(authorID, postID):
         response.status_code = 404
         return response
 
-    # authors/<str:authorID>/posts/<str:postID>/likes
-    # "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
+    # Get likes
     queryString = "{0}/posts/{1}".format(authorID, postID)
     likes = Like.objects.filter(object_contains = queryString)  
 
     #TODO make sure empty likes doesnt cause issues
+    # Create the JSON response dictionary
     serializer = LikeSerializer(likes, many=True)
     responseDict = serializer.data
 
@@ -204,8 +177,9 @@ def get_post_likes(authorID, postID):
     response.status_code = 200
     return response
 
+# Gets all likes on an author's comment
 @api_view(["GET"])
-def get_comment_likes(authorID, postID, commentID):
+def get_comment_likes(request, authorID, postID, commentID):
     response = HttpResponse()
 
     # Find the author, post, and comment with the given id's
@@ -216,8 +190,7 @@ def get_comment_likes(authorID, postID, commentID):
         response.status_code = 404
         return response
 
-    # authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
-    # "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
+    # Get likes
     queryString = "{0}/posts/{1}/comments/{2}".format(authorID, postID, commentID)
     likes = Like.objects.filter(object_contains = queryString)  
 
@@ -230,9 +203,10 @@ def get_comment_likes(authorID, postID, commentID):
     response.status_code = 200
     return response
 
-#TODO check that private info is not disclosed
+#TODO check that private info is not disclosed (spec mentioned it could be an issue)
+# Get all likes an author has sent
 @api_view(["GET"])
-def get_author_likes(authorID):
+def get_author_likes(request, authorID):
     response = HttpResponse()
 
     # Find the author, post, and comment with the given id's
@@ -241,21 +215,21 @@ def get_author_likes(authorID):
         response.status_code = 404
         return response
 
-    # authors/{AUTHOR_ID}/liked
-    # "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
+    # Get likes
     # queryString has "authors/" to prevent authorID being potentially matched with a post or comment with the same ID.
     queryString = "authors/{}".format(authorID)
     likes = Like.objects.filter(object_contains = queryString)  
 
     #TODO make sure empty likes doesnt cause issues
+    # Create the JSON response dictionary
     serializer = LikeSerializer(likes, many=True)
-    responseDict = serializer.data
+    items = serializer.data
+    responseDict = {'type' : 'liked', 'items' : items}
 
     # Return the response
     response = JsonResponse(responseDict)
     response.status_code = 200
     return response
-
 
 # Returns Post object if found, otherwise returns None
 def find_post(id):
@@ -266,7 +240,6 @@ def find_post(id):
     except ObjectDoesNotExist:
         return None
 
-
 # Returns Comment object if found, otherwise returns None
 def find_comment(id):
     return None # TODO Remove once Comment is implmented 
@@ -275,9 +248,6 @@ def find_comment(id):
         return Comment.objects.get(id=id)
     except ObjectDoesNotExist:
         return None
-
-
-
 
 
 ##################### END LIKE VIEWS #####################
