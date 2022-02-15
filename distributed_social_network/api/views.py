@@ -3,8 +3,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from django.http import JsonResponse, HttpResponse
-from .models import Author
+from .models import Author, Like
 from .serializers import AuthorSerializer, LikeSerializer
+
 
 # Routes the request for a single author
 @api_view(['DELETE', 'PATCH', 'GET'])
@@ -179,7 +180,7 @@ def send_like(request, authorID):
     return response
   
 @api_view(["GET"])
-def get_post_likes(request, authorID, postID):
+def get_post_likes(authorID, postID):
     response = HttpResponse()
 
     # Find the author and post with the given id's
@@ -189,23 +190,71 @@ def get_post_likes(request, authorID, postID):
         response.status_code = 404
         return response
 
-    #TODO find way to get list of likes
-    '''
-    # Create the JSON response dictionary
-    serializer = LikeSerializer(many=True)
+    # authors/<str:authorID>/posts/<str:postID>/likes
+    # "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
+    queryString = "{0}/posts/{1}".format(authorID, postID)
+    likes = Like.objects.filter(object_contains = queryString)  
+
+    #TODO make sure empty likes doesnt cause issues
+    serializer = LikeSerializer(likes, many=True)
     responseDict = serializer.data
-    '''
 
     # Return the response
     response = JsonResponse(responseDict)
     response.status_code = 200
     return response
 
-def get_comment_likes(request, authorID, postID, commentID):
-    pass
+@api_view(["GET"])
+def get_comment_likes(authorID, postID, commentID):
+    response = HttpResponse()
 
-def get_author_likes(request, authorID):
-    pass
+    # Find the author, post, and comment with the given id's
+    author = find_author(authorID)
+    post = find_post(postID)
+    comment = find_comment(commentID)
+    if author is None or post is None or comment is None:
+        response.status_code = 404
+        return response
+
+    # authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
+    # "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
+    queryString = "{0}/posts/{1}/comments/{2}".format(authorID, postID, commentID)
+    likes = Like.objects.filter(object_contains = queryString)  
+
+    #TODO make sure empty likes doesnt cause issues
+    serializer = LikeSerializer(likes, many=True)
+    responseDict = serializer.data
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
+
+#TODO check that private info is not disclosed
+@api_view(["GET"])
+def get_author_likes(authorID):
+    response = HttpResponse()
+
+    # Find the author, post, and comment with the given id's
+    author = find_author(authorID)
+    if author is None:
+        response.status_code = 404
+        return response
+
+    # authors/{AUTHOR_ID}/liked
+    # "object":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e/posts/764efa883dda1e11db47671c4a3bbd9e"
+    # queryString has "authors/" to prevent authorID being potentially matched with a post or comment with the same ID.
+    queryString = "authors/{}".format(authorID)
+    likes = Like.objects.filter(object_contains = queryString)  
+
+    #TODO make sure empty likes doesnt cause issues
+    serializer = LikeSerializer(likes, many=True)
+    responseDict = serializer.data
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
 
 
 # Returns Post object if found, otherwise returns None
@@ -226,6 +275,9 @@ def find_comment(id):
         return Comment.objects.get(id=id)
     except ObjectDoesNotExist:
         return None
+
+
+
 
 
 ##################### END LIKE VIEWS #####################

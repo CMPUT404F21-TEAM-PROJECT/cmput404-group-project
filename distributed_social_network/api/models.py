@@ -13,5 +13,4 @@ class Author(models.Model):
 class Like(models.Model):
     summary = models.CharField(max_length=200)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    object = models.CharField(max_length=200) #TODO find out what this is used for
-
+    object = models.CharField(max_length=200) 
