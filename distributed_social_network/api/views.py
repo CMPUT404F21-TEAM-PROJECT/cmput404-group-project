@@ -7,11 +7,11 @@ from .models import Author, FollowRequest
 from .serializers import AuthorSerializer, FollowRequestSerializer
 
 # Routes the request for a single author
-@api_view(['DELETE', 'PATCH', 'GET'])
+@api_view(['DELETE', 'POST', 'GET'])
 def route_single_author(request, id):
     if request.method == 'DELETE':
         return delete_author(request, id)
-    elif request.method == 'PATCH':
+    elif request.method == 'POST':
         return update_author(request, id)
     elif request.method == 'GET':
         return get_single_author(request, id)
@@ -66,6 +66,11 @@ def update_author(request, id):
     author = find_author(id)
     if author == None:
         response.status_code = 404
+        return response
+    
+    # Don't allow the primary key (id) to be changed
+    if request.data.get("id") != id:
+        response.status_code = 400
         return response
 
     # Collect the request data
@@ -174,7 +179,7 @@ def remove_follower(id, f_id):
         response.status_code = 404
         return response
 
-    # Delete the author
+    # delete the follow request
     fr.delete()
     response.status_code = 200
 
