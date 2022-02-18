@@ -18,3 +18,7 @@ class Post(models.Model):
     description = models.CharField(max_length=500)
     visibility = models.CharField(max_length=10) # TODO: Limit to only 'PUBLIC' or 'FRIENDS'
     published = models.DateField()
+    source = models.CharField(max_length=200)
+    origin = models.CharField(max_length=200)
+    categories = models.CharField(max_length=200) # Should be stored as space separated list of strings
+    unlisted = models.BooleanField(default=False)
