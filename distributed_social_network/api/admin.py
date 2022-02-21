@@ -1,7 +1,4 @@
 from django.contrib import admin
-from .models import Author, FollowRequest, Post
+from .models import Author
 
-myModels = [Author,
-            FollowRequest,
-            Post]
-admin.site.register(myModels)
+admin.site.register(Author)

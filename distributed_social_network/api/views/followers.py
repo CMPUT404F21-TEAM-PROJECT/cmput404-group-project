@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
 from ..models import FollowRequest
-from ..serializers import FollowRequestSerializer
+from ..serializers import AuthorSerializer, FollowRequestSerializer
 
 # Routes the request for a single follower
 @api_view(['DELETE', 'PUT', 'GET'])
