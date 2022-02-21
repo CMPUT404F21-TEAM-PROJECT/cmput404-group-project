@@ -2,6 +2,26 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view
+from ..models import Author
+
+# Routes the request for a single author
+@api_view(['DELETE', 'POST', 'GET'])
+def route_single_author(request, author_id):
+    if request.method == 'DELETE':
+        return delete_author(request, author_id)
+    elif request.method == 'POST':
+        return update_author(request, author_id)
+    elif request.method == 'GET':
+        return get_single_author(request, author_id)
+
+# Routes the request for multiple authors
+@api_view(['POST', 'GET'])
+def route_multiple_authors(request):
+    if request.method == 'POST':
+        return add_author(request)
+    elif request.method == 'GET':
+        return get_multiple_authors(request)
 
 # Adds a new author to the database.
 # Expects JSON request body with author attributes.
