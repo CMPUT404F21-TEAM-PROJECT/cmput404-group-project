@@ -6,27 +6,27 @@ from ..serializers import FollowRequestSerializer
 
 # Routes the request for a single follower
 @api_view(['DELETE', 'PUT', 'GET'])
-def route_single_follower(request, id, f_id):
+def route_single_follower(request, author_id, follower_id):
     if request.method == 'DELETE':
-        return remove_follower(id, f_id)
+        return remove_follower(author_id, follower_id)
     elif request.method == 'PUT':
-        return add_follower(id, f_id)
+        return add_follower(author_id, follower_id)
     elif request.method == 'GET':
-        return get_follower(id, f_id)
+        return get_follower(author_id, follower_id)
 
 # Routes the request for list of followers
 @api_view(['GET'])
-def route_multiple_followers(request, id):
+def route_multiple_followers(request, author_id):
     if request.method == 'GET':
-        return get_followers(id)
+        return get_followers(author_id)
 
-# Adds author f_id as a follower of author id 
+# Adds author follower_id as a follower of author id 
 # TODO: "must be authenticated"
-def add_follower(id, f_id):
+def add_follower(author_id, follower_id):
     response = HttpResponse()
     # look for follow request
     try:
-        fr = FollowRequest.objects.get(actor=f_id, object=id)
+        fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
     except ObjectDoesNotExist:
         response.status_code = 400
         return response
@@ -40,12 +40,12 @@ def add_follower(id, f_id):
         response.status_code = 200
         return response
 
-# Removes author f_id as a follower of author id
-def remove_follower(id, f_id):
+# Removes author follower_id as a follower of author author_id
+def remove_follower(author_id, follower_id):
     response = HttpResponse()
 
     try:
-        fr = FollowRequest.objects.get(actor=f_id, object=id)
+        fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
     except ObjectDoesNotExist:
         response.status_code = 404
         return response
@@ -56,12 +56,12 @@ def remove_follower(id, f_id):
 
     return response
 
-# Check if author f_id is a follower of author id
-def get_follower(id, f_id):
+# Check if author follower_id is a follower of author author_id
+def get_follower(author_id, follower_id):
     response = HttpResponse()
 
     try:
-        fr = FollowRequest.objects.get(actor=f_id, object=id)
+        fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
     except ObjectDoesNotExist:
         response.status_code = 404
         return response
@@ -76,13 +76,13 @@ def get_follower(id, f_id):
         response.status_code = 404
         return response
 
-# Get a list of author id's followers
-def get_followers(id):
+# Get a list of author author_id's followers
+def get_followers(author_id):
     response = HttpResponse()
 
     # find accepted friend requests
     follower_list = []
-    for follower in FollowRequest.objects.filter(object=id).filter(accepted=True).select_related('actor'):
+    for follower in FollowRequest.objects.filter(object=author_id).filter(accepted=True).select_related('actor'):
         follower_list.append(follower)
     
     serializer = AuthorSerializer(follower_list, many=True)
