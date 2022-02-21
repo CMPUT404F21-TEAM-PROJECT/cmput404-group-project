@@ -1,3 +1,4 @@
+import uuid
 from django.test import TestCase
 from .models import Author, Post, Comment
 from django.utils import timezone
@@ -26,7 +27,7 @@ class PostTestCase(TestCase):
 
 class CommentTestCase(TestCase):
 
-    uuid = '348b0550-aa72-44d1-987a-68d10c864d2b'
+    uuid = uuid.uuid4()
 
     def setUp(self):
         author = Author.objects.create(id="test_author_id")
