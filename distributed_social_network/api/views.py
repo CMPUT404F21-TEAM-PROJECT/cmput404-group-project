@@ -5,6 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.http import JsonResponse, HttpResponse
 from .models import Author, Post
 from .serializers import AuthorSerializer, PostSerializer
+import base64
 
 # Routes the request for a single author
 @api_view(['DELETE', 'POST', 'GET'])
@@ -143,7 +144,7 @@ def route_single_post(request, author_id, post_id):
     elif request.method == 'DELETE':
         return delete_post(request, post_id)
     elif request.method == 'PUT':
-        return create_post(request, post_id)
+        return create_post(request)
 
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
@@ -152,6 +153,12 @@ def route_multiple_posts(request, author_id):
         return create_post(request)
     elif request.method == 'GET':
         return get_multiple_posts(request)
+
+# Routes the request for a single image post
+@api_view(['GET'])
+def route_single_image_post(request, author_id, post_id):
+    if request.method == 'GET':
+        return get_post_image(request, post_id)
 
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
@@ -166,6 +173,7 @@ def create_post(request):
         serializer.save()
         response.status_code = 201
         return response
+    print(serializer.errors)
 
     # If the data is not valid, do not save the object to the database
     response.status_code = 400
@@ -247,6 +255,26 @@ def get_multiple_posts(request):
     # Return the response
     response = JsonResponse(responseDict)
     response.status_code = 200
+    return response
+
+# Get the image post with id 'id' in the database and return a binary response
+def get_post_image(request, id):
+    response = HttpResponse()
+
+    # Find the post with the given id
+    post = find_post(id)
+    if post == None:
+        response.status_code = 404
+        return response
+    
+    # Check if the post is an image post
+    if post.contentType != "application/base64" and post.contentType != "image/png;base64" and post.contentType != "image/jpeg;base64":
+        response.status_code = 404
+        return response
+
+    # Return the response
+    response.status_code = 200
+    response.content = base64.b64decode(post.content)
     return response
 
 # Returns the post object if found, otherwise returns None
