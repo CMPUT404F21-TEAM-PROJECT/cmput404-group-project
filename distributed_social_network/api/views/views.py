@@ -3,8 +3,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from django.http import JsonResponse, HttpResponse
-from .models import Author, Post
-from .serializers import AuthorSerializer, PostSerializer
+from ..models import Author, Post
+from ..serializers import AuthorSerializer, PostSerializer
 
 # Routes the request for a single author
 @api_view(['DELETE', 'POST', 'GET'])

@@ -9,7 +9,17 @@ class Author(models.Model):
     profileImage = models.CharField(max_length=200) # this will likely be a url or file path
     password = models.CharField(max_length=100)
     #friends = models.CharField(max_length=200) # not sure about this attribute yet
- 
+
+class FollowRequest(models.Model):
+    summary = models.CharField(max_length=200)
+    actor = models.ForeignKey('Author',
+                              on_delete=models.CASCADE,
+                              related_name='actor')
+    object = models.ForeignKey('Author',
+                               on_delete=models.CASCADE,
+                               related_name='object')
+    accepted = models.BooleanField(default=False)
+
 class Post(models.Model):
     id = models.CharField(max_length=200, primary_key=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE) # When author is deleted so are their posts
