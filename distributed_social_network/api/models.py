@@ -25,6 +25,7 @@ class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE) # When author is deleted so are their posts
     title = models.CharField(max_length=200)
     contentType = models.CharField(max_length=20) # TODO: Limit to only content types allowed
+    content = models.TextField()
     description = models.CharField(max_length=500)
     visibility = models.CharField(max_length=10) # TODO: Limit to only 'PUBLIC' or 'FRIENDS'
     published = models.DateField()
