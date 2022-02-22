@@ -1,7 +1,8 @@
+from importlib_metadata import re
 import jwt, datetime
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
-from ..models import User
+from ..models import User, Author
 from ..serializers import AuthorSerializer, UserSerializer
 
 
@@ -89,4 +90,18 @@ def login_user(request):
     response.set_cookie(key='jwt', value=token, httponly=True)
     response.data = responseDict
 
+    return response
+
+# Test function for authentication and getting user data
+@api_view(['GET'])
+def get_user(request):
+    response = HttpResponse()
+    userid = get_user_id(request)
+    if not userid:
+        response.status_code = 401
+        response.content = "Error: Not Authenticated"
+        return response
+    user = User.objects.filter(id=userid).first()
+    author = Author.objects.filter(id=user).first()
+    response.content = author
     return response

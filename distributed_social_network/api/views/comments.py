@@ -1,7 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
-from ..models import Comment
+from rest_framework.pagination import PageNumberPagination
+from ..models import Comment, Post
 from ..serializers import CommentSerializer
 
 # Routes the request for multiple comment
@@ -146,5 +147,13 @@ def find_comment(id):
     # Find the comment with the given id
     try:
         return Comment.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return None
+
+# Returns the post object if found, otherwise returns None
+def find_post(id):
+    # Find the post with the given id
+    try:
+        return Post.objects.get(id=id)
     except ObjectDoesNotExist:
         return None

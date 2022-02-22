@@ -20,9 +20,9 @@ def route_single_post(request, author_id, post_id):
 
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
-def route_multiple_posts(request, author_id, post_id):
+def route_multiple_posts(request, author_id):
     if request.method == 'POST':
-        return create_post(request, post_id)
+        return create_post(request)
     elif request.method == 'GET':
         return get_multiple_posts(request)
 
@@ -34,9 +34,9 @@ def route_single_image_post(request, author_id, post_id):
 
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
-def create_post(request, id):
+def create_post(request):
     # Use the given id
-    request.data["id"] = id
+    # request.data["id"] = id
     
     # Serialize a new Post object
     serializer = PostSerializer(data = request.data)

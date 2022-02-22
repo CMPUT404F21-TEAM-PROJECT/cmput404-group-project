@@ -26,7 +26,8 @@ class FollowRequest(models.Model):
     accepted = models.BooleanField(default=False)
 
 class Post(models.Model):
-    id = models.CharField(max_length=200, primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # id = models.CharField(max_length=200, primary_key=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE) # When author is deleted so are their posts
     title = models.CharField(max_length=200)
     contentType = models.CharField(max_length=20) # TODO: Limit to only content types allowed

@@ -1,12 +1,8 @@
 import uuid
 from django.test import TestCase
-<<<<<<< HEAD
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import Author, Post, Comment
-=======
 from .models import Author, Post, Comment, User
->>>>>>> 14d206d (Model changes and adding jwt authentication)
 from django.utils import timezone
 from datetime import datetime
 import copy, base64, os
@@ -19,8 +15,7 @@ author1 = {
     "host":"testingHost1",
     "displayName":"testingDisplayName1",
     "github":"testingGithub1",
-    "profileImage":"testingProfileImage1",
-    "password":"testingPassword1",
+    "profileImage":"testingProfileImage1"
 }
 
 author2 = {
@@ -29,8 +24,7 @@ author2 = {
     "host":"testingHost2",
     "displayName":"testingDisplayName2",
     "github":"testingGithub2",
-    "profileImage":"testingProfileImage2",
-    "password":"testingPassword2",
+    "profileImage":"testingProfileImage2"
 }
 
 # Post Mock Data
@@ -121,7 +115,6 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(savedAuthor.displayName, author1["displayName"])
         self.assertEqual(savedAuthor.github, author1["github"])
         self.assertEqual(savedAuthor.profileImage, author1["profileImage"])
-        self.assertEqual(savedAuthor.password, author1["password"])
 
     def test_get_multiple_authors(self):
         url = '/service/authors/'
@@ -178,7 +171,6 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(savedAuthor.displayName, author1Updated["displayName"])
         self.assertEqual(savedAuthor.github, author1Updated["github"])
         self.assertEqual(savedAuthor.profileImage, author1Updated["profileImage"])
-        self.assertEqual(savedAuthor.password, author1Updated["password"])
 
     def test_get_single_author(self):
         getUrl = '/service/authors/' + author1["id"] + '/'
