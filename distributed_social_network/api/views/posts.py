@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer
 from rest_framework.pagination import PageNumberPagination
-import base64
+import base64, jwt
 from ..models import Post
 from rest_framework.decorators import api_view
 
@@ -83,6 +83,17 @@ def delete_post(request, id):
         response.status_code = 404
         return response
 
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        deleterId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(post.author_id) == deleterId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+
     # Delete the post
     post.delete()
     response.status_code = 200
@@ -100,6 +111,17 @@ def update_post(request, id):
     post = find_post(id)
     if post == None:
         response.status_code = 404
+        return response
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        updaterId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(post.author_id) == updaterId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
         return response
 
     # Collect the request data
