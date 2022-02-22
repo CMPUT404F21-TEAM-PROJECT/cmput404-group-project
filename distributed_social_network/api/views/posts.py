@@ -16,7 +16,7 @@ def route_single_post(request, author_id, post_id):
     elif request.method == 'DELETE':
         return delete_post(request, post_id)
     elif request.method == 'PUT':
-        return create_post(request, post_id)
+        return create_post_with_id(request, post_id)
 
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
@@ -34,9 +34,28 @@ def route_single_image_post(request, author_id, post_id):
 
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
-def create_post(request):
+def create_post(request):   
+    # Serialize a new Post object
+    serializer = PostSerializer(data = request.data)
+
+    response = HttpResponse()
+
+    # If given data is valid, save the object to the database
+    if serializer.is_valid():
+        serializer.save()
+        response.status_code = 201
+        return response
+    print(serializer.errors)
+
+    # If the data is not valid, do not save the object to the database
+    response.status_code = 400
+    return response
+
+# Adds a new post to the database.
+# Expects JSON request body with post attributes.
+def create_post_with_id(request, id):
     # Use the given id
-    # request.data["id"] = id
+    request.data["id"] = id
     
     # Serialize a new Post object
     serializer = PostSerializer(data = request.data)

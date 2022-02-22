@@ -26,7 +26,7 @@ class FollowRequest(models.Model):
     accepted = models.BooleanField(default=False)
 
 class Post(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
     # id = models.CharField(max_length=200, primary_key=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE) # When author is deleted so are their posts
     title = models.CharField(max_length=200)
