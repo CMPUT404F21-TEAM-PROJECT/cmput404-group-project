@@ -1,14 +1,18 @@
 import uuid
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 class Author(models.Model):
-    id = models.CharField(max_length=200, primary_key=True)
-    url = models.CharField(max_length=200)
-    host = models.CharField(max_length=200)
+    id = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    # id = models.CharField(max_length=200, primary_key=True)
+    url = models.CharField(max_length=200, null=True, blank=True)
+    host = models.CharField(max_length=200, null=True, blank=True)
     displayName = models.CharField(max_length=30)
-    github = models.CharField(max_length=100)
-    profileImage = models.CharField(max_length=200) # this will likely be a url or file path
-    password = models.CharField(max_length=100)
+    github = models.CharField(max_length=100, null=True, blank=True)
+    profileImage = models.CharField(max_length=200, null=True, blank=True) # this will likely be a url or file path
     #friends = models.CharField(max_length=200) # not sure about this attribute yet
 
 class FollowRequest(models.Model):

@@ -1,5 +1,22 @@
 from rest_framework import serializers
-from .models import Author, FollowRequest, Post, Comment
+from .models import Author, FollowRequest, Post, Comment, User
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+        extra_kwargs = {
+            'passwod': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password:
+            # set_password() is a function provided by django to hash the password
+            instance.set_password(password)
+            instance.save()
+        return instance
 
 class AuthorSerializer(serializers.ModelSerializer):
     type = serializers.CharField(read_only = True, default = 'author')

@@ -1,7 +1,12 @@
+import uuid
 from django.test import TestCase
+<<<<<<< HEAD
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import Author, Post, Comment
+=======
+from .models import Author, Post, Comment, User
+>>>>>>> 14d206d (Model changes and adding jwt authentication)
 from django.utils import timezone
 from datetime import datetime
 import copy, base64, os
@@ -78,23 +83,29 @@ imagePostBase64 = {
 
 # Create your tests here.
 class AuthorTestCase(TestCase):
+
     def setUp(self):
-        Author.objects.create(id="test_author_id")
+        self.id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        Author.objects.create(id=self.user)
 
     def test_author_default_values(self):
-        author = Author.objects.get(id="test_author_id")
-        self.assertEqual(author.id, "test_author_id")
+        author = Author.objects.get(id=self.id)
+        self.assertEqual(author.id, self.user)
 
 
 class PostTestCase(TestCase):
     def setUp(self):
-        author = Author.objects.create(id="test_author_id")
-        post = Post.objects.create(id="test_post_id", author=author, published=datetime.now())
+        self.id = uuid.uuid4()
+        self.post_id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        self.author = Author.objects.create(id=self.user)
+        self.post = Post.objects.create(id=self.post_id, author=self.author, published=datetime.now())
 
     def test_author_default_values(self):
-        post = Post.objects.get(id="test_post_id")
-        self.assertEqual(post.id, "test_post_id")
-        self.assertEqual(post.author.id, "test_author_id")
+        post = Post.objects.get(id=self.post_id)
+        self.assertEqual(post.id, str(self.post_id))
+        self.assertEqual(post.author, self.author)
 
 class AuthorEndpointTestCase(APITestCase):
     def test_add_author(self):
@@ -253,14 +264,16 @@ class PostEndpointTestCase(APITestCase):
 
 class CommentTestCase(TestCase):
 
-    uuid = '348b0550-aa72-44d1-987a-68d10c864d2b'
-
     def setUp(self):
-        author = Author.objects.create(id="test_author_id")
-        post = Post.objects.create(id="test_post_id", author=author, published=datetime.now())
-        Comment.objects.create(id=self.uuid, post_id=post, author=author, published=timezone.now())
+        self.id = uuid.uuid4()
+        self.post_id = uuid.uuid4()
+        self.comment_id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        self.author = Author.objects.create(id=self.user)
+        self.post = Post.objects.create(id=self.post_id, author=self.author, published=datetime.now())
+        Comment.objects.create(id=self.comment_id, post_id=self.post, author=self.author, published=timezone.now())
 
     def test_comment_default_values(self):
-        comment = Comment.objects.get(id=self.uuid)
-        self.assertEqual(comment.post_id.id, "test_post_id")
-        self.assertEqual(comment.author.id, "test_author_id")
+        comment = Comment.objects.get(id=self.comment_id)
+        self.assertEqual(comment.id, self.comment_id)
+        self.assertEqual(comment.author, self.author)

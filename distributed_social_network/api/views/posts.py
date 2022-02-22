@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer
+from rest_framework.pagination import PageNumberPagination
 import base64
 from ..models import Post
 from rest_framework.decorators import api_view
@@ -19,7 +20,7 @@ def route_single_post(request, author_id, post_id):
 
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
-def route_multiple_posts(request, author_id):
+def route_multiple_posts(request, author_id, post_id):
     if request.method == 'POST':
         return create_post(request, post_id)
     elif request.method == 'GET':
