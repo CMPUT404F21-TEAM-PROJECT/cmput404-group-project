@@ -2,9 +2,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer
 from rest_framework.pagination import PageNumberPagination
-import base64, jwt
-from ..models import Post
+import base64, jwt, uuid
+from ..models import FollowRequest, Post
 from rest_framework.decorators import api_view
+from django.db.models import Q
+from itertools import chain
 
 # Routes the request for a single post
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -146,6 +148,21 @@ def get_post(request, id):
     if post == None:
         response.status_code = 404
         return response
+    authorId = post.author_id
+
+    # Check if the post is friends only
+    if post.visibility == "FRIENDS":
+        # Check if the current user is a friend of the author
+        try:
+            cookie = request.COOKIES['jwt']
+            viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+            followRequests = FollowRequest.objects.filter(Q(actor__exact=authorId) | Q(object__exact=authorId)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+            if len(followRequests) <= 0:
+                response.status_code = 401
+                return response
+        except KeyError:
+            response.status_code = 401
+            return response
     
     # Create the JSON response dictionary
     serializer = PostSerializer(post)
@@ -158,13 +175,38 @@ def get_post(request, id):
 
 # Get all posts
 def get_multiple_posts(request):
+    # Get all public posts that are not unlisted
+    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False)
+
+    friendsPosts = []
+
+    # Get the current user id
+    try:
+        cookie = request.COOKIES['jwt']
+        viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+
+        # Get all friends only posts that are not unlisted
+        friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
+        permissionForAny = True
+    except KeyError:
+        permissionForAny = False
+
+    if permissionForAny:
+        # Loop over friends posts
+        allowedFriendsPosts = []
+        for post in friendsPosts:
+            # Check if the current user is a friend of the author
+            followRequests = FollowRequest.objects.filter(Q(actor__exact=post.author_id) | Q(object__exact=post.author_id)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+            if len(followRequests) <= 0:
+                allowedFriendsPosts.append(post)
+
     # Initialize paginator
     paginator = PageNumberPagination()
     paginator.page_query_param = 'page'
     paginator.page_size_query_param = 'size'
 
-    # Get all posts, paginated
-    posts = paginator.paginate_queryset(Post.objects.all(), request)
+    # Get posts, paginated
+    posts = paginator.paginate_queryset(list(chain(publicPosts, friendsPosts)), request)
 
     # Create the JSON response dictionary
     serializer = PostSerializer(posts, many=True)
