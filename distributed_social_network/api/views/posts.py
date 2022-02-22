@@ -37,10 +37,21 @@ def route_single_image_post(request, author_id, post_id):
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
 def create_post(request):   
+    response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        creatorId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(request.data['author']) == creatorId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+
     # Serialize a new Post object
     serializer = PostSerializer(data = request.data)
-
-    response = HttpResponse()
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
@@ -58,11 +69,21 @@ def create_post(request):
 def create_post_with_id(request, id):
     # Use the given id
     request.data["id"] = id
+    response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        creatorId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(request.data['author']) == creatorId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
     
     # Serialize a new Post object
     serializer = PostSerializer(data = request.data)
-
-    response = HttpResponse()
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
