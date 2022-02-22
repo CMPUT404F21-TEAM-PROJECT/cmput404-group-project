@@ -62,6 +62,6 @@ def get_inbox(author_id):
     data.pop('follow_requests')
     data['items'] = paginated_items 
 
-    response = JsonResponse(responseDict)
+    response = JsonResponse(data)
     response.status_code = 200
     return response
