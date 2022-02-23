@@ -248,6 +248,21 @@ def get_post_image(request, id):
     if post == None:
         response.status_code = 404
         return response
+    authorId = post.author_id
+
+    # Check if the post is friends only
+    if post.visibility == "FRIENDS":
+        # Check if the current user is a friend of the author
+        try:
+            cookie = request.COOKIES['jwt']
+            viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+            followRequests = FollowRequest.objects.filter(Q(actor__exact=authorId) | Q(object__exact=authorId)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+            if len(followRequests) <= 0:
+                response.status_code = 401
+                return response
+        except KeyError:
+            response.status_code = 401
+            return response
     
     # Check if the post is an image post
     if post.contentType != "application/base64" and post.contentType != "image/png;base64" and post.contentType != "image/jpeg;base64":
