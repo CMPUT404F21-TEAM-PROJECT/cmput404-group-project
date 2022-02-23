@@ -38,6 +38,9 @@ class Inbox(models.Model):
     author = models.ForeignKey(Author,
                               on_delete=models.CASCADE,
                               related_name='author')
-    posts = models.ManyToManyField(Post)
-    # likes = models.ManyToManyField(Like)
-    follow_requests = models.ManyToManyField(FollowRequest)
+    posts = models.ManyToManyField(Post,
+                                   related_name='posts')
+    # likes = models.ManyToManyField(Like,
+                                    #  related_name='posts')
+    follow_requests = models.ManyToManyField(FollowRequest,
+                                             related_name='follow_requests')

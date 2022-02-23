@@ -27,13 +27,13 @@ def route_inbox(request, author_id):
         elif object_type == 'like':
             pass
         elif object_type == 'follow':
-            add_follow(request, author_id)
+            add_follow(request, author_id, inbox)
         else:
             response.status_code = 400
             return response
 
     elif request.method == 'DELETE':
-        pass
+        delete_inbox(request, author_id, inbox)
 
 # Get author_id's inbox
 def get_inbox(request, author_id):
@@ -86,13 +86,7 @@ def get_inbox(request, author_id):
 
 
 # Create a follow request and add it to author_id's inbox
-def add_follow(request, author_id):
-    try:
-        inbox = Inbox.objects.get(author=author_id)
-    except ObjectDoesNotExist:
-        response.status_code = 404
-        return response
-
+def add_follow(request, author_id, inbox):
     # get the viewer (person who sent the follow request)
     try:
         cookie = request.COOKIES['jwt']
@@ -118,4 +112,25 @@ def add_follow(request, author_id):
 
     print(serializer.errors)
     response.status_code = 400
+    return response
+
+def delete_inbox(request, author_id, inbox):
+    response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(inbox.author) == viewerId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+    
+    inbox.posts.clear()
+    # inbox.likes.clear()
+    inbox.follow_requests.clear()
+    response.status_code = 200
+
     return response
