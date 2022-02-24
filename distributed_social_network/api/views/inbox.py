@@ -26,7 +26,7 @@ def route_inbox(request, author_id):
         if object_type == 'post':
             add_post(request, author_id, inbox)
         elif object_type == 'like':
-            pass
+            add_like(request, author_id, inbox)
         elif object_type == 'follow':
             add_follow(request, author_id, inbox)
         else:
@@ -163,5 +163,6 @@ def add_post(request, author_id, inbox):
     response.status_code = 200
     return response
 
+# Create a like and add it to author_id's inbox
 def add_like(request, author_id, inbox):
     pass
