@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
 from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer
+from ..views import get_follower, find_post
 
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -23,7 +24,7 @@ def route_inbox(request, author_id):
 
         object_type = request.data['type']
         if object_type == 'post':
-            pass
+            add_post(request, author_id, inbox)
         elif object_type == 'like':
             pass
         elif object_type == 'follow':
@@ -84,36 +85,6 @@ def get_inbox(request, author_id):
     response.status_code = 200
     return response
 
-
-# Create a follow request and add it to author_id's inbox
-def add_follow(request, author_id, inbox):
-    # get the viewer (person who sent the follow request)
-    try:
-        cookie = request.COOKIES['jwt']
-        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-    except KeyError:
-        response.status_code = 401
-        return response
-    
-    # create the follow request
-    data = request.data.copy()
-    data['actor'] = viewerId
-    data['object'] = author_id
-    serializer = FollowRequestSerializer(data = data)
-    response = HttpResponse()
-
-    # If given data is valid, save the follow request to the database
-    if serializer.is_valid():
-        fr = serializer.save()
-        # add the follow request to author_id's inbox
-        inbox.follow_requests.add(fr)
-        response.status_code = 201
-        return response
-
-    print(serializer.errors)
-    response.status_code = 400
-    return response
-
 def delete_inbox(request, author_id, inbox):
     response = HttpResponse()
 
@@ -134,3 +105,63 @@ def delete_inbox(request, author_id, inbox):
     response.status_code = 200
 
     return response
+
+# Create a follow request and add it to author_id's inbox
+def add_follow(request, author_id, inbox):
+    # get the viewer (person who sent the follow request)
+    try:
+        cookie = request.COOKIES['jwt']
+        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+    except KeyError:
+        response.status_code = 401
+        return response
+    
+    # TODO: handle remote actors
+    # create the follow request
+    data = request.data.copy()
+    data['actor'] = viewerId
+    data['object'] = author_id
+    serializer = FollowRequestSerializer(data = data)
+    response = HttpResponse()
+
+    # If given data is valid, save the follow request to the database
+    if serializer.is_valid():
+        fr = serializer.save()
+        # add the follow request to author_id's inbox
+        inbox.follow_requests.add(fr)
+        response.status_code = 201
+        return response
+
+    print(serializer.errors)
+    response.status_code = 400
+    return response
+
+# Get the post and add it to author_id's inbox
+def add_post(request, author_id, inbox):
+    response = HttpResponse()
+
+    # check if author_id is following senderId, if not return unauthorized
+    try:
+        cookie = request.COOKIES['jwt']
+        senderId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if get_follower(senderId, author_id).status != 200: # TODO: need to deal with remote senders 
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+    
+    # find the post
+    # TODO: need to handle remote posts
+    post = find_post(request.data["id"])
+    if post == None:
+        response.status_code = 400
+        return response
+
+    # add the follow request to author_id's inbox
+    inbox.posts.add(post)
+    response.status_code = 200
+    return response
+
+def add_like(request, author_id, inbox):
+    pass
