@@ -1,11 +1,11 @@
 from django.test import TestCase
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from api.models import Author, FollowRequest, Inbox, Post
 from datetime import datetime
 import copy, base64, os
 
-# Author Mock Data
+# Mock Data
 
 author1 = {
     "id":"testingId1",
@@ -94,8 +94,6 @@ class InboxEndpointTestCase(APITestCase):
         # registerUrl = "/service/register/"
         # cls.client.post(registerUrl, user1, format='json')
         # cls.client.post(registerUrl, user2, format='json')
-        # self.author = User.objects.get(username=user1["username"])
-        # self.actor = User.objects.get(username=user2["username"])
         # user1Id = str(self.author.id)
         # author1["id"] = user1Id
         # updateUrl1 = '/service/authors/' + author1["id"] + '/'
@@ -106,14 +104,19 @@ class InboxEndpointTestCase(APITestCase):
         # cls.client.post(updateUrl2, author2, format='json')
 
         # remove when auth stuff is merged
-        self.author = Author.objects.create(**author1)
-        self.actor = Author.objects.create(**author2)
+        Author.objects.create(**author1)
+        Author.objects.create(**author2)
+
+    def setUp(self):
+        self.author = Author.objects.get(username=user1["username"])
+        self.actor = Author.objects.get(username=user2["username"])
 
         # create inbox and populate with a post
         self.inbox = Inbox.objects.create(author=self.author)
         self.inbox.posts.add(Post.objects.create(**post1))
 
-    def get_inbox(self):
+
+    def test_get_inbox(self):
         """Test GET request for getting an inbox."""
         # loginUrl = "/service/login/"
         # self.client.post(loginUrl, user1, format='json')
@@ -126,13 +129,13 @@ class InboxEndpointTestCase(APITestCase):
         self.assertEqual(self.author.id, responseJson['author'])
         self.assertEqual(len(responseJson['items']), 1)
 
-    def get_paginated_inbox(self):
+    def test_get_paginated_inbox(self):
         """Test GET request for getting a paginated inbox."""
         # loginUrl = "/service/login/"
         # self.client.post(loginUrl, user1, format='json')
         pass # TODO
 
-    def clear_inbox(self):
+    def test_clear_inbox(self):
         """Test DELETE request for clearing an inbox."""
         # loginUrl = "/service/login/"
         # self.client.post(loginUrl, user1, format='json')
@@ -148,7 +151,7 @@ class InboxEndpointTestCase(APITestCase):
         self.assertEqual(0, len(inbox.likes.all()))
         self.assertEqual(0, len(inbox.follow_requests.all()))
 
-    def add_local_post(self):
+    def test_add_local_post(self):
         """Test POST request for sending a local post to an inbox."""
         # loginUrl = "/service/login/"
         # self.client.post(loginUrl, user2, format='json')
@@ -161,7 +164,7 @@ class InboxEndpointTestCase(APITestCase):
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(2, len(inbox.posts.all()))
 
-    def add_local_follow(self):
+    def test_add_local_follow(self):
         """Test POST request for sending a follow request from a local author to an inbox."""
         # loginUrl = "/service/login/"
         # self.client.post(loginUrl, user2, format='json')
@@ -174,19 +177,19 @@ class InboxEndpointTestCase(APITestCase):
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(1, len(inbox.follow_requests.all()))
 
-    def add_local_like(self):
+    def test_add_local_like(self):
         """Test POST request for sending a like for a local post/comment to an inbox."""
         pass
 
     # TODO: implement for part 2
-    # def add_remote_post(self):
+    # def test_add_remote_post(self):
     #     """Test POST request for sending a remote post to an inbox."""
     #     pass
 
-    # def add_remote_follow(self):
+    # def test_add_remote_follow(self):
     #     """Test POST request for sending a follow request from a remote author to an inbox."""
     #     pass
 
-    # def add_remote_like(self):
+    # def test_add_remote_like(self):
     #     """Test POST request for sending a like for a remote post/comment to an inbox."""
     #     pass
