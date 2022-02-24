@@ -2,12 +2,16 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-  path('authors/', views.route_multiple_authors, name='Add Author'),
-  path('authors/<str:id>/', views.route_single_author, name='Change Author'),
+  path('authors/', views.route_multiple_authors, name='Multiple Authors'),
+  path('authors/<str:author_id>/', views.route_single_author, name='Single Author'),
+  path('authors/<str:author_id>/posts/', views.route_multiple_posts, name='Multiple Posts'),
+  path('authors/<str:author_id>/posts/<str:post_id>/', views.route_single_post, name='Single Post'),
+  path('authors/<str:author_id>/posts/<str:post_id>/image/', views.route_single_image_post, name='Single Image Post'),
+  path('authors/<str:author_id>/followers/', views.route_multiple_followers, name='Get Followers'),
+  path('authors/<str:author_id>/followers/<str:follower_id>', views.route_single_follower, name='Manage Follower'),
   path('authors/<str:authorID>/inbox/', views.send_like, name="Send Like"),
   path('authors/<str:authorID>/posts/<str:postID>/likes', views.get_post_likes, name="Get Post Like"),
   path('authors/<str:authorID>/posts/<str:postID>/comments/<str:commentID>/likes', views.get_comment_likes, name="Get Comment Likes"),
   path('authors/<str:authorID>/liked', views.get_author_likes, name="Get Author's Likes")
-
 ]
 

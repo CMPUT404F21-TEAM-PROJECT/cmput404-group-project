@@ -13,7 +13,7 @@ services:
         - postgres-data:/var/lib/postgresql/data
   server:
     build:
-      context: ../
+      context: ../distributed_social_network
       dockerfile: Dockerfile
     restart: always
     environment:
@@ -26,6 +26,14 @@ services:
       - 8000:8000
     depends_on:
       - db
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_IPV4ADDRESS= 127.0.0.1
+    ports:
+      - 80:80
 volumes:
   postgres-data:
   
