@@ -2,9 +2,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view
 import base64, jwt, uuid
 from ..models import FollowRequest, Post
-from rest_framework.decorators import api_view
 from django.db.models import Q
 from itertools import chain
 
@@ -35,34 +35,14 @@ def route_single_image_post(request, author_id, post_id):
         return get_post_image(request, post_id)
 
 # Adds a new post to the database.
-# Expects JSON request body with post attributes.
+# Generates a new id for the post
 def create_post(request):   
-    response = HttpResponse()
-
-    # Check authorization
-    try:
-        cookie = request.COOKIES['jwt']
-        creatorId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (str(request.data['author']) == creatorId):
-            response.status_code = 401
-            return response
-    except KeyError:
-        response.status_code = 401
-        return response
-
-    # Serialize a new Post object
-    serializer = PostSerializer(data = request.data)
-
-    # If given data is valid, save the object to the database
-    if serializer.is_valid():
-        serializer.save()
-        response.status_code = 201
-        return response
-    print(serializer.errors)
-
-    # If the data is not valid, do not save the object to the database
-    response.status_code = 400
-    return response
+    # Generate a new id
+    post_id = uuid.uuid4()
+    # If id already exists make a new one
+    while get_post(request, post_id).status_code == 200:
+        post_id = uuid.uuid4()
+    return create_post_with_id(request, post_id)
 
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
