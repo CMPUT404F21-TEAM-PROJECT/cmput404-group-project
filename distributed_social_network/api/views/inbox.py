@@ -11,33 +11,6 @@ from rest_framework.pagination import PageNumberPagination
 # Routes the request for inbox
 @api_view(['GET', 'POST', 'DELETE'])
 def route_inbox(request, author_id):
-    if request.method == 'GET':
-        return get_inbox(request, author_id)
-
-    elif request.method == 'POST':
-        response = HttpResponse()
-        try:
-            inbox = Inbox.objects.get(author=author_id)
-        except ObjectDoesNotExist:
-            response.status_code = 404
-            return response
-
-        object_type = request.data['type']
-        if object_type == 'post':
-            add_post(request, author_id, inbox)
-        elif object_type == 'like':
-            add_like(request, author_id, inbox)
-        elif object_type == 'follow':
-            add_follow(request, author_id, inbox)
-        else:
-            response.status_code = 400
-            return response
-
-    elif request.method == 'DELETE':
-        delete_inbox(request, author_id, inbox)
-
-# Get author_id's inbox
-def get_inbox(request, author_id):
     response = HttpResponse()
     try:
         inbox = Inbox.objects.get(author=author_id)
@@ -45,11 +18,31 @@ def get_inbox(request, author_id):
         response.status_code = 404
         return response
 
+    if request.method == 'GET':
+        return get_inbox(request, author_id, inbox)
+
+    elif request.method == 'POST':
+        object_type = request.data['type'].lower()
+        if object_type == 'post':
+            return add_post(request, author_id, inbox)
+        elif object_type == 'like':
+            return add_like(request, author_id, inbox)
+        elif object_type == 'follow':
+            return add_follow(request, author_id, inbox)
+        else:
+            response.status_code = 400
+            return response
+
+    elif request.method == 'DELETE':
+        return delete_inbox(request, author_id, inbox)
+
+# Get author_id's inbox
+def get_inbox(request, author_id, inbox):
     # Check authorization
     try:
         cookie = request.COOKIES['jwt']
         viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (str(inbox.author) == viewerId):
+        if not (str(inbox.author.id.id) == viewerId):
             response.status_code = 401
             return response
     except KeyError:
@@ -92,7 +85,7 @@ def delete_inbox(request, author_id, inbox):
     try:
         cookie = request.COOKIES['jwt']
         viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (str(inbox.author) == viewerId):
+        if not (str(inbox.author.id.id) == viewerId):
             response.status_code = 401
             return response
     except KeyError:
@@ -144,7 +137,7 @@ def add_post(request, author_id, inbox):
     try:
         cookie = request.COOKIES['jwt']
         senderId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if get_follower(senderId, author_id).status != 200: # TODO: need to deal with remote senders 
+        if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
             response.status_code = 401
             return response
     except KeyError:
@@ -158,7 +151,7 @@ def add_post(request, author_id, inbox):
         response.status_code = 400
         return response
 
-    # add the follow request to author_id's inbox
+    # add the post to author_id's inbox
     inbox.posts.add(post)
     response.status_code = 200
     return response

@@ -1,31 +1,14 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from api.models import Author, FollowRequest, Inbox, Post
+from api.models import Author, FollowRequest, Inbox, Post, User
+from api.serializers import PostSerializer
 from datetime import datetime
 import copy, base64, os
+import uuid
+
 
 # Mock Data
-
-author1 = {
-    "id":"testingId1",
-    "url":"testingUrl1",
-    "host":"testingHost1",
-    "displayName":"testingDisplayName1",
-    "github":"testingGithub1",
-    "profileImage":"testingProfileImage1",
-    "password":"testingPassword1",
-}
-
-author2 = {
-    "id":"testingId2",
-    "url":"testingUrl2",
-    "host":"testingHost2",
-    "displayName":"testingDisplayName2",
-    "github":"testingGithub2",
-    "profileImage":"testingProfileImage2",
-    "password":"testingPassword2",
-}
 
 user1 = {
     "username":"user1",
@@ -37,35 +20,49 @@ user2 = {
     "password":"password2"
 }
 
+# Author Mock Data
+
+author1 = {
+    "url":"testingUrl1",
+    "host":"testingHost1",
+    "displayName":"testingDisplayName1",
+    "github":"testingGithub1",
+    "profileImage":"testingProfileImage1"
+}
+
+author2 = {
+    "url":"testingUrl2",
+    "host":"testingHost2",
+    "displayName":"testingDisplayName2",
+    "github":"testingGithub2",
+    "profileImage":"testingProfileImage2"
+}
+
 post1 = {
-    "type":"post",
-    "id": "postId1",
-    "author":"testingId2",
-    "title":"title1",
+    "id": "41111111-1111-1111-1111-111111111111",
+    "title":"textPostTitle1",
     "contentType":"text/plain",
-    "content":"blah",
-    "description":"test post",
+    "content":"textPostContent1",
+    "description":"textDescription1",
     "visibility":"PUBLIC",
     "published":"2022-01-10",
-    "source":"source1",
-    "origin":"origin1",
-    "categories":"categories1",
+    "source":"textSource1",
+    "origin":"textOrigin1",
+    "categories":"textCategories1",
     "unlisted":False
 }
 
 post2 = {
-    "type":"post",
-    "id": "postId2",
-    "author":"testingId2",
-    "title":"title1",
-    "contentType":"text/plain",
-    "content":"blah",
-    "description":"test post",
+    "id": "51111111-1111-1111-1111-111111111111",
+    "title":"textPostTitle2",
+    "contentType":"text/markdown",
+    "content":"textPostContent2",
+    "description":"textDescription2",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
-    "source":"source1",
-    "origin":"origin1",
-    "categories":"categories1",
+    "published":"2022-01-11",
+    "source":"textSource2",
+    "origin":"textOrigin2",
+    "categories":"textCategories2",
     "unlisted":False
 }
 
@@ -77,42 +74,57 @@ follow_request = {
 # Create your tests here.
 class InboxTestCase(TestCase):
     def setUp(self):
-        author = Author.objects.create(id="test_author_id")
+        self.id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        author = Author.objects.create(id=self.user)
         Inbox.objects.create(author=author)
 
     def test_inbox_default_values(self):
-        author = Author.objects.get(id="test_author_id")
+        author = Author.objects.get(id=self.id)
         inbox = Inbox.objects.get(author=author)
         self.assertEqual(inbox.author, author)
 
 class InboxEndpointTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # register author 
         cls.client = APIClient()
+
+        # Create 2 new users if they don't already exist
         registerUrl = "/service/register/"
         cls.client.post(registerUrl, user1, format='json')
         cls.client.post(registerUrl, user2, format='json')
-        user1Id = str(self.author.id)
+        
+        # Save their ids
+        user1Id = str(User.objects.get(username=user1["username"]).id)
+        user2Id = str(User.objects.get(username=user2["username"]).id)
         author1["id"] = user1Id
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        cls.client.post(updateUrl1, author1, format='json')
-        user2Id = str(self.actor.id)
         author2["id"] = user2Id
+        user1["id"] = user1Id
+        user2["id"] = user2Id
+
+        # Update authors
+        updateUrl1 = '/service/authors/' + author1["id"] + '/'
         updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        
+        cls.client.post(updateUrl1, author1, format='json')
         cls.client.post(updateUrl2, author2, format='json')
 
-        # # remove when auth stuff is merged
-        # Author.objects.create(**author1)
-        # Author.objects.create(**author2)
-
     def setUp(self):
-        self.author = Author.objects.get(username=user1["username"])
-        self.actor = Author.objects.get(username=user2["username"])
+        self.author = Author.objects.get(id=author1["id"])
+        self.actor = Author.objects.get(id=author2["id"])
 
         # create inbox and populate with a post
         self.inbox = Inbox.objects.create(author=self.author)
-        self.inbox.posts.add(Post.objects.create(**post1))
+        self.inbox.posts.add(Post.objects.create(**post1, author=self.actor))
+
+        # make author follow actor (so actor can send stuff to author's inbox)
+        FollowRequest.objects.create(summary='blah',
+                                     actor=self.author,
+                                     object=self.actor,
+                                     accepted=True)
+        
+        # make another post that will be added to the inbox in a test
+        Post.objects.create(**post2, author=self.actor)
 
 
     def test_get_inbox(self):
@@ -125,7 +137,7 @@ class InboxEndpointTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         responseJson = response.json()
-        self.assertEqual(self.author.id, responseJson['author'])
+        self.assertEqual(str(self.author.id.id), responseJson['author'])
         self.assertEqual(len(responseJson['items']), 1)
 
     def test_get_paginated_inbox(self):
@@ -147,7 +159,7 @@ class InboxEndpointTestCase(APITestCase):
         # Check if the inbox was cleared
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(0, len(inbox.posts.all()))
-        self.assertEqual(0, len(inbox.likes.all()))
+        # self.assertEqual(0, len(inbox.likes.all()))
         self.assertEqual(0, len(inbox.follow_requests.all()))
 
     def test_add_local_post(self):
@@ -157,7 +169,10 @@ class InboxEndpointTestCase(APITestCase):
 
         url = '/service/authors/' + author1["id"] + '/inbox/'
 
-        response = self.client.post(url, post2, format='json')
+        local_post = post2.copy()
+        local_post['type'] = 'post'
+
+        response = self.client.post(url, local_post, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         inbox = Inbox.objects.get(author=self.author)
@@ -171,7 +186,7 @@ class InboxEndpointTestCase(APITestCase):
         url = '/service/authors/' + author1["id"] + '/inbox/'
 
         response = self.client.post(url, follow_request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(1, len(inbox.follow_requests.all()))

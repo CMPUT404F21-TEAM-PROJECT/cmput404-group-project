@@ -3,7 +3,7 @@ import uuid
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from .models import Author, User
+from api.models import Author, User
 from django.utils import timezone
 from datetime import datetime
 import copy, base64, os, json
