@@ -1,9 +1,10 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import Author, Post
+from .models import Author, Post, Like
 from datetime import datetime
 import copy, base64, os
+from django.db.models import Q
 
 # Author Mock Data
 
@@ -94,6 +95,20 @@ class PostTestCase(TestCase):
         post = Post.objects.get(id="test_post_id")
         self.assertEqual(post.id, "test_post_id")
         self.assertEqual(post.author.id, "test_author_id")
+
+
+class LikeTestCase(TestCase):
+    def setUp(self):
+        author = Author.objects.create(id="test_author_id")
+        Like.objects.create(summary="test_like_summary", author=author, object="test_like_object") 
+
+    def test_like_default_values(self):
+        author = Author.objects.get(id="test_author_id")
+        like = Like.objects.get(Q(author=author) & Q(object="test_like_object"))
+        self.assertEqual(like.summary, "test_like_summary")
+        self.assertEqual(like.author, author)
+        self.assertEqual(like.object, "test_like_object")
+
 
 class AuthorEndpointTestCase(APITestCase):
     def test_add_author(self):

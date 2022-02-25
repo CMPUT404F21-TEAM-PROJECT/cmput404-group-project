@@ -12,9 +12,9 @@ class Author(models.Model):
 
 
 class Like(models.Model):
-    summary = models.CharField(max_length=200)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    object = models.CharField(max_length=200) 
+    summary = models.CharField(max_length=200) #Description of like
+    author = models.ForeignKey(Author, on_delete=models.CASCADE) #Sender of the like
+    object = models.CharField(max_length=200) #URL of the post or comment being liked
 
     
 class FollowRequest(models.Model):

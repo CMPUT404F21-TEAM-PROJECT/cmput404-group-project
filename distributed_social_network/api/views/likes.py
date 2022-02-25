@@ -91,10 +91,9 @@ def get_author_likes(request, authorID):
         response.status_code = 404
         return response
 
+    
     # Get likes
-    # queryString has "authors/" to prevent authorID being potentially matched with a post or comment with the same ID.
-    queryString = "authors/{}".format(authorID)
-    likes = Like.objects.filter(object_contains = queryString)  
+    likes = Like.objects.filter(author=author)
 
     #TODO make sure empty likes doesnt cause issues
     # Create the JSON response dictionary
