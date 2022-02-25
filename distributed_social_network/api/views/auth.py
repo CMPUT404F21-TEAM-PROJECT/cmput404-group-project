@@ -2,7 +2,7 @@ from importlib_metadata import re
 import jwt, datetime
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
-from ..models import User, Author
+from ..models import User, Author, Inbox
 from ..serializers import AuthorSerializer, UserSerializer
 
 
@@ -24,7 +24,7 @@ def get_user_id(request):
 
     return serializer.data['id']
 
-# Creates a new user object and their respective author object
+# Creates a new user object and their respective author and inbox objects
 @api_view(['POST'])
 def create_new_user(request):
     response = HttpResponse()
@@ -40,10 +40,13 @@ def create_new_user(request):
 
             # If given data is valid, save the object to the database
             if author_serializer.is_valid():
-                author_serializer.save()
+                author = author_serializer.save()
+                # Create inbox object for the user
+                Inbox.objects.create(author=author)
         except:
             response.status_code = 400
             response.content = "Error while serializing the author"
+
     else:
         response.status_code = 400
         response.content = "Error occurred during serialization"
