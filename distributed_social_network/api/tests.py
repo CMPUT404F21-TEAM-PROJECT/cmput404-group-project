@@ -1,3 +1,4 @@
+from urllib import response
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -5,6 +6,9 @@ from .models import Author, Post, Like
 from datetime import datetime
 import copy, base64, os
 from django.db.models import Q
+
+
+
 
 # Author Mock Data
 
@@ -75,6 +79,48 @@ imagePostBase64 = {
     "categories":"imageCategories1",
     "unlisted":False
 }
+
+######### Start Like Mock Data #########
+PORT = "5438"
+HOST = "127.0.0.1"
+author1ID = author1["id"]
+author2ID = author2["id"]
+post = imagePostPng
+postID = post["id"]
+postAuthor = post["author"]
+comment = None #TODO change once comment is merged
+commentID = comment["id"]
+
+#Like left by author1 on post
+postLike1 = {
+   "summary": "postLike1Summary",
+   "author": author1,
+   "object": "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, postAuthor, postID)
+}
+
+#Like left by author2 on post
+postLike2 = {
+    "summary": "postLike2Summary",
+    "author": author2,
+    "object": "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, postAuthor, postID)
+}
+
+
+#Like left by author1 on comment
+commentLike1 = {
+    "summary": "commentLike1Summary",
+    "author": author1,
+    "object": "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, postAuthor, postID, commentID)
+}
+
+#Like left by author2 on comment
+commentLike2 = {
+    "summary": "commentLike2Summary",
+    "author": author2,
+    "object": "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, postAuthor, postID, commentID)
+}
+
+######### End Like Mock Data #########
 
 # Create your tests here.
 class AuthorTestCase(TestCase):
@@ -264,3 +310,75 @@ class PostEndpointTestCase(APITestCase):
 
         # Check if the image matches the posted image
         self.assertEqual(response.content, open(os.getcwd() + "/testing_media/test.png", 'rb').read())
+
+
+class LikeEndpointTestCase(APITestCase):
+    def test_send_like(self):
+        url = "/service/authors/{}/inbox/".format(postAuthor)
+        object = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, postAuthor, postID)
+        response = self.client.post(url, postLike1, format="json")
+        savedLike = Like.objects.get(Q(author=author1) & Q(object=object))
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED) #Check that request returned 201 code
+        
+        #Check that all fields are correct
+        self.assertEqual(savedLike.summary, postLike1["summary"])
+        self.assertEqual(savedLike.author, postLike1["author"]) #TODO see if this works
+        self.assertEqual(savedLike.object, postLike1["object"])
+
+
+    def test_get_post_likes(self):
+        postUrl =  "/service/authors/{}/inbox/".format(postAuthor)
+        getUrl = "/service/authors/{0}/posts/{1}/likes".format(postAuthor, postID)
+
+        #Add likes 
+        self.client.post(postUrl, postLike1, format="json")
+        self.client.post(postUrl, postLike2, format="json")
+
+        response = self.client.get(getUrl, format="json")
+        likes = response.json()["items"] #TODO check how multiple likes are represented in json
+    
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
+        self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
+        
+        #Check that the items returned are the mock likes
+        self.assertTrue(postLike1 in likes) 
+        self.assertTrue(postLike2 in likes) 
+        
+
+    def test_get_comment_likes(self):
+        postUrl = "/service/authors/{}/inbox/".format(postAuthor)
+        getUrl = "/service/authors/{0}/posts/{1}/comments/{2}/likes".format(postAuthor, postID, commentID)
+
+        #Add likes 
+        self.client.post(postUrl, commentLike1, format="json")
+        self.client.post(postUrl, commentLike2, format="json")
+
+        response = self.client.get(getUrl, format="json")
+        likes = response.json()["items"] #TODO check how multiple likes are represented in json
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
+        self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
+        
+        #Check that the items returned are the mock likes
+        self.assertTrue(commentLike1 in likes) 
+        self.assertTrue(commentLike2 in likes) 
+
+    def test_get_author_likes(self):
+        postUrl = "/service/authors/{}/inbox/".format(postAuthor)
+        getUrl = "/service/authors/{}/liked".format(postAuthor)
+
+        #Add likes 
+        self.client.post(postUrl, postLike1, format="json")
+        self.client.post(postUrl, commentLike1, format="json")
+
+        response = self.client.get(getUrl, format="json")
+        likes = response.json()["items"] #TODO check how multiple likes are represented in json
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
+        self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
+
+        #Check that the items returned are the mock likes
+        self.assertTrue(postLike1 in likes) 
+        self.assertTrue(commentLike1 in likes) 
