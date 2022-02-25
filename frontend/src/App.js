@@ -6,7 +6,7 @@ import requests from "./requests";
 function App() {
 
   const fetchAuthors = async () => {
-    // sends a GET request to http://${BACKEND_URL}:${BACKEND_PORT}/service/authors?page=2&size=2
+    // sends a GET request to http://${BACKEND_URL}:${BACKEND_PORT}/service/authors
     const response = await requests.get(`service/authors/`, {
       // uncommenting below will send request to /authors?page=2&size=2
       // params: {
@@ -16,10 +16,10 @@ function App() {
     });
 
     console.log(response)
-    console.log('hi fromf fetchAuthors')
+    console.log('hi from fetchAuthors')
   };
 
-  // Send the GET request once on loadup
+  // Send the request once on loadup
   useEffect(() => {
     fetchAuthors();
   }, []);
