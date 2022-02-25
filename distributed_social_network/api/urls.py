@@ -1,7 +1,11 @@
 from django.urls import path
+from django.contrib import admin
 from . import views
 
 urlpatterns = [
+  path('register/', views.create_new_user, name="Create New User"),
+  path('login/', views.login_user, name="Log User In"),
+  path('get-user/', views.get_user, name="Get User Info"),
   path('authors/', views.route_multiple_authors, name='Multiple Authors'),
   path('authors/<str:author_id>/', views.route_single_author, name='Single Author'),
   path('authors/<str:author_id>/posts/', views.route_multiple_posts, name='Multiple Posts'),
@@ -12,6 +16,8 @@ urlpatterns = [
   path('authors/<str:authorID>/inbox/', views.send_like, name="Send Like"),
   path('authors/<str:authorID>/posts/<str:postID>/likes', views.get_post_likes, name="Get Post Like"),
   path('authors/<str:authorID>/posts/<str:postID>/comments/<str:commentID>/likes', views.get_comment_likes, name="Get Comment Likes"),
-  path('authors/<str:authorID>/liked', views.get_author_likes, name="Get Author's Likes")
+  path('authors/<str:authorID>/liked', views.get_author_likes, name="Get Author's Likes"),
+  path('authors/<str:author_id>/posts/<str:post_id>/Comments', views.route_multiple_comments, name='Multiple Comments'),
+  path('authors/<str:author_id>/posts/<str:post_id>/Comments/<uuid:comment_id>/', views.route_single_comment, name='Single Comment')
 ]
 
