@@ -3,7 +3,9 @@ from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer
 import base64
 from ..models import Post
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
+import uuid
 
 # Routes the request for a single post
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -21,6 +23,11 @@ def route_single_post(request, author_id, post_id):
 @api_view(['POST', 'GET'])
 def route_multiple_posts(request, author_id):
     if request.method == 'POST':
+        # Generate a new id
+        post_id = str(uuid.uuid4())
+        # If id already exists make a new one
+        while get_post(request, post_id).status_code == 200:
+            post_id = str(uuid.uuid4())
         return create_post(request, post_id)
     elif request.method == 'GET':
         return get_multiple_posts(request)

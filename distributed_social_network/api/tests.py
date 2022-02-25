@@ -29,6 +29,36 @@ author2 = {
 
 # Post Mock Data
 
+textPostPlain = {
+    "id": "textId1",
+    "author":"testingId1",
+    "title":"textPostTitle1",
+    "contentType":"text/plain",
+    "content":"textPostContent1",
+    "description":"textDescription1",
+    "visibility":"PUBLIC",
+    "published":"2022-01-10",
+    "source":"textSource1",
+    "origin":"textOrigin1",
+    "categories":"textCategories1",
+    "unlisted":False
+}
+
+textPostMarkdown = {
+    "id": "textId2",
+    "author":"testingId1",
+    "title":"textPostTitle2",
+    "contentType":"text/markdown",
+    "content":"textPostContent2",
+    "description":"textDescription2",
+    "visibility":"PUBLIC",
+    "published":"2022-01-11",
+    "source":"textSource2",
+    "origin":"textOrigin2",
+    "categories":"textCategories2",
+    "unlisted":False
+}
+
 os.chdir(os.path.dirname(__file__))
 imagePostPng = {
     "id": "imageId1",
@@ -190,6 +220,75 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(responseJson["password"], author1["password"])
 
 class PostEndpointTestCase(APITestCase):
+    def test_get_text_post(self):
+        addAuthorUrl = '/service/authors/'
+        postUrl = '/service/authors/' + author1["id"] + '/posts/' + textPostPlain["id"] + '/'
+
+        # Add an author
+        response = self.client.post(addAuthorUrl, author1, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Add a text post
+        response = self.client.put(postUrl, textPostPlain, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get the text post
+        response = self.client.get(postUrl)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check for correct attributes
+        responseJson = response.json()
+        self.assertEqual(responseJson["id"], textPostPlain["id"])
+        self.assertEqual(responseJson["author"], textPostPlain["author"])
+        self.assertEqual(responseJson["title"], textPostPlain["title"])
+        self.assertEqual(responseJson["contentType"], textPostPlain["contentType"])
+        self.assertEqual(responseJson["content"], textPostPlain["content"])
+        self.assertEqual(responseJson["description"], textPostPlain["description"])
+        self.assertEqual(responseJson["visibility"], textPostPlain["visibility"])
+        self.assertEqual(responseJson["published"], textPostPlain["published"])
+        self.assertEqual(responseJson["source"], textPostPlain["source"])
+        self.assertEqual(responseJson["origin"], textPostPlain["origin"])
+        self.assertEqual(responseJson["categories"], textPostPlain["categories"])
+        self.assertEqual(responseJson["unlisted"], textPostPlain["unlisted"])
+
+    def test_get_multiple_posts(self):
+        # This test posts 2 posts of different types to the multiple posts url
+        # It then gets both posts using the multiple posts url
+        # It then verifies that the id of the post has changed and the content has not
+        addAuthorUrl = '/service/authors/'
+        postsUrl = '/service/authors/' + author1["id"] + '/posts/'
+
+        # Add author
+        self.client.post(addAuthorUrl, author1, format='json')
+
+        # Add 2 text posts
+        response = self.client.post(postsUrl, textPostPlain, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(postsUrl, textPostMarkdown, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get multiple posts
+        response = self.client.get(postsUrl)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure 2 posts returned
+        responseJson = response.json()
+        self.assertEqual(len(responseJson['items']), 2)
+
+        # Since Pagenation can return random order, determine which is which
+        if responseJson['items'][0]['content'] == textPostPlain['content']:
+            plainPost = responseJson['items'][0]
+            markdownPost = responseJson['items'][1]
+        else:
+            plainPost = responseJson['items'][1]
+            markdownPost = responseJson['items'][0]
+        
+        # Assert the id has changed but the content has not
+        self.assertNotEqual(plainPost['id'], textPostPlain['id'])
+        self.assertEqual(plainPost['content'], textPostPlain['content'])
+        self.assertNotEqual(markdownPost['id'], textPostMarkdown['id'])
+        self.assertEqual(markdownPost['content'], textPostMarkdown['content'])
+
     def test_get_image_post_jpeg(self):
         addAuthorUrl = '/service/authors/'
         addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/'
