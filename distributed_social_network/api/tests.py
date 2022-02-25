@@ -43,8 +43,7 @@ author2 = {
 # Post Mock Data
 
 textPostPlain = {
-    "id": "textId1",
-    "author":"testingId1",
+    "id": "41111111-1111-1111-1111-111111111111",
     "title":"textPostTitle1",
     "contentType":"text/plain",
     "content":"textPostContent1",
@@ -58,8 +57,7 @@ textPostPlain = {
 }
 
 textPostMarkdown = {
-    "id": "textId2",
-    "author":"testingId1",
+    "id": "51111111-1111-1111-1111-111111111111",
     "title":"textPostTitle2",
     "contentType":"text/markdown",
     "content":"textPostContent2",
@@ -242,6 +240,8 @@ class PostEndpointTestCase(APITestCase):
         author2["id"] = user2Id
         user1["id"] = user1Id
         user2["id"] = user2Id
+        textPostPlain["author"] = user1Id
+        textPostMarkdown["author"] = user1Id
         imagePostBase64["author"] = user1Id
         imagePostPng["author"] = user1Id
         imagePostJpeg["author"] = user1Id
@@ -253,12 +253,12 @@ class PostEndpointTestCase(APITestCase):
         cls.client.post(updateUrl2, author2, format='json')
 
     def test_get_text_post(self):
-        addAuthorUrl = '/service/authors/'
-        postUrl = '/service/authors/' + author1["id"] + '/posts/' + textPostPlain["id"] + '/'
 
-        # Add an author
-        response = self.client.post(addAuthorUrl, author1, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+        postUrl = '/service/authors/' + author1["id"] + '/posts/' + textPostPlain["id"] + '/'
 
         # Add a text post
         response = self.client.put(postUrl, textPostPlain, format='json')
@@ -287,11 +287,12 @@ class PostEndpointTestCase(APITestCase):
         # This test posts 2 posts of different types to the multiple posts url
         # It then gets both posts using the multiple posts url
         # It then verifies that the id of the post has changed and the content has not
-        addAuthorUrl = '/service/authors/'
-        postsUrl = '/service/authors/' + author1["id"] + '/posts/'
+        
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add author
-        self.client.post(addAuthorUrl, author1, format='json')
+        postsUrl = '/service/authors/' + author1["id"] + '/posts/'
 
         # Add 2 text posts
         response = self.client.post(postsUrl, textPostPlain, format='json')
