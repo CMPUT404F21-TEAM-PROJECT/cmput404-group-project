@@ -1,11 +1,12 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer
-import base64
-from ..models import Post
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
-import uuid
+import base64, jwt, uuid
+from ..models import FollowRequest, Post
+from django.db.models import Q
+from itertools import chain
 
 # Routes the request for a single post
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -17,17 +18,17 @@ def route_single_post(request, author_id, post_id):
     elif request.method == 'DELETE':
         return delete_post(request, post_id)
     elif request.method == 'PUT':
-        return create_post(request, post_id)
+        return create_post_with_id(request, post_id)
 
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
 def route_multiple_posts(request, author_id):
     if request.method == 'POST':
         # Generate a new id
-        post_id = str(uuid.uuid4())
+        post_id = uuid.uuid4()
         # If id already exists make a new one
         while get_post(request, post_id).status_code == 200:
-            post_id = str(uuid.uuid4())
+            post_id = uuid.uuid4()
         return create_post(request, post_id)
     elif request.method == 'GET':
         return get_multiple_posts(request)
@@ -40,14 +41,54 @@ def route_single_image_post(request, author_id, post_id):
 
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
-def create_post(request, id):
-    # Use the given id
-    request.data["id"] = id
-    
+def create_post(request):   
+    response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        creatorId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(request.data['author']) == creatorId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+
     # Serialize a new Post object
     serializer = PostSerializer(data = request.data)
 
+    # If given data is valid, save the object to the database
+    if serializer.is_valid():
+        serializer.save()
+        response.status_code = 201
+        return response
+    print(serializer.errors)
+
+    # If the data is not valid, do not save the object to the database
+    response.status_code = 400
+    return response
+
+# Adds a new post to the database.
+# Expects JSON request body with post attributes.
+def create_post_with_id(request, id):
+    # Use the given id
+    request.data["id"] = id
     response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        creatorId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(request.data['author']) == creatorId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+    
+    # Serialize a new Post object
+    serializer = PostSerializer(data = request.data)
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
@@ -70,6 +111,17 @@ def delete_post(request, id):
         response.status_code = 404
         return response
 
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        deleterId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(post.author_id) == deleterId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+
     # Delete the post
     post.delete()
     response.status_code = 200
@@ -87,6 +139,17 @@ def update_post(request, id):
     post = find_post(id)
     if post == None:
         response.status_code = 404
+        return response
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        updaterId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (str(post.author_id) == updaterId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
         return response
 
     # Collect the request data
@@ -111,6 +174,21 @@ def get_post(request, id):
     if post == None:
         response.status_code = 404
         return response
+    authorId = post.author_id
+
+    # Check if the post is friends only
+    if post.visibility == "FRIENDS":
+        # Check if the current user is a friend of the author
+        try:
+            cookie = request.COOKIES['jwt']
+            viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+            followRequests = FollowRequest.objects.filter(Q(actor__exact=authorId) | Q(object__exact=authorId)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+            if len(followRequests) <= 0:
+                response.status_code = 401
+                return response
+        except KeyError:
+            response.status_code = 401
+            return response
     
     # Create the JSON response dictionary
     serializer = PostSerializer(post)
@@ -123,13 +201,38 @@ def get_post(request, id):
 
 # Get all posts
 def get_multiple_posts(request):
+    # Get all public posts that are not unlisted
+    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False)
+
+    friendsPosts = []
+
+    # Get the current user id
+    try:
+        cookie = request.COOKIES['jwt']
+        viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+
+        # Get all friends only posts that are not unlisted
+        friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
+        permissionForAny = True
+    except KeyError:
+        permissionForAny = False
+
+    if permissionForAny:
+        # Loop over friends posts
+        allowedFriendsPosts = []
+        for post in friendsPosts:
+            # Check if the current user is a friend of the author
+            followRequests = FollowRequest.objects.filter(Q(actor__exact=post.author_id) | Q(object__exact=post.author_id)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+            if len(followRequests) <= 0:
+                allowedFriendsPosts.append(post)
+
     # Initialize paginator
     paginator = PageNumberPagination()
     paginator.page_query_param = 'page'
     paginator.page_size_query_param = 'size'
 
-    # Get all posts, paginated
-    posts = paginator.paginate_queryset(Post.objects.all(), request)
+    # Get posts, paginated
+    posts = paginator.paginate_queryset(list(chain(publicPosts, friendsPosts)), request)
 
     # Create the JSON response dictionary
     serializer = PostSerializer(posts, many=True)
@@ -150,6 +253,21 @@ def get_post_image(request, id):
     if post == None:
         response.status_code = 404
         return response
+    authorId = post.author_id
+
+    # Check if the post is friends only
+    if post.visibility == "FRIENDS":
+        # Check if the current user is a friend of the author
+        try:
+            cookie = request.COOKIES['jwt']
+            viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+            followRequests = FollowRequest.objects.filter(Q(actor__exact=authorId) | Q(object__exact=authorId)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+            if len(followRequests) <= 0:
+                response.status_code = 401
+                return response
+        except KeyError:
+            response.status_code = 401
+            return response
     
     # Check if the post is an image post
     if post.contentType != "application/base64" and post.contentType != "image/png;base64" and post.contentType != "image/jpeg;base64":
