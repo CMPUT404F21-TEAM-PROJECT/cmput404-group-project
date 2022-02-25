@@ -1,38 +1,78 @@
+from shutil import register_unpack_format
+import uuid
 from django.test import TestCase
 from rest_framework import status
-from rest_framework.test import APITestCase
-from .models import Author, Post
+from rest_framework.test import APITestCase, APIClient
+from .models import Author, Post, Comment, User
+from django.utils import timezone
 from datetime import datetime
-import copy, base64, os
+import copy, base64, os, json
+from django.db.models import Q
+from http.cookies import SimpleCookie
+
+# User Mock Data
+
+user1 = {
+    "username":"user1",
+    "password":"password1"
+}
+
+user2 = {
+    "username":"user2",
+    "password":"password2"
+}
 
 # Author Mock Data
 
 author1 = {
-    "id":"testingId1",
     "url":"testingUrl1",
     "host":"testingHost1",
     "displayName":"testingDisplayName1",
     "github":"testingGithub1",
-    "profileImage":"testingProfileImage1",
-    "password":"testingPassword1",
+    "profileImage":"testingProfileImage1"
 }
 
 author2 = {
-    "id":"testingId2",
     "url":"testingUrl2",
     "host":"testingHost2",
     "displayName":"testingDisplayName2",
     "github":"testingGithub2",
-    "profileImage":"testingProfileImage2",
-    "password":"testingPassword2",
+    "profileImage":"testingProfileImage2"
 }
 
 # Post Mock Data
 
+textPostPlain = {
+    "id": "41111111-1111-1111-1111-111111111111",
+    "title":"textPostTitle1",
+    "contentType":"text/plain",
+    "content":"textPostContent1",
+    "description":"textDescription1",
+    "visibility":"PUBLIC",
+    "published":"2022-01-10",
+    "source":"textSource1",
+    "origin":"textOrigin1",
+    "categories":"textCategories1",
+    "unlisted":False
+}
+
+textPostMarkdown = {
+    "id": "51111111-1111-1111-1111-111111111111",
+    "title":"textPostTitle2",
+    "contentType":"text/markdown",
+    "content":"textPostContent2",
+    "description":"textDescription2",
+    "visibility":"PUBLIC",
+    "published":"2022-01-11",
+    "source":"textSource2",
+    "origin":"textOrigin2",
+    "categories":"textCategories2",
+    "unlisted":False
+}
+
 os.chdir(os.path.dirname(__file__))
 imagePostPng = {
-    "id": "imageId1",
-    "author":"testingId1",
+    "id": "11111111-1111-1111-1111-111111111111",
     "title":"imageTitle1",
     "contentType":"image/png;base64",
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.png", 'rb').read()),
@@ -46,8 +86,7 @@ imagePostPng = {
 }
 
 imagePostJpeg = {
-    "id": "imageId1",
-    "author":"testingId1",
+    "id": "21111111-1111-1111-1111-111111111111",
     "title":"imageTitle1",
     "contentType":"image/jpeg;base64",
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.jpeg", 'rb').read()),
@@ -61,8 +100,7 @@ imagePostJpeg = {
 }
 
 imagePostBase64 = {
-    "id": "imageId1",
-    "author":"testingId1",
+    "id": "31111111-1111-1111-1111-111111111111",
     "title":"imageTitle1",
     "contentType":"application/base64",
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.png", 'rb').read()),
@@ -77,46 +115,64 @@ imagePostBase64 = {
 
 # Create your tests here.
 class AuthorTestCase(TestCase):
+
     def setUp(self):
-        Author.objects.create(id="test_author_id")
+        self.id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        Author.objects.create(id=self.user)
 
     def test_author_default_values(self):
-        author = Author.objects.get(id="test_author_id")
-        self.assertEqual(author.id, "test_author_id")
+        author = Author.objects.get(id=self.id)
+        self.assertEqual(author.id, self.user)
 
 
 class PostTestCase(TestCase):
     def setUp(self):
-        author = Author.objects.create(id="test_author_id")
-        post = Post.objects.create(id="test_post_id", author=author, published=datetime.now())
+        self.id = uuid.uuid4()
+        self.post_id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        self.author = Author.objects.create(id=self.user)
+        self.post = Post.objects.create(id=self.post_id, author=self.author, published=datetime.now())
 
     def test_author_default_values(self):
-        post = Post.objects.get(id="test_post_id")
-        self.assertEqual(post.id, "test_post_id")
-        self.assertEqual(post.author.id, "test_author_id")
+        post = Post.objects.get(id=self.post_id)
+        self.assertEqual(post.id, self.post_id)
+        self.assertEqual(post.author, self.author)
 
 class AuthorEndpointTestCase(APITestCase):
-    def test_add_author(self):
-        url = '/service/authors/'
-        # Add an author
-        response = self.client.post(url, author1, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = APIClient()
 
-        # Check for correct attributes
-        savedAuthor = Author.objects.get(id=author1["id"])
-        self.assertEqual(savedAuthor.url, author1["url"])
-        self.assertEqual(savedAuthor.host, author1["host"])
-        self.assertEqual(savedAuthor.displayName, author1["displayName"])
-        self.assertEqual(savedAuthor.github, author1["github"])
-        self.assertEqual(savedAuthor.profileImage, author1["profileImage"])
-        self.assertEqual(savedAuthor.password, author1["password"])
+        # Create 2 new users if they don't already exist
+        registerUrl = "/service/register/"
+        cls.client.post(registerUrl, user1, format='json')
+        cls.client.post(registerUrl, user2, format='json')
+        
+        # Save their ids
+        user1Id = str(User.objects.get(username=user1["username"]).id)
+        user2Id = str(User.objects.get(username=user2["username"]).id)
+        author1["id"] = user1Id
+        author2["id"] = user2Id
+        user1["id"] = user1Id
+        user2["id"] = user2Id
+        imagePostBase64["author"] = user1Id
+        imagePostPng["author"] = user1Id
+        imagePostJpeg["author"] = user1Id
+
+        # Update authors
+        updateUrl1 = '/service/authors/' + author1["id"] + '/'
+        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        
+        cls.client.post(updateUrl1, author1, format='json')
+        cls.client.post(updateUrl2, author2, format='json')
 
     def test_get_multiple_authors(self):
-        url = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add 2 authors
-        self.client.post(url, author1, format='json')
-        self.client.post(url, author2, format='json')
+        url = '/service/authors/'
 
         # Get multiple authors
         response = self.client.get(url)
@@ -126,32 +182,12 @@ class AuthorEndpointTestCase(APITestCase):
         responseJson = response.json()
         self.assertEqual(len(responseJson['items']), 2)
 
-    def test_delete_author(self):
-        addUrl = '/service/authors/'
-        deleteUrl = '/service/authors/' + author1["id"] + '/'
-
-        # Add an author
-        response =self.client.post(addUrl, author1, format='json')
-
-        # Delete the author
-        response = self.client.delete(deleteUrl)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check if the author was deleted
-        try:
-            Author.objects.get(id=author1["id"])
-
-            # If the get does not raise an error, that means the deleted author was found
-            self.assertEqual("Deleted author was found", "after being deleted")
-        except:
-            return
-
     def test_update_author(self):
-        addUrl = '/service/authors/'
-        updateUrl = '/service/authors/' + author1["id"] + '/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add an author
-        self.client.post(addUrl, author1, format='json')
+        updateUrl = '/service/authors/' + author1["id"] + '/'
 
         # Update the author
         author1Updated = copy.deepcopy(author2)
@@ -166,14 +202,13 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(savedAuthor.displayName, author1Updated["displayName"])
         self.assertEqual(savedAuthor.github, author1Updated["github"])
         self.assertEqual(savedAuthor.profileImage, author1Updated["profileImage"])
-        self.assertEqual(savedAuthor.password, author1Updated["password"])
 
     def test_get_single_author(self):
-        getUrl = '/service/authors/' + author1["id"] + '/'
-        addUrl = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add an author
-        self.client.post(addUrl, author1, format='json')
+        getUrl = '/service/authors/' + author1["id"] + '/'
 
         # Get the author
         response = self.client.get(getUrl)
@@ -187,20 +222,116 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(responseJson["displayName"], author1["displayName"])
         self.assertEqual(responseJson["github"], author1["github"])
         self.assertEqual(responseJson["profileImage"], author1["profileImage"])
-        self.assertEqual(responseJson["password"], author1["password"])
 
 class PostEndpointTestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = APIClient()
+
+        # Create 2 new users if they don't already exist
+        registerUrl = "/service/register/"
+        cls.client.post(registerUrl, user1, format='json')
+        cls.client.post(registerUrl, user2, format='json')
+        
+        # Save their ids
+        user1Id = str(User.objects.get(username=user1["username"]).id)
+        user2Id = str(User.objects.get(username=user2["username"]).id)
+        author1["id"] = user1Id
+        author2["id"] = user2Id
+        user1["id"] = user1Id
+        user2["id"] = user2Id
+        textPostPlain["author"] = user1Id
+        textPostMarkdown["author"] = user1Id
+        imagePostBase64["author"] = user1Id
+        imagePostPng["author"] = user1Id
+        imagePostJpeg["author"] = user1Id
+
+        # Update authors
+        updateUrl1 = '/service/authors/' + author1["id"] + '/'
+        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        cls.client.post(updateUrl1, author1, format='json')
+        cls.client.post(updateUrl2, author2, format='json')
+
+    def test_get_text_post(self):
+
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+        postUrl = '/service/authors/' + author1["id"] + '/posts/' + textPostPlain["id"] + '/'
+
+        # Add a text post
+        response = self.client.put(postUrl, textPostPlain, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get the text post
+        response = self.client.get(postUrl)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check for correct attributes
+        responseJson = response.json()
+        self.assertEqual(responseJson["id"], textPostPlain["id"])
+        self.assertEqual(responseJson["author"], textPostPlain["author"])
+        self.assertEqual(responseJson["title"], textPostPlain["title"])
+        self.assertEqual(responseJson["contentType"], textPostPlain["contentType"])
+        self.assertEqual(responseJson["content"], textPostPlain["content"])
+        self.assertEqual(responseJson["description"], textPostPlain["description"])
+        self.assertEqual(responseJson["visibility"], textPostPlain["visibility"])
+        self.assertEqual(responseJson["published"], textPostPlain["published"])
+        self.assertEqual(responseJson["source"], textPostPlain["source"])
+        self.assertEqual(responseJson["origin"], textPostPlain["origin"])
+        self.assertEqual(responseJson["categories"], textPostPlain["categories"])
+        self.assertEqual(responseJson["unlisted"], textPostPlain["unlisted"])
+
+    def test_get_multiple_posts(self):
+        # This test posts 2 posts of different types to the multiple posts url
+        # It then gets both posts using the multiple posts url
+        # It then verifies that the id of the post has changed and the content has not
+        
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+        postsUrl = '/service/authors/' + author1["id"] + '/posts/'
+
+        # Add 2 text posts
+        response = self.client.post(postsUrl, textPostPlain, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(postsUrl, textPostMarkdown, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get multiple posts
+        response = self.client.get(postsUrl)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure 2 posts returned
+        responseJson = response.json()
+        self.assertEqual(len(responseJson['items']), 2)
+
+        # Since Pagenation can return random order, determine which is which
+        if responseJson['items'][0]['content'] == textPostPlain['content']:
+            plainPost = responseJson['items'][0]
+            markdownPost = responseJson['items'][1]
+        else:
+            plainPost = responseJson['items'][1]
+            markdownPost = responseJson['items'][0]
+        
+        # Assert the id has changed but the content has not
+        self.assertNotEqual(plainPost['id'], textPostPlain['id'])
+        self.assertEqual(plainPost['content'], textPostPlain['content'])
+        self.assertNotEqual(markdownPost['id'], textPostMarkdown['id'])
+        self.assertEqual(markdownPost['content'], textPostMarkdown['content'])
+
     def test_get_image_post_jpeg(self):
-        addAuthorUrl = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+        
         addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/'
         getPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/image/'
 
-        # Add an author
-        response = self.client.post(addAuthorUrl, author1, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         # Add an image post
-        response = self.client.put(addPostUrl, imagePostJpeg, format='json')
+        response = self.client.put(addPostUrl, imagePostJpeg, format='json', )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the image post
@@ -211,13 +342,12 @@ class PostEndpointTestCase(APITestCase):
         self.assertEqual(response.content, open(os.getcwd() + "/testing_media/test.jpeg", 'rb').read())
 
     def test_get_image_post_png(self):
-        addAuthorUrl = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
         addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
         getPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/image/'
-
-        # Add an author
-        response = self.client.post(addAuthorUrl, author1, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostPng, format='json')
@@ -231,13 +361,12 @@ class PostEndpointTestCase(APITestCase):
         self.assertEqual(response.content, open(os.getcwd() + "/testing_media/test.png", 'rb').read())
 
     def test_get_image_post_base64(self):
-        addAuthorUrl = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
         addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostBase64["id"] + '/'
         getPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostBase64["id"] + '/image/'
-
-        # Add an author
-        response = self.client.post(addAuthorUrl, author1, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostBase64, format='json')
@@ -249,3 +378,19 @@ class PostEndpointTestCase(APITestCase):
 
         # Check if the image matches the posted image
         self.assertEqual(response.content, open(os.getcwd() + "/testing_media/test.png", 'rb').read())
+
+class CommentTestCase(TestCase):
+
+    def setUp(self):
+        self.id = uuid.uuid4()
+        self.post_id = uuid.uuid4()
+        self.comment_id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        self.author = Author.objects.create(id=self.user)
+        self.post = Post.objects.create(id=self.post_id, author=self.author, published=datetime.now())
+        Comment.objects.create(id=self.comment_id, post_id=self.post, author=self.author, published=timezone.now())
+
+    def test_comment_default_values(self):
+        comment = Comment.objects.get(id=self.comment_id)
+        self.assertEqual(comment.id, self.comment_id)
+        self.assertEqual(comment.author, self.author)
