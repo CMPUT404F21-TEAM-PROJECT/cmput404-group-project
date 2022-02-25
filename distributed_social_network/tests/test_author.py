@@ -1,63 +1,87 @@
+from shutil import register_unpack_format
+import uuid
 from django.test import TestCase
 from rest_framework import status
-from rest_framework.test import APITestCase
-from api.models import Author, Post
+from rest_framework.test import APITestCase, APIClient
+from .models import Author, User
+from django.utils import timezone
 from datetime import datetime
-import copy, base64, os
+import copy, base64, os, json
+from django.db.models import Q
+from http.cookies import SimpleCookie
+
+# User Mock Data
+
+user1 = {
+    "username":"user1",
+    "password":"password1"
+}
+
+user2 = {
+    "username":"user2",
+    "password":"password2"
+}
 
 # Author Mock Data
 
 author1 = {
-    "id":"testingId1",
     "url":"testingUrl1",
     "host":"testingHost1",
     "displayName":"testingDisplayName1",
     "github":"testingGithub1",
-    "profileImage":"testingProfileImage1",
-    "password":"testingPassword1",
+    "profileImage":"testingProfileImage1"
 }
 
 author2 = {
-    "id":"testingId2",
     "url":"testingUrl2",
     "host":"testingHost2",
     "displayName":"testingDisplayName2",
     "github":"testingGithub2",
-    "profileImage":"testingProfileImage2",
-    "password":"testingPassword2",
+    "profileImage":"testingProfileImage2"
 }
 
-# Create your tests here.
 class AuthorTestCase(TestCase):
+
     def setUp(self):
-        Author.objects.create(id="test_author_id")
+        self.id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        Author.objects.create(id=self.user)
 
     def test_author_default_values(self):
-        author = Author.objects.get(id="test_author_id")
-        self.assertEqual(author.id, "test_author_id")
+        author = Author.objects.get(id=self.id)
+        self.assertEqual(author.id, self.user)
 
 class AuthorEndpointTestCase(APITestCase):
-    def test_add_author(self):
-        url = '/service/authors/'
-        # Add an author
-        response = self.client.post(url, author1, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = APIClient()
 
-        # Check for correct attributes
-        savedAuthor = Author.objects.get(id=author1["id"])
-        self.assertEqual(savedAuthor.url, author1["url"])
-        self.assertEqual(savedAuthor.host, author1["host"])
-        self.assertEqual(savedAuthor.displayName, author1["displayName"])
-        self.assertEqual(savedAuthor.github, author1["github"])
-        self.assertEqual(savedAuthor.profileImage, author1["profileImage"])
-        self.assertEqual(savedAuthor.password, author1["password"])
+        # Create 2 new users if they don't already exist
+        registerUrl = "/service/register/"
+        cls.client.post(registerUrl, user1, format='json')
+        cls.client.post(registerUrl, user2, format='json')
+        
+        # Save their ids
+        user1Id = str(User.objects.get(username=user1["username"]).id)
+        user2Id = str(User.objects.get(username=user2["username"]).id)
+        author1["id"] = user1Id
+        author2["id"] = user2Id
+        user1["id"] = user1Id
+        user2["id"] = user2Id
+
+        # Update authors
+        updateUrl1 = '/service/authors/' + author1["id"] + '/'
+        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        
+        cls.client.post(updateUrl1, author1, format='json')
+        cls.client.post(updateUrl2, author2, format='json')
 
     def test_get_multiple_authors(self):
-        url = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add 2 authors
-        self.client.post(url, author1, format='json')
-        self.client.post(url, author2, format='json')
+        url = '/service/authors/'
 
         # Get multiple authors
         response = self.client.get(url)
@@ -67,32 +91,12 @@ class AuthorEndpointTestCase(APITestCase):
         responseJson = response.json()
         self.assertEqual(len(responseJson['items']), 2)
 
-    def test_delete_author(self):
-        addUrl = '/service/authors/'
-        deleteUrl = '/service/authors/' + author1["id"] + '/'
-
-        # Add an author
-        response =self.client.post(addUrl, author1, format='json')
-
-        # Delete the author
-        response = self.client.delete(deleteUrl)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check if the author was deleted
-        try:
-            Author.objects.get(id=author1["id"])
-
-            # If the get does not raise an error, that means the deleted author was found
-            self.assertEqual("Deleted author was found", "after being deleted")
-        except:
-            return
-
     def test_update_author(self):
-        addUrl = '/service/authors/'
-        updateUrl = '/service/authors/' + author1["id"] + '/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add an author
-        self.client.post(addUrl, author1, format='json')
+        updateUrl = '/service/authors/' + author1["id"] + '/'
 
         # Update the author
         author1Updated = copy.deepcopy(author2)
@@ -107,14 +111,13 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(savedAuthor.displayName, author1Updated["displayName"])
         self.assertEqual(savedAuthor.github, author1Updated["github"])
         self.assertEqual(savedAuthor.profileImage, author1Updated["profileImage"])
-        self.assertEqual(savedAuthor.password, author1Updated["password"])
 
     def test_get_single_author(self):
-        getUrl = '/service/authors/' + author1["id"] + '/'
-        addUrl = '/service/authors/'
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
-        # Add an author
-        self.client.post(addUrl, author1, format='json')
+        getUrl = '/service/authors/' + author1["id"] + '/'
 
         # Get the author
         response = self.client.get(getUrl)
@@ -128,5 +131,3 @@ class AuthorEndpointTestCase(APITestCase):
         self.assertEqual(responseJson["displayName"], author1["displayName"])
         self.assertEqual(responseJson["github"], author1["github"])
         self.assertEqual(responseJson["profileImage"], author1["profileImage"])
-        self.assertEqual(responseJson["password"], author1["password"])
-

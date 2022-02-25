@@ -88,24 +88,23 @@ class InboxTestCase(TestCase):
 class InboxEndpointTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # TODO: uncomment when auth stuff is merged
-        # # register author 
-        # cls.client = APIClient()
-        # registerUrl = "/service/register/"
-        # cls.client.post(registerUrl, user1, format='json')
-        # cls.client.post(registerUrl, user2, format='json')
-        # user1Id = str(self.author.id)
-        # author1["id"] = user1Id
-        # updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        # cls.client.post(updateUrl1, author1, format='json')
-        # user2Id = str(self.actor.id)
-        # author2["id"] = user2Id
-        # updateUrl2 = '/service/authors/' + author2["id"] + '/'
-        # cls.client.post(updateUrl2, author2, format='json')
+        # register author 
+        cls.client = APIClient()
+        registerUrl = "/service/register/"
+        cls.client.post(registerUrl, user1, format='json')
+        cls.client.post(registerUrl, user2, format='json')
+        user1Id = str(self.author.id)
+        author1["id"] = user1Id
+        updateUrl1 = '/service/authors/' + author1["id"] + '/'
+        cls.client.post(updateUrl1, author1, format='json')
+        user2Id = str(self.actor.id)
+        author2["id"] = user2Id
+        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        cls.client.post(updateUrl2, author2, format='json')
 
-        # remove when auth stuff is merged
-        Author.objects.create(**author1)
-        Author.objects.create(**author2)
+        # # remove when auth stuff is merged
+        # Author.objects.create(**author1)
+        # Author.objects.create(**author2)
 
     def setUp(self):
         self.author = Author.objects.get(username=user1["username"])
@@ -118,8 +117,8 @@ class InboxEndpointTestCase(APITestCase):
 
     def test_get_inbox(self):
         """Test GET request for getting an inbox."""
-        # loginUrl = "/service/login/"
-        # self.client.post(loginUrl, user1, format='json')
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
         
         url = '/service/authors/' + author1["id"] + '/inbox/'
 
@@ -137,8 +136,8 @@ class InboxEndpointTestCase(APITestCase):
 
     def test_clear_inbox(self):
         """Test DELETE request for clearing an inbox."""
-        # loginUrl = "/service/login/"
-        # self.client.post(loginUrl, user1, format='json')
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
 
         url = '/service/authors/' + author1["id"] + '/inbox/'
 
@@ -153,8 +152,8 @@ class InboxEndpointTestCase(APITestCase):
 
     def test_add_local_post(self):
         """Test POST request for sending a local post to an inbox."""
-        # loginUrl = "/service/login/"
-        # self.client.post(loginUrl, user2, format='json')
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user2, format='json')
 
         url = '/service/authors/' + author1["id"] + '/inbox/'
 
@@ -166,8 +165,8 @@ class InboxEndpointTestCase(APITestCase):
 
     def test_add_local_follow(self):
         """Test POST request for sending a follow request from a local author to an inbox."""
-        # loginUrl = "/service/login/"
-        # self.client.post(loginUrl, user2, format='json')
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user2, format='json')
 
         url = '/service/authors/' + author1["id"] + '/inbox/'
 
