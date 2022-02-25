@@ -88,7 +88,14 @@ author2ID = author2["id"]
 post = imagePostPng
 postID = post["id"]
 postAuthor = post["author"]
-comment = None #TODO change once comment is merged
+
+comment = {
+    "author": "testAuthor",
+    "comment": "testComment",
+    "contentType": "testContentType",
+    "published": "testPublished",
+    "id": "testID"
+}
 commentID = comment["id"]
 
 #Like left by author1 on post
@@ -323,7 +330,7 @@ class LikeEndpointTestCase(APITestCase):
         
         #Check that all fields are correct
         self.assertEqual(savedLike.summary, postLike1["summary"])
-        self.assertEqual(savedLike.author, postLike1["author"]) #TODO see if this works
+        self.assertEqual(savedLike.author, postLike1["author"]) 
         self.assertEqual(savedLike.object, postLike1["object"])
 
 
@@ -336,7 +343,7 @@ class LikeEndpointTestCase(APITestCase):
         self.client.post(postUrl, postLike2, format="json")
 
         response = self.client.get(getUrl, format="json")
-        likes = response.json()["items"] #TODO check how multiple likes are represented in json
+        likes = response.json()["items"] #List of likes
     
 
         self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
@@ -356,7 +363,7 @@ class LikeEndpointTestCase(APITestCase):
         self.client.post(postUrl, commentLike2, format="json")
 
         response = self.client.get(getUrl, format="json")
-        likes = response.json()["items"] #TODO check how multiple likes are represented in json
+        likes = response.json()["items"] #List of likes
 
         self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
         self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
@@ -374,7 +381,7 @@ class LikeEndpointTestCase(APITestCase):
         self.client.post(postUrl, commentLike1, format="json")
 
         response = self.client.get(getUrl, format="json")
-        likes = response.json()["items"] #TODO check how multiple likes are represented in json
+        likes = response.json()["items"] #List of likes
 
         self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
         self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
