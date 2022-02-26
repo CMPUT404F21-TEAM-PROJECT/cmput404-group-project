@@ -41,7 +41,7 @@ def get_post_likes(request, authorID, postID):
 
     # Get likes
     queryString = "{0}/posts/{1}".format(authorID, postID)
-    likes = Like.objects.filter(object_contains = queryString)  
+    likes = Like.objects.filter(object__contains = queryString)  
 
     #TODO make sure empty likes doesnt cause issues
     # Create the JSON response dictionary
@@ -65,12 +65,13 @@ def get_comment_likes(request, authorID, postID, commentID):
     post = find_post(postID)
     comment = find_comment(commentID)
     if author is None or post is None or comment is None:
+        #TODO fix issue with comment = None
         response.status_code = 404
         return response
 
     # Get likes
     queryString = "{0}/posts/{1}/comments/{2}".format(authorID, postID, commentID)
-    likes = Like.objects.filter(object_contains = queryString)  
+    likes = Like.objects.filter(object__contains = queryString)  
 
     #TODO make sure empty likes doesnt cause issues
     serializer = LikeSerializer(likes, many=True)
@@ -95,9 +96,9 @@ def get_author_likes(request, authorID):
         response.status_code = 404
         return response
 
-    
     # Get likes
-    likes = Like.objects.filter(author=author)
+    likes = Like.objects.filter(author=author) #TODO fix returning no likes
+    
 
     #TODO make sure empty likes doesnt cause issues
     # Create the JSON response dictionary
