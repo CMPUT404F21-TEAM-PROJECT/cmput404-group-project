@@ -47,7 +47,8 @@ def get_post_likes(request, authorID, postID):
     # Create the JSON response dictionary
     serializer = LikeSerializer(likes, many=True)
     items = serializer.data
-    responseDict = {'type' : 'likes', 'items' : items}
+    object = post.id #Url to post. (postID is just the id where as post.id is the full url)
+    responseDict = {'type' : 'liked', 'items' : items, 'object' : object}
 
     # Return the response
     response = JsonResponse(responseDict)
@@ -74,7 +75,8 @@ def get_comment_likes(request, authorID, postID, commentID):
     #TODO make sure empty likes doesnt cause issues
     serializer = LikeSerializer(likes, many=True)
     items = serializer.data
-    responseDict = {'type' : 'likes', 'items' : items}
+    object = comment.id #Url to coment. (commentID is just the id where as comment.id is the full url)
+    responseDict = {'type' : 'liked', 'items' : items, 'object' : object}
 
     # Return the response
     response = JsonResponse(responseDict)
@@ -101,7 +103,8 @@ def get_author_likes(request, authorID):
     # Create the JSON response dictionary
     serializer = LikeSerializer(likes, many=True)
     items = serializer.data
-    responseDict = {'type' : 'liked', 'items' : items}
+    object = author.url
+    responseDict = {'type' : 'liked', 'items' : items, "object" : object}
 
     # Return the response
     response = JsonResponse(responseDict)

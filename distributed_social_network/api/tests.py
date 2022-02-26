@@ -24,6 +24,8 @@ user2 = {
 
 
 # Author Mock Data
+PORT = "5438"
+HOST = "127.0.0.1"
 
 author1 = {
     "url":"testingUrl1",
@@ -115,50 +117,46 @@ imagePostBase64 = {
 }
 
 ######### Start Like Mock Data #########
-PORT = "5438"
-HOST = "127.0.0.1"
-author1ID = author1["id"]
-author2ID = author2["id"]
-post = imagePostPng
-postID = post["id"]
-postAuthor = post["author"]
+'''
+NOTE Fields with empty strings are updated 
+in setUp for Like endpoint tests
+'''
 
-comment = {
+likeTestComment = {
     "author": "testAuthor",
     "comment": "testComment",
     "contentType": "testContentType",
     "published": "testPublished",
-    "id": "testID"
+    "id": "91111111-1111-1111-1111-111111111111"
 }
-commentID = comment["id"]
 
 #Like left by author1 on post
 postLike1 = {
    "summary": "postLike1Summary",
-   "author": author1,
-   "object": "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, postAuthor, postID)
+   "author": "",
+   "object": "" 
 }
 
 #Like left by author2 on post
 postLike2 = {
     "summary": "postLike2Summary",
-    "author": author2,
-    "object": "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, postAuthor, postID)
+    "author": "",
+    "object": "" 
 }
 
 
 #Like left by author1 on comment
 commentLike1 = {
     "summary": "commentLike1Summary",
-    "author": author1,
-    "object": "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, postAuthor, postID, commentID)
+    "author": "",
+    "object": ""
 }
 
 #Like left by author2 on comment
 commentLike2 = {
     "summary": "commentLike2Summary",
-    "author": author2,
-    "object": "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, postAuthor, postID, commentID)
+    "author": "",
+    "object": ""
 }
 
 ######### End Like Mock Data #########
@@ -192,14 +190,15 @@ class PostTestCase(TestCase):
 
 class LikeTestCase(TestCase):
     def setUp(self):
-        author = Author.objects.create(id="test_author_id")
-        Like.objects.create(summary="test_like_summary", author=author, object="test_like_object") 
+        self.id = uuid.uuid4()
+        self.user = User.objects.create(id=self.id)
+        self.author = Author.objects.create(id=self.user)
+        Like.objects.create(summary="test_like_summary", author=self.author, object="test_like_object") 
 
     def test_like_default_values(self):
-        author = Author.objects.get(id="test_author_id")
-        like = Like.objects.get(Q(author=author) & Q(object="test_like_object"))
+        like = Like.objects.get(Q(author=self.author) & Q(object="test_like_object"))
         self.assertEqual(like.summary, "test_like_summary")
-        self.assertEqual(like.author, author)
+        self.assertEqual(like.author, self.author)
         self.assertEqual(like.object, "test_like_object")
 
 
@@ -446,9 +445,57 @@ class PostEndpointTestCase(APITestCase):
 
 
 class LikeEndpointTestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = APIClient()
+
+        # Create 2 new users if they don't already exist
+        registerUrl = "/service/register/"
+        cls.client.post(registerUrl, user1, format='json')
+        cls.client.post(registerUrl, user2, format='json')
+        
+        # Save their ids
+        user1Id = str(User.objects.get(username=user1["username"]).id)
+        user2Id = str(User.objects.get(username=user2["username"]).id)
+        author1["id"] = user1Id
+        author2["id"] = user2Id
+        user1["id"] = user1Id
+        user2["id"] = user2Id
+        imagePostBase64["author"] = user1Id
+        imagePostPng["author"] = user1Id
+        imagePostJpeg["author"] = user1Id
+        
+        #Set up mock like objects
+        cls.likeTestPost = imagePostPng
+        cls.likeTestPostID = cls.likeTestPost["id"]
+        cls.likeTestPostAuthor = cls.likeTestPost["author"] 
+        cls.likeTestCommentID = likeTestComment["id"]
+
+        postLike1["author"] = author1
+        postLike2["author"] = author2
+        commentLike1["author"] = author1
+        commentLike2["author"] = author2
+        postLike1["object"] = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, cls.likeTestPostAuthor, cls.likeTestPostID)
+        postLike2["object"] = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, cls.likeTestPostAuthor, cls.likeTestPostID)
+        commentLike1["object"] = "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, cls.likeTestPostAuthor, cls.likeTestPostID, cls.likeTestCommentID)
+        commentLike2["object"] = "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, cls.likeTestPostAuthor, cls.likeTestPostID, cls.likeTestCommentID)
+        
+
+        # Update authors
+        updateUrl1 = '/service/authors/' + author1["id"] + '/'
+        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        
+        cls.client.post(updateUrl1, author1, format='json')
+        cls.client.post(updateUrl2, author2, format='json')
+
     def test_send_like(self):
-        url = "/service/authors/{}/inbox/".format(postAuthor)
-        object = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, postAuthor, postID)
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+
+        url = "/service/authors/{}/inbox/".format(self.likeTestPostAuthor)
+        object = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, self.likeTestPostAuthor, self.likeTestPostID)
         response = self.client.post(url, postLike1, format="json")
         savedLike = Like.objects.get(Q(author=author1) & Q(object=object))
         
@@ -461,8 +508,13 @@ class LikeEndpointTestCase(APITestCase):
 
 
     def test_get_post_likes(self):
-        postUrl =  "/service/authors/{}/inbox/".format(postAuthor)
-        getUrl = "/service/authors/{0}/posts/{1}/likes".format(postAuthor, postID)
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+
+        postUrl =  "/service/authors/{}/inbox/".format(self.likeTestPostAuthor)
+        getUrl = "/service/authors/{0}/posts/{1}/likes".format(self.likeTestPostAuthor, self.likeTestPostID)
 
         #Add likes 
         self.client.post(postUrl, postLike1, format="json")
@@ -481,8 +533,12 @@ class LikeEndpointTestCase(APITestCase):
         
 
     def test_get_comment_likes(self):
-        postUrl = "/service/authors/{}/inbox/".format(postAuthor)
-        getUrl = "/service/authors/{0}/posts/{1}/comments/{2}/likes".format(postAuthor, postID, commentID)
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+        postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthor)
+        getUrl = "/service/authors/{0}/posts/{1}/comments/{2}/likes".format(self.likeTestPostAuthor, self.likeTestPostID, self.likeTestCommentID)
 
         #Add likes 
         self.client.post(postUrl, commentLike1, format="json")
@@ -499,8 +555,13 @@ class LikeEndpointTestCase(APITestCase):
         self.assertTrue(commentLike2 in likes) 
 
     def test_get_author_likes(self):
-        postUrl = "/service/authors/{}/inbox/".format(postAuthor)
-        getUrl = "/service/authors/{}/liked".format(postAuthor)
+        # Log in as user1
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+
+        postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthor)
+        getUrl = "/service/authors/{}/liked".format(self.likeTestPostAuthor)
 
         #Add likes 
         self.client.post(postUrl, postLike1, format="json")
@@ -531,4 +592,7 @@ class CommentTestCase(TestCase):
         comment = Comment.objects.get(id=self.comment_id)
         self.assertEqual(comment.id, self.comment_id)
         self.assertEqual(comment.author, self.author)
+
+
+
 
