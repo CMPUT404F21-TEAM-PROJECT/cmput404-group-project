@@ -17,10 +17,10 @@ class Author(models.Model):
 
 class FollowRequest(models.Model):
     summary = models.CharField(max_length=200)
-    actor = models.ForeignKey('Author',
+    actor = models.ForeignKey(Author,
                               on_delete=models.CASCADE,
                               related_name='actor')
-    object = models.ForeignKey('Author',
+    object = models.ForeignKey(Author,
                                on_delete=models.CASCADE,
                                related_name='object')
     accepted = models.BooleanField(default=False)
@@ -39,6 +39,17 @@ class Post(models.Model):
     origin = models.CharField(max_length=200)
     categories = models.CharField(max_length=200) # Should be stored as space separated list of strings
     unlisted = models.BooleanField(default=False)
+
+class Inbox(models.Model):
+    author = models.ForeignKey(Author,
+                              on_delete=models.CASCADE,
+                              related_name='author')
+    posts = models.ManyToManyField(Post,
+                                   related_name='posts')
+    # likes = models.ManyToManyField(Like,
+                                    #  related_name='posts')
+    follow_requests = models.ManyToManyField(FollowRequest,
+                                             related_name='follow_requests')
 
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -13,6 +13,7 @@ urlpatterns = [
   path('authors/<str:author_id>/posts/<str:post_id>/image/', views.route_single_image_post, name='Single Image Post'),
   path('authors/<str:author_id>/followers/', views.route_multiple_followers, name='Get Followers'),
   path('authors/<str:author_id>/followers/<str:follower_id>', views.route_single_follower, name='Manage Follower'),
+  path('authors/<str:author_id>/inbox/', views.route_inbox, name='Inbox'),
   path('authors/<str:author_id>/posts/<str:post_id>/Comments', views.route_multiple_comments, name='Multiple Comments'),
   path('authors/<str:author_id>/posts/<str:post_id>/Comments/<uuid:comment_id>/', views.route_single_comment, name='Single Comment')
 ]
