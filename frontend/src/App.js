@@ -3,8 +3,8 @@ import React from 'react'
 import ReactDom from 'react-dom'
 import ProfileScreen from './pages/profileScreen';
 
-class App extends React.Component {
-  render(){
+function App() {
+
     return (
       <div className="App">
         <header className="App-header"></header>
@@ -13,7 +13,6 @@ class App extends React.Component {
         </body>
       </div>
     )
-  }
 }
 
 export default App;
