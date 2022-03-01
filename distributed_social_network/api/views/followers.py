@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
+import jwt
 from django.http import JsonResponse, HttpResponse
 from ..models import FollowRequest
 from ..serializers import AuthorSerializer, FollowRequestSerializer
@@ -8,9 +9,9 @@ from ..serializers import AuthorSerializer, FollowRequestSerializer
 @api_view(['DELETE', 'PUT', 'GET'])
 def route_single_follower(request, author_id, follower_id):
     if request.method == 'DELETE':
-        return remove_follower(author_id, follower_id)
+        return remove_follower(request, author_id, follower_id)
     elif request.method == 'PUT':
-        return add_follower(author_id, follower_id)
+        return add_follower(request, author_id, follower_id)
     elif request.method == 'GET':
         return get_follower(author_id, follower_id)
 
@@ -20,10 +21,21 @@ def route_multiple_followers(request, author_id):
     if request.method == 'GET':
         return get_followers(author_id)
 
-# Adds author follower_id as a follower of author id 
-# TODO: "must be authenticated"
-def add_follower(author_id, follower_id):
+# Adds author follower_id as a follower of author id
+def add_follower(request, author_id, follower_id):
     response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (author_id == viewerId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+
     # look for follow request
     try:
         fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
@@ -41,8 +53,19 @@ def add_follower(author_id, follower_id):
         return response
 
 # Removes author follower_id as a follower of author author_id
-def remove_follower(author_id, follower_id):
+def remove_follower(request, author_id, follower_id):
     response = HttpResponse()
+
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if not (author_id == viewerId):
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
 
     try:
         fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
@@ -82,8 +105,8 @@ def get_followers(author_id):
 
     # find accepted friend requests
     follower_list = []
-    for follower in FollowRequest.objects.filter(object=author_id).filter(accepted=True).select_related('actor'):
-        follower_list.append(follower)
+    for fr in FollowRequest.objects.filter(object=author_id).filter(accepted=True):
+        follower_list.append(fr.actor)
     
     serializer = AuthorSerializer(follower_list, many=True)
     items = serializer.data

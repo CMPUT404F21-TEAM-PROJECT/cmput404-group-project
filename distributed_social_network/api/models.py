@@ -19,10 +19,10 @@ class FollowRequest(models.Model):
     summary = models.CharField(max_length=200)
     actor = models.ForeignKey(Author,
                               on_delete=models.CASCADE,
-                              related_name='actor')
+                              related_name='fr_sent')
     object = models.ForeignKey(Author,
                                on_delete=models.CASCADE,
-                               related_name='object')
+                               related_name='fr_received')
     accepted = models.BooleanField(default=False)
 
 class Post(models.Model):
@@ -41,15 +41,12 @@ class Post(models.Model):
     unlisted = models.BooleanField(default=False)
 
 class Inbox(models.Model):
-    author = models.ForeignKey(Author,
-                              on_delete=models.CASCADE,
-                              related_name='author')
-    posts = models.ManyToManyField(Post,
-                                   related_name='posts')
+    author = models.OneToOneField(Author,
+                                  on_delete=models.CASCADE)
+    posts = models.ManyToManyField(Post)
     # likes = models.ManyToManyField(Like,
                                     #  related_name='posts')
-    follow_requests = models.ManyToManyField(FollowRequest,
-                                             related_name='follow_requests')
+    follow_requests = models.ManyToManyField(FollowRequest)
 
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

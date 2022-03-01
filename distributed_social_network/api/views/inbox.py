@@ -42,7 +42,7 @@ def get_inbox(request, author_id, inbox):
     try:
         cookie = request.COOKIES['jwt']
         viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (str(inbox.author.id.id) == viewerId):
+        if not (author_id == viewerId):
             response.status_code = 401
             return response
     except KeyError:
@@ -85,7 +85,7 @@ def delete_inbox(request, author_id, inbox):
     try:
         cookie = request.COOKIES['jwt']
         viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (str(inbox.author.id.id) == viewerId):
+        if not (author_id == viewerId):
             response.status_code = 401
             return response
     except KeyError:
