@@ -1,10 +1,9 @@
-from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
 from django.http import JsonResponse, HttpResponse
 from ..models import Author, Like, Post, Comment
-from ..serializers import AuthorSerializer, LikeSerializer
+from ..serializers import  LikeSerializer
+from django.db.models import Q
 
 
 
@@ -41,9 +40,8 @@ def get_post_likes(request, authorID, postID):
 
     # Get likes
     queryString = "{0}/posts/{1}".format(authorID, postID)
-    likes = Like.objects.filter(object__contains = queryString)  
+    likes = Like.objects.filter(Q(object__contains = queryString) & ~Q(object__contains = "comments") )  
 
-    #TODO make sure empty likes doesnt cause issues
     # Create the JSON response dictionary
     serializer = LikeSerializer(likes, many=True)
     items = serializer.data
@@ -73,7 +71,6 @@ def get_comment_likes(request, authorID, postID, commentID):
     queryString = "{0}/posts/{1}/comments/{2}".format(authorID, postID, commentID)
     likes = Like.objects.filter(object__contains = queryString)  
 
-    #TODO make sure empty likes doesnt cause issues
     serializer = LikeSerializer(likes, many=True)
     items = serializer.data
     object = comment.id #Url to coment. (commentID is just the id where as comment.id is the full url)
@@ -97,9 +94,8 @@ def get_author_likes(request, authorID):
         return response
 
     # Get likes
-    likes = Like.objects.filter(author=author) #TODO fix returning no likes
+    likes = Like.objects.filter(author=author) 
     
-
     #TODO make sure empty likes doesnt cause issues
     # Create the JSON response dictionary
     serializer = LikeSerializer(likes, many=True)

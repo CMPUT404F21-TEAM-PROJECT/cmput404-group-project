@@ -25,9 +25,9 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Author
         fields = '__all__'
 
-#TODO check if this supports foreign key for author
 class LikeSerializer(serializers.ModelSerializer):
     type = serializers.CharField(read_only = True, default = 'Like')
+    author = AuthorSerializer()
     class Meta:
         model = Like
         fields = '__all__'
