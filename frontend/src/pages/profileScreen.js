@@ -1,6 +1,6 @@
 import React from 'react'
 import AuthorDetailsEditable from "../components/authorDetailsEditable"
-import Button from '@mui/material/TextField'
+import Button from '@mui/material/Button'
 
 class ProfileScreen extends React.Component {
     render(){
