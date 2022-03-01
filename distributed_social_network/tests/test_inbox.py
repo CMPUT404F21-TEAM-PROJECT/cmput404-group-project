@@ -2,7 +2,6 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from api.models import Author, FollowRequest, Inbox, Post, User
-from api.serializers import PostSerializer
 from datetime import datetime
 import copy, base64, os
 import uuid
@@ -113,8 +112,8 @@ class InboxEndpointTestCase(APITestCase):
         self.author = Author.objects.get(id=author1["id"])
         self.actor = Author.objects.get(id=author2["id"])
 
-        # create inbox and populate with a post
-        self.inbox = Inbox.objects.create(author=self.author)
+        # get inbox and populate with a post
+        self.inbox = Inbox.objects.get(author=self.author)
         self.inbox.posts.add(Post.objects.create(**post1, author=self.actor))
 
         # make author follow actor (so actor can send stuff to author's inbox)
