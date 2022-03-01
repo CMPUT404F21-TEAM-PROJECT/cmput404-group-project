@@ -6,6 +6,7 @@ urlpatterns = [
   path('register/', views.create_new_user, name="Create New User"),
   path('login/', views.login_user, name="Log User In"),
   path('get-user/', views.get_user, name="Get User Info"),
+  path('logout/', views.log_user_out, name="Log User Out"),
   path('authors/', views.route_multiple_authors, name='Multiple Authors'),
   path('authors/<str:author_id>/', views.route_single_author, name='Single Author'),
   path('authors/<str:author_id>/posts/', views.route_multiple_posts, name='Multiple Posts'),

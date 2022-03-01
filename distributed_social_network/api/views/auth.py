@@ -95,6 +95,22 @@ def login_user(request):
 
     return response
 
+# Deletes the current user's jwt token, return a 400 if user is not currently logged in and calls this method
+@api_view(['POST'])
+def log_user_out(request):
+    response = HttpResponse()
+    try:
+        cookie = request.COOKIES['jwt']
+        if cookie:
+            response.delete_cookie('jwt')
+            response.content = "User successfully logged out"
+            response.status_code = 200
+            return response
+    except:
+        response.content = "Current user is not logged in"
+        response.status_code = 400
+        return response
+
 # Test function for authentication and getting user data
 @api_view(['GET'])
 def get_user(request):

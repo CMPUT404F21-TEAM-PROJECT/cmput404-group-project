@@ -52,8 +52,7 @@ class Inbox(models.Model):
                                              related_name='follow_requests')
 
 class Comment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # id = models.CharField(max_length=200, primary_key=True) #TODO: Should they be stored as uuidfields?
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE) # When post is deleted, delete the comments
     author = models.ForeignKey(Author, on_delete=models.CASCADE) # When author is deleted so are their comments
     contentType = models.CharField(max_length=20) # Limit to only content types allowed
