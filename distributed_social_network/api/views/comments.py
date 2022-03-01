@@ -1,3 +1,6 @@
+from importlib_metadata import re
+import jwt
+from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
@@ -15,11 +18,11 @@ def route_multiple_comments(request, post_id, author_id):
         return add_comment(request, author_id, post_id)
 
 # Routes the request for a single comment
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def route_single_comment(request, post_id, author_id, comment_id):
     if request.method == 'GET':
         return get_comment(request, comment_id)
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
         return update_comment(request, comment_id)
     elif request.method == 'DELETE':
         return delete_comment(request, comment_id)
@@ -38,8 +41,8 @@ def get_comments(request, post_id):
     paginator.page_query_param = 'page'
     paginator.page_size_query_param = 'size'
 
-    # Get all comments, paginated
-    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=post_id), request)
+    # Get all comments, ordered by the latest published dates paginated
+    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=post_id).order_by('-published'), request)
 
     # Create the JSON response dictionary
     serializer = CommentSerializer(comments, many=True)
@@ -54,9 +57,22 @@ def get_comments(request, post_id):
 # Adds a new comment to an existing post
 # Expects JSON request body with post and author attributes
 def add_comment(request, author_id, post_id):
+    response = HttpResponse()
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        user_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+    except KeyError:
+        response.status_code = 401
+        response.content = "Error: Not Authenticated"
+        return response
+
+    # Uses the current user and time as author and published respectively
+    request.data["author"] = user_id
+    request.data["published"] = timezone.localtime(timezone.now())
+
     # Serialize a new Comment object
     serializer = CommentSerializer(data = request.data)
-    response = HttpResponse()
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
@@ -66,7 +82,7 @@ def add_comment(request, author_id, post_id):
         return response
     
     response.status_code = 400
-    response.content = "Error: Issue occurred during serialization"
+    response.content = request.data
     return response
 
 # Gets a single comment JSON object
@@ -95,18 +111,34 @@ def get_comment(request, comment_id):
 # Expects JSON request body with post and author attributes
 def update_comment(request, comment_id):
     response = HttpResponse()
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        user_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+    except KeyError:
+        response.status_code = 401
+        response.content = "Error: Not Authenticated"
+        return response
 
     # Find the comment with the given comment_id
     comment = find_comment(comment_id)
     if comment == None:
         response.status_code = 404
         return response
-    
-    # Don't allow the primary key (id) to be changed
-    if str(request.data.get("id")) != str(comment_id):
-        response.status_code = 400
-        response.content = "comment_id: {} | id: {}".format(comment_id,request.data.get("id"))
+    elif str(comment.author_id) != user_id:
+        response.status_code = 401
+        response.content = "Error: Comment was not created by this author"
         return response
+    
+    # Don't allow the primary key (id) to be changed, if no request_id is provided, use the comment_id
+    request_id = request.data.get("id")
+    if request_id and str(request_id) != str(comment_id):
+        response.status_code = 400
+        response.content = "Error: Can't change id of comment"
+        return response
+
+    # Update the published time of the comment to the current time
+    request.data["published"] = timezone.localtime(timezone.now())
 
     # Collect the request data
     serializer = CommentSerializer(partial = True, instance = comment, data=request.data)
@@ -127,6 +159,14 @@ def update_comment(request, comment_id):
 # Deletes a comment using the provided id
 def delete_comment(request, comment_id):
     response = HttpResponse()
+    # Check authorization
+    try:
+        cookie = request.COOKIES['jwt']
+        user_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+    except KeyError:
+        response.status_code = 401
+        response.content = "Error: Not Authenticated"
+        return response
 
     # Find the comment with the given comment_id
     comment = find_comment(comment_id)
@@ -135,6 +175,10 @@ def delete_comment(request, comment_id):
     if not comment:
         response.status_code = 404
         response.content = "Error: Comment not found"
+        return response
+    elif str(comment.author_id) != user_id:
+        response.status_code = 401
+        response.content = "Error: Comment was not created by this author"
         return response
 
     comment.delete()
