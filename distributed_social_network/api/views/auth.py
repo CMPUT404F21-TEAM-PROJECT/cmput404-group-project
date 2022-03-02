@@ -1,7 +1,8 @@
+from telnetlib import AUTHENTICATION
 from importlib_metadata import re
 import jwt, datetime
 from rest_framework.decorators import api_view
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from ..models import User, Author, Inbox
 from ..serializers import AuthorSerializer, UserSerializer
 
@@ -11,7 +12,9 @@ def get_user_id(request):
     token = request.COOKIES.get('jwt')
     # Request was not authenticated without a token
     if not token:
-        return None
+        token = request.headers['Authorization']
+        if not token:
+            return None
     
     # Check whether the access token has expired
     try:
@@ -122,5 +125,6 @@ def get_user(request):
         return response
     user = User.objects.filter(id=userid).first()
     author = Author.objects.filter(id=user).first()
-    response.content = author
+    serializer = AuthorSerializer(author)
+    response = JsonResponse(serializer.data)
     return response

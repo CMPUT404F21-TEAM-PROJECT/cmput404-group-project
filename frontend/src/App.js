@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import './App.css';
-import requests from "./requests";
-import Login from "./components/LoginRegister/Login";
+import Login from "./components/LoginRegister/login";
 import Register from "./components/LoginRegister/Register";
 import Inbox from "./components/Inbox/Inbox";
 import { BrowserRouter, BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import ProfileScreen from "./components/AccountDetails/profileScreen";
 
 function App() {
-  var state = {token: null}
 
     return (
       <BrowserRouter>
@@ -26,6 +25,11 @@ function App() {
             <Inbox/>
           </div>
         </Route>
+        <Route exact path="/profile">
+          <div className="App">
+            <ProfileScreen/>
+          </div>
+        </Route>        
       </BrowserRouter>
     )
 }
