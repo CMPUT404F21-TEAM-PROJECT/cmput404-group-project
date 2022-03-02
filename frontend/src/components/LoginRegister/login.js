@@ -1,6 +1,7 @@
 import React, { useEffect, Component } from "react";
 // import './App.css';
 import requests from "../../requests";
+import ProfileScreen from "../AccountDetails/profileScreen";
 
 // class Login extends Component() {
 
@@ -32,13 +33,11 @@ class Login extends Component {
     login = async () => {
         console.log(this.state.credentials);
         const response = await requests.post(`service/login/`, {
-        // uncommenting below will send request to /authors?page=2&size=2
-        params: {
             username: this.state.credentials.username,
-            password: this.state.credentials.password
-            },
+            password: this.state.credentials.password,
         });
         alert(response);
+        this.props.parentCallback(response);
     }
 
     inputChanged = event => {
@@ -49,7 +48,7 @@ class Login extends Component {
 
   render() {
       return (
-          <div className="App">
+          <div className="LoginScreen">
             <h1>
               Login
             </h1>
