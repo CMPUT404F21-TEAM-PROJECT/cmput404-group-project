@@ -1,7 +1,8 @@
+from telnetlib import AUTHENTICATION
 from importlib_metadata import re
 import jwt, datetime
 from rest_framework.decorators import api_view
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from ..models import User, Author, Inbox
 from ..serializers import AuthorSerializer, UserSerializer
 
@@ -11,7 +12,9 @@ def get_user_id(request):
     token = request.COOKIES.get('jwt')
     # Request was not authenticated without a token
     if not token:
-        return None
+        token = request.headers['Authorization']
+        if not token:
+            return None
     
     # Check whether the access token has expired
     try:
@@ -89,11 +92,27 @@ def login_user(request):
 
     response = HttpResponse()
     response.status_code = 201
-    response.content = "User successfully logged in"
+    response.content = token
     response.set_cookie(key='jwt', value=token, httponly=True)
     response.data = responseDict
 
     return response
+
+# Deletes the current user's jwt token, return a 400 if user is not currently logged in and calls this method
+@api_view(['POST'])
+def log_user_out(request):
+    response = HttpResponse()
+    try:
+        cookie = request.COOKIES['jwt']
+        if cookie:
+            response.delete_cookie('jwt')
+            response.content = "User successfully logged out"
+            response.status_code = 200
+            return response
+    except:
+        response.content = "Current user is not logged in"
+        response.status_code = 400
+        return response
 
 # Test function for authentication and getting user data
 @api_view(['GET'])
@@ -106,5 +125,6 @@ def get_user(request):
         return response
     user = User.objects.filter(id=userid).first()
     author = Author.objects.filter(id=user).first()
-    response.content = author
+    serializer = AuthorSerializer(author)
+    response = JsonResponse(serializer.data)
     return response

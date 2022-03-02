@@ -31,3 +31,9 @@ Contributors:
     Ryan Helgoth
     Victor Lieu
 
+
+References
+==========
+
+React components from MaterialUI: https://mui.com/components/
+
