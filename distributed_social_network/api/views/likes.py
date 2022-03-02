@@ -6,26 +6,6 @@ from ..serializers import  LikeSerializer
 from django.db.models import Q
 
 
-
-# Sends a like to inbox of an author
-@api_view(["POST"])
-def send_like(request, authorID):
-    serializer = LikeSerializer(data = request.data)
-    response = HttpResponse()
-
-    if find_author(authorID) is None: 
-        # If author is not found, return 404
-        response.status_code = 404  
-    elif serializer.is_valid():
-        # If given data is valid, save the object to the database
-        serializer.save()
-        response.status_code = 201
-    else:
-        # If the data is not valid, do not save the object to the database
-        response.status_code = 400
-
-    return response
-
 # Gets all the likes on an author's post
 @api_view(["GET"])
 def get_post_likes(request, authorID, postID):

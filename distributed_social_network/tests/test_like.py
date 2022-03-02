@@ -195,26 +195,6 @@ class LikeEndpointTestCase(APITestCase):
         cursor.execute("INSERT INTO api_like (summary, object, author_id) VALUES( %s , %s , %s);", [postLike2["summary"], postLike2["object"], postLike2["author"]["id"]])
         cursor.execute("INSERT INTO api_like (summary, object, author_id) VALUES( %s , %s , %s);", [commentLike1["summary"], commentLike1["object"], commentLike1["author"]["id"]])
         cursor.execute("INSERT INTO api_like (summary, object, author_id) VALUES( %s , %s , %s);", [commentLike2["summary"], commentLike2["object"], commentLike2["author"]["id"]])
-
-
-    '''TODO un-comment test when inbox is setup
-    def test_send_like(self):
-        # Log in as user1
-        loginUrl = "/service/login/"
-        self.client.post(loginUrl, user1, format='json')
-
-        url = "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-        object = "http://{0}:{1}/service/authors/{2}/posts/{3}".format(HOST, PORT, self.likeTestPostAuthorID, self.likeTestPostID)
-        response = self.client.post(url, postLike1, format="json") 
-        savedLike = Like.objects.get(Q(author=author1) & Q(object=object))
-        
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED) #Check that request returned 201 code
-        
-        #Check that all fields are correct
-        self.assertEqual(savedLike.summary, postLike1["summary"])
-        self.assertEqual(savedLike.author, postLike1["author"]) 
-        self.assertEqual(savedLike.object, postLike1["object"])
-    '''
     
     def test_get_post_likes(self):
         # Log in as user1
