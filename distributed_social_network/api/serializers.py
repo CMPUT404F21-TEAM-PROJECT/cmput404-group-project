@@ -28,6 +28,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class LikeSerializer(serializers.ModelSerializer):
     type = serializers.CharField(read_only = True, default = 'Like')
+    author = AuthorSerializer()
     class Meta:
         model = Like
         fields = '__all__'
