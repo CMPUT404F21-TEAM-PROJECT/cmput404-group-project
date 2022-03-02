@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import logo from './logo.svg';
 import './App.css';
 import requests from "./requests";
-import FollowRequest from "./components/Followers/FollowRequest";
+import Follower from "./components/Followers/Follower";
 
 function App() {
 
@@ -29,7 +29,7 @@ function App() {
 
   return (
     <div className="App">
-      <FollowRequest
+      <Follower
         currentUser="ce2b9fb6-ab59-42b5-9173-f89704954f78"
         displayName="display name"
         profileImage="https://i.imgur.com/k7XVwpB.jpeg"
