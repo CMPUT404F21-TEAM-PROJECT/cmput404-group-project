@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import logo from './logo.svg';
 import './App.css';
 import requests from "./requests";
+import FollowRequest from "./components/Followers/FollowRequest";
 
 function App() {
 
@@ -28,20 +29,12 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <FollowRequest
+        currentUser="ce2b9fb6-ab59-42b5-9173-f89704954f78"
+        displayName="display name"
+        profileImage="https://i.imgur.com/k7XVwpB.jpeg"
+        id="21d21da7-dba1-45da-92e9-bc526be3831f"
+      />
     </div>
   );
 }

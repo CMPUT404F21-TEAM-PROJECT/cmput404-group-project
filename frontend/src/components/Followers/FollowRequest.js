@@ -1,26 +1,49 @@
-import React from "react";
+import React, {useState} from "react";
 import requests from "../../requests";
 
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import CheckIcon from '@mui/icons-material/Check';
-import ClearIcon from '@mui/icons-material/Clear';
+import { Alert,
+        Avatar,
+        Button,
+        ListItem,
+        ListItemAvatar,
+        ListItemText,
+        ListItemSecondaryAction,
+        } from "@mui/material";
+import ClearIcon from '@mui/icons-material/Clear'
+import CheckIcon from '@mui/icons-material/Check'
 
+// assuming props contains all the author attributes of the person who
+// sent the follow request, and the id of the current user
 export default function FollowRequest(props) {
+    const [error, setError] = useState("");
 
-    function acceptFollowRequest() {
+    const acceptFollowRequest = async () => {
         // send PUT request to author_id/followers/follower_id
-        console.log('clicked accept')
+        console.log('clicked accept');
+        try {
+          const response = await requests.put(`service/authors/${props.currentUser}/follwers/${props.id}/`);
+        } catch {
+          setError("Failed to accept follow request.");
+        }   
     }
 
-    function rejectFollowRequest() {
+
+    const rejectFollowRequest = async () => {
         // send DELETE request to author_id/followers/follower_id
         console.log('clicked reject')
+        try {
+          const response = await requests.delete(`service/authors/${props.currentUser}/follwers/${props.id}/`);
+        } catch {
+          setError("Failed to reject follow request.");
+        }   
     }
     return (
       <ListItem>
+        {error && (
+        <Alert severity="error">
+          {error}
+        </Alert>
+        )}
         <ListItemAvatar>
           <Avatar
           src={props.profileImage}
