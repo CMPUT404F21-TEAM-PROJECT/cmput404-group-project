@@ -9,6 +9,9 @@ from datetime import datetime
 import copy, base64, os, json
 from django.db.models import Q
 from http.cookies import SimpleCookie
+from django.db import connections
+from psycopg2.extras import Json
+
 
 # User Mock Data
 
@@ -22,7 +25,9 @@ user2 = {
     "password":"password2"
 }
 
+
 # Author Mock Data
+
 
 author1 = {
     "url":"testingUrl1",
@@ -281,3 +286,4 @@ class PostEndpointTestCase(APITestCase):
 
         # Check if the image matches the posted image
         self.assertEqual(response.content, open(os.getcwd() + "/testing_media/test.png", 'rb').read())
+

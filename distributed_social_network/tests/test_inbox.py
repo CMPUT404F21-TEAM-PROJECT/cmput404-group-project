@@ -1,10 +1,11 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from api.models import Author, FollowRequest, Inbox, Post, User
+from api.models import Author, FollowRequest, Like, Inbox, Post, User
 from datetime import datetime
 import copy, base64, os
 import uuid
+from django.db.models import Q
 
 
 # Mock Data
@@ -69,6 +70,14 @@ follow_request = {
     "type":"follow",
     "summary":"blah",
 }
+
+postLike1 = {
+    "type": "Like",
+    "summary": "postLike1Summary",
+}
+
+PORT = "5438"
+HOST = "127.0.0.1"
 
 # Create your tests here.
 class InboxTestCase(TestCase):
@@ -190,9 +199,31 @@ class InboxEndpointTestCase(APITestCase):
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(1, len(inbox.follow_requests.all()))
 
-    def test_add_local_like(self):
-        """Test POST request for sending a like for a local post/comment to an inbox."""
-        pass
+    # TODO: Figure out AuthorSerializer() errors
+    # def test_add_local_like(self):
+    #     """Test POST request for sending a like for a local post/comment to an inbox."""
+    #     # make actor follow author (so author can send stuff to actor's inbox)
+    #     FollowRequest.objects.create(summary='blah',
+    #                                  actor=self.actor,
+    #                                  object=self.author,
+    #                                  accepted=True)
+    #     # Log in as user1
+    #     loginUrl = "/service/login/"
+    #     self.client.post(loginUrl, user1, format='json')
+
+    #     url = '/service/authors/' + author2["id"] + '/inbox/'
+    #     # postLike1['object'] = "http://{0}:{1}/service/authors/{2}/posts/{3}".format(HOST, PORT, author2, post1['id'])
+    #     postLike1['object'] = post1['id']
+    #     response = self.client.post(url, postLike1, format="json") 
+
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED) #Check that request returned 201 code
+
+    #     savedLike = Like.objects.get(summary="postLike1Summary")
+        
+    #     #Check that all fields are correct
+    #     self.assertEqual(savedLike.summary, postLike1["summary"])
+    #     self.assertEqual(savedLike.author, self.author) 
+    #     self.assertEqual(savedLike.object, postLike1["object"])
 
     # TODO: implement for part 2
     # def test_add_remote_post(self):

@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Author, FollowRequest, Post, Comment, User, Inbox
+from .models import Author, FollowRequest, Post, Comment, User, Inbox, Like
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,10 +19,18 @@ class UserSerializer(serializers.ModelSerializer):
             instance.save()
         return instance
 
+
 class AuthorSerializer(serializers.ModelSerializer):
     type = serializers.CharField(read_only = True, default = 'author')
     class Meta:
         model = Author
+        fields = '__all__'
+
+class LikeSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(read_only = True, default = 'Like')
+    author = AuthorSerializer()
+    class Meta:
+        model = Like
         fields = '__all__'
 
 class FollowRequestSerializer(serializers.ModelSerializer):

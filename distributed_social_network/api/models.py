@@ -15,6 +15,13 @@ class Author(models.Model):
     profileImage = models.CharField(max_length=200, null=True, blank=True) # this will likely be a url or file path
     #friends = models.CharField(max_length=200) # not sure about this attribute yet
 
+
+class Like(models.Model):
+    summary = models.CharField(max_length=200) #Description of like
+    author = models.ForeignKey(Author, on_delete=models.CASCADE) #Sender of the like
+    object = models.CharField(max_length=200) #URL of the post or comment being liked
+
+    
 class FollowRequest(models.Model):
     summary = models.CharField(max_length=200)
     actor = models.ForeignKey(Author,
@@ -56,3 +63,4 @@ class Comment(models.Model):
     contentType = models.CharField(max_length=20) # Limit to only content types allowed
     comment = models.CharField(max_length=200) # Actual content of the comment
     published = models.DateTimeField() # ISO FORMAT, Time is updated every time the comment is changed
+
