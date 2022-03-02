@@ -4,12 +4,11 @@ import Button from '@mui/material/Button'
 import requests from "../../requests";
 
 class ProfileScreen extends React.Component {
-    state = {author : "empty", token : ''};
+    state = {author : "empty", token : this.props.token};
 
     getAuthorDetails = async () => {
         // Get the author details
-        console.log("ACCESSTOKEN:" + localStorage.getItem('access_token'))
-        const response = await requests.get('service/get-user/');
+        const response = await requests.get('service/get-user/', {withCredentials: true});
 
         // Update author details
         this.state.author = {
@@ -35,7 +34,7 @@ class ProfileScreen extends React.Component {
             displayName: this.state.author.displayName,
             github: this.state.author.github,
             profileImage: this.state.author.profileImage
-            });
+            }, {withCredentials: true});
     }
 
     render(){

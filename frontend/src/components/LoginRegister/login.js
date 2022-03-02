@@ -35,9 +35,9 @@ class Login extends Component {
         const response = await requests.post(`service/login/`, {
             username: this.state.credentials.username,
             password: this.state.credentials.password,
-        });
+        }, {withCredentials: true});
         alert(response);
-        this.props.parentCallback(response);
+        this.props.parentCallback(response.data.token);
     }
 
     inputChanged = event => {

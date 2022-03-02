@@ -5,17 +5,16 @@ import ProfileScreen from './components/AccountDetails/profileScreen';
 import Login from './components/LoginRegister/login';
 
 function App() {
-  var state = {cookie: null}
+  var state = {token: null}
 
-  function handleLogin(c) {
-    console.log(c)
-    state = {cookie: c}
+  function updateState (token) {
+    state.token = token;
   }
 
   return (
     <div className='App'>
-      <Login parentCallback={handleLogin}/>
-      <ProfileScreen cookie={state.cookie}/>
+      <Login parentCallback={updateState}/>
+      <ProfileScreen token={state.token}/>
     </div>
   )
 }
