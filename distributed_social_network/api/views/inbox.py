@@ -2,8 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
-from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer
-from ..views import get_follower, find_post
+from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer
+from ..views import get_follower, find_post, find_author
 
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -101,6 +101,7 @@ def delete_inbox(request, author_id, inbox):
 
 # Create a follow request and add it to author_id's inbox
 def add_follow(request, author_id, inbox):
+    response = HttpResponse()
     # get the viewer (person who sent the follow request)
     try:
         cookie = request.COOKIES['jwt']
@@ -115,7 +116,6 @@ def add_follow(request, author_id, inbox):
     data['actor'] = viewerId
     data['object'] = author_id
     serializer = FollowRequestSerializer(data = data)
-    response = HttpResponse()
 
     # If given data is valid, save the follow request to the database
     if serializer.is_valid():
@@ -158,4 +158,34 @@ def add_post(request, author_id, inbox):
 
 # Create a like and add it to author_id's inbox
 def add_like(request, author_id, inbox):
-    pass
+    response = HttpResponse()
+    # check if author_id is following senderId, if not return unauthorized
+    try:
+        cookie = request.COOKIES['jwt']
+        senderId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
+            response.status_code = 401
+            return response
+    except KeyError:
+        response.status_code = 401
+        return response
+    
+    # TODO: handle remote actors
+    # create the like
+    data = request.data.copy()
+    data['author'] = senderId
+
+    serializer = LikeSerializer(data = data)
+
+    if find_author(author_id) is None: 
+        # If author is not found, return 404
+        response.status_code = 404  
+    elif serializer.is_valid():
+        # If given data is valid, save the object to the database
+        serializer.save()
+        response.status_code = 201
+    else:
+        # If the data is not valid, do not save the object to the database
+        response.status_code = 400
+
+    return response

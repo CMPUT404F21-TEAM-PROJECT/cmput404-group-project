@@ -5,6 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from ..models import Author
 
+
 # Routes the request for a single author
 @api_view(['DELETE', 'POST', 'GET'])
 def route_single_author(request, author_id):
