@@ -89,7 +89,7 @@ def login_user(request):
 
     response = HttpResponse()
     response.status_code = 201
-    response.content = "User successfully logged in"
+    response.content = token
     response.set_cookie(key='jwt', value=token, httponly=True)
     response.data = responseDict
 

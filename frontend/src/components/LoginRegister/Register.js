@@ -6,36 +6,26 @@ import {
   } from "@mui/material";
 import "../../styles/login-register.css";
 import requests from "../../requests";
-import ProfileScreen from "../AccountDetails/profileScreen";
-import {useHstory, Redirect, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
   
-class Login extends Component {
+class Register extends Component {
     state = {
           username: "",
           password: "",
-          successful_login: false
+          confirm_password: "",
       }
-    handleLogin = async () => {
+
+    handleRegister = async () => {
         console.log(this.state);
-        try {
-            const response = await requests.post(`service/login/`, {
+        if(this.state.password == this.state.confirm_password) {
+            const response = await requests.post(`service/register/`, {
                 username: this.state.username,
                 password: this.state.password
-            }, {WithCredentials: true});
-            localStorage.setItem('access_token', response.data);
-            requests.defaults.headers['Authorization'] = 'JWT ' + localStorage.getItem('access_token');
-            console.log(response.data);
-            this.setState({successful_login: true})
+            });
+            alert(response);
         }
-        catch(error) {
-            console.log(error);
-        }
-    }
-
-    verifyLogin = (e) => {
-        console.log(this.successful_login)
-        if (!this.successful_login) {
-            e.preventDefault();
+        else {
+            console.log("Passwords Don't Match");
         }
     }
 
@@ -47,7 +37,7 @@ class Login extends Component {
                 Social Distributions
             </h1>
             <h3>
-                Please Log in to Continue
+                Create a new account
             </h3>
             <div className="wrapper">
             <TextField
@@ -59,38 +49,49 @@ class Login extends Component {
                 onChange={({ target }) =>
                 this.setState({
                 username: target.value
-                })
-            }
+                })}
             />
             <br/>
             <TextField
                 className="text-input"
                 size="small"
                 type="text"
-                label="Password"
                 type="password"
+                label="Password"
                 value={this.state.password}
                 onChange={({ target }) =>
-                    this.setState({
-                    password: target.value
-                    })
-                }
+                this.setState({
+                password: target.value
+                })}
+            />
+            <br/>
+            <TextField
+                className="text-input"
+                size="small"
+                type="text"
+                type="password"
+                label="Confirm Password"
+                value={this.state.confirm_password}
+                onChange={({ target }) =>
+                this.setState({
+                confirm_password: target.value
+                })}
             />
             <br/>
             <Button
+                className="avonmore-button"
                 disabled={this.state.loginBtnDisabled}
+                color="primary"
                 variant="contained"
-                onClick={this.handleLogin}
+                onClick={this.handleRegister}
                 ref={node => (this.btn = node)}>
-              Login
+              Register
             </Button>
-            {this.state.successful_login && <Redirect to="/inbox" />}
             </div>
-            <NavLink style={{ textDecoration: 'none', position: 'relative', top: '20px' }} to="/register">Don't have an account? Sign Up</NavLink>
+            <NavLink style={{ textDecoration: 'none', position: 'relative', top: '30px' }} to="/">Have an account? Log in</NavLink>
           </div>
           </body>
         );
     }
 }
-
-export default Login;
+export default Register;

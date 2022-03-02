@@ -1,22 +1,33 @@
+import React, { useEffect, useState } from "react";
 import './App.css';
-import React from 'react'
-import ReactDom from 'react-dom'
-import ProfileScreen from './components/AccountDetails/profileScreen';
-import Login from './components/LoginRegister/login';
+import requests from "./requests";
+import Login from "./components/LoginRegister/Login";
+import Register from "./components/LoginRegister/Register";
+import Inbox from "./components/Inbox/Inbox";
+import { BrowserRouter, BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
 function App() {
   var state = {token: null}
 
-  function updateState (token) {
-    state.token = token;
-  }
-
-  return (
-    <div className='App'>
-      <Login parentCallback={updateState}/>
-      <ProfileScreen token={state.token}/>
-    </div>
-  )
+    return (
+      <BrowserRouter>
+        <Route exact path="/">
+          <div className="Login">
+            <Login />
+          </div>
+        </Route>
+        <Route exact path="/register">
+          <div className="App">
+            <Register/>
+          </div>
+        </Route>
+        <Route exact path="/inbox">
+          <div className="App">
+            <Inbox/>
+          </div>
+        </Route>
+      </BrowserRouter>
+    )
 }
 
 export default App;
