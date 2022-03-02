@@ -18,7 +18,6 @@ class Author(models.Model):
 
 class Like(models.Model):
     summary = models.CharField(max_length=200) #Description of like
-    # https://stackoverflow.com/questions/44292380/how-to-create-nested-models-and-get-nested-json-output-in-django-rest-framework
     author = models.ForeignKey(Author, on_delete=models.CASCADE) #Sender of the like
     object = models.CharField(max_length=200) #URL of the post or comment being liked
 
