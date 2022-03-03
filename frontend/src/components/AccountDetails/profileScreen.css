@@ -1,0 +1,47 @@
+div.ProfileScreen {
+    margin: 1em 1em 1em 1em;
+}
+
+#my-profile {
+    min-height: auto;
+}
+
+span.label {
+    display: block;
+}
+
+h1 {
+    margin: 1em 0em 1em 0em;
+}
+
+h5.MuiTypography-root {
+    display: inline-block;
+    margin: 0.2em 0em 0em 0em;
+}
+
+h5.MuiTypography-root.current-info {
+    background-color: rgb(212, 212, 212);
+    outline: 1px solid black;
+    padding: .2em .4em;
+}
+
+h5.MuiTypography-root.current-label {
+    margin-right: 0.5em;
+}
+
+div.MuiFormControl-root {
+    display: block;
+}
+
+img {
+    max-width: 200pt;
+    max-height: 200pt;
+}
+
+#labels {
+    margin: 1em 0em 0em 0em;
+}
+
+#inputs {
+    margin: 1em 0em 1em 0em;
+}
