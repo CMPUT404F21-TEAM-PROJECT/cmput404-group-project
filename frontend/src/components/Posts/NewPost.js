@@ -7,6 +7,12 @@ import { Redirect } from "react-router-dom";
 // TODO: Add form validation
 //import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
+// TODOS:
+// Form validation
+// print error messages
+// photo post
+// markdown post
+
 class NewPost extends Component {
   constructor(props) {
     super(props);
