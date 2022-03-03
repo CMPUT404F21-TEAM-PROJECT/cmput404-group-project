@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import './App.css';
+import NavBar from "./components/NavBar.js";
+
+
 import Login from "./components/LoginRegister/login";
 import Register from "./components/LoginRegister/Register";
 import Inbox from "./components/Inbox/Inbox";
@@ -22,14 +25,16 @@ function App() {
         </Route>
         <Route exact path="/inbox">
           <div className="Inbox">
+            <NavBar />
             <Inbox/>
           </div>
         </Route>
         <Route exact path="/profile">
           <div className="Profile">
+            <NavBar />
             <ProfileScreen/>
           </div>
-        </Route>        
+        </Route>       
       </BrowserRouter>
     )
 }
