@@ -5,6 +5,7 @@ import Register from "./components/LoginRegister/Register";
 import Inbox from "./components/Inbox/Inbox";
 import { BrowserRouter, BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import ProfileScreen from "./components/AccountDetails/profileScreen";
+import NewPost from "./components/Posts/NewPost.js"
 
 function App() {
 
@@ -29,7 +30,12 @@ function App() {
           <div className="Profile">
             <ProfileScreen/>
           </div>
-        </Route>        
+        </Route>   
+        <Route exact path="/newpost">
+          <div className="NewPost">
+            <NewPost/>
+          </div>
+        </Route>      
       </BrowserRouter>
     )
 }
