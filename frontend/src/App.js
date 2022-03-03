@@ -15,13 +15,11 @@ function App() {
       <BrowserRouter>
         <Route exact path="/">
           <div className="Login">
-            <NavBar />
             <Login />
           </div>
         </Route>
         <Route exact path="/register">
           <div className="Register">
-            <NavBar />
             <Register/>
           </div>
         </Route>
@@ -36,7 +34,7 @@ function App() {
             <NavBar />
             <ProfileScreen/>
           </div>
-        </Route>        
+        </Route>       
       </BrowserRouter>
     )
 }

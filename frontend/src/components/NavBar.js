@@ -14,9 +14,11 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import {Link} from "react-router-dom";
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Profile', 'Logout'];
+const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post"}
 
 const NavBar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -37,10 +39,22 @@ const NavBar = () => {
     setAnchorElUser(null);
   };
 
+  /*
+  TODO:
+    -Get rid of underscores on links
+    -Highlight button of current page
+
+
+
+
+  */
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
+          {/* NOTE: un-comment this out if we need a logo in the nav bar
+
           <Typography
             variant="h6"
             noWrap
@@ -49,6 +63,8 @@ const NavBar = () => {
           >
             LOGO
           </Typography>
+          
+          */}
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -96,13 +112,15 @@ const NavBar = () => {
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {page}
-              </Button>
+              <Link to={links[page]}>
+                <Button
+                  key={page}
+                  onClick={handleCloseNavMenu}
+                  sx={{ my: 2, color: 'white', display: 'block' }}
+                >
+                  {page}
+                </Button>
+              </Link>
             ))}
           </Box>
 
