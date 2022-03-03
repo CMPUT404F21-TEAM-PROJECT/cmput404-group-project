@@ -2,8 +2,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
-from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer
+from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer
 from ..views import get_follower, find_post, find_author
+from .auth import get_payload
 
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -38,14 +39,11 @@ def route_inbox(request, author_id):
 
 # Get author_id's inbox
 def get_inbox(request, author_id, inbox):
+    response = HttpResponse()
+
     # Check authorization
-    try:
-        cookie = request.COOKIES['jwt']
-        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (author_id == viewerId):
-            response.status_code = 401
-            return response
-    except KeyError:
+    viewerId = get_payload(request).get("id")
+    if not (author_id == viewerId):
         response.status_code = 401
         return response
     
@@ -55,8 +53,8 @@ def get_inbox(request, author_id, inbox):
     data = serializer.data
     for post in data['posts']:
         items.append(post)
-    # for like in data['likes']:
-    #     items.append(likes)
+    for like in data['likes']:
+        items.append(likes)
     for fr in data['follow_requests']:
         items.append(fr)
     
@@ -70,7 +68,7 @@ def get_inbox(request, author_id, inbox):
     paginated_items = paginator.paginate_queryset(items, request)
 
     data.pop('posts')
-    # data.pop('likes')
+    data.pop('likes')
     data.pop('follow_requests')
     data['items'] = paginated_items 
 
@@ -82,18 +80,13 @@ def delete_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    try:
-        cookie = request.COOKIES['jwt']
-        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if not (author_id == viewerId):
-            response.status_code = 401
-            return response
-    except KeyError:
+    viewerId = get_payload(request).get("id")
+    if not (author_id == viewerId):
         response.status_code = 401
         return response
     
     inbox.posts.clear()
-    # inbox.likes.clear()
+    inbox.likes.clear()
     inbox.follow_requests.clear()
     response.status_code = 200
 
@@ -102,13 +95,9 @@ def delete_inbox(request, author_id, inbox):
 # Create a follow request and add it to author_id's inbox
 def add_follow(request, author_id, inbox):
     response = HttpResponse()
-    # get the viewer (person who sent the follow request)
-    try:
-        cookie = request.COOKIES['jwt']
-        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-    except KeyError:
-        response.status_code = 401
-        return response
+
+    # get person who sent the follow request
+    viewerId = get_payload(request).get("id")
     
     # TODO: handle remote actors
     # create the follow request
@@ -134,13 +123,8 @@ def add_post(request, author_id, inbox):
     response = HttpResponse()
 
     # check if author_id is following senderId, if not return unauthorized
-    try:
-        cookie = request.COOKIES['jwt']
-        senderId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
-            response.status_code = 401
-            return response
-    except KeyError:
+    senderId = get_payload(request).get("id")
+    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
     
@@ -159,14 +143,10 @@ def add_post(request, author_id, inbox):
 # Create a like and add it to author_id's inbox
 def add_like(request, author_id, inbox):
     response = HttpResponse()
+
     # check if author_id is following senderId, if not return unauthorized
-    try:
-        cookie = request.COOKIES['jwt']
-        senderId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-        if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
-            response.status_code = 401
-            return response
-    except KeyError:
+    senderId = get_payload(request).get("id")
+    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
     
