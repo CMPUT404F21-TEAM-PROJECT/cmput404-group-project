@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 import jwt
 from django.http import JsonResponse, HttpResponse
-from ..models import FollowRequest
+from ..models import FollowRequest, Author
 from ..serializers import AuthorSerializer, FollowRequestSerializer
 
 # Routes the request for a single follower
@@ -92,7 +92,10 @@ def get_follower(author_id, follower_id):
     if fr.accepted:
         serializer = FollowRequestSerializer(fr) # NOTE: should we return follower instead of the follow request data?
         responseDict = serializer.data
+        responseDict['actor'] = AuthorSerializer(Author.objects.get(id=responseDict['actor'])).data
+        responseDict['object'] = AuthorSerializer(Author.objects.get(id=responseDict['object'])).data
         response = JsonResponse(responseDict)
+        # response['actor'] = AuthorSerializer(response['actor'])
         response.status_code = 200
         return response
     else:

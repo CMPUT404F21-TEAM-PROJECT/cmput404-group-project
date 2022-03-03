@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
-from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer
+from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer
 from ..views import get_follower, find_post, find_author
 
 from rest_framework.decorators import api_view
@@ -105,7 +105,7 @@ def add_follow(request, author_id, inbox):
     # get the viewer (person who sent the follow request)
     try:
         cookie = request.COOKIES['jwt']
-        viewerId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        viewer_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
     except KeyError:
         response.status_code = 401
         return response
@@ -113,7 +113,7 @@ def add_follow(request, author_id, inbox):
     # TODO: handle remote actors
     # create the follow request
     data = request.data.copy()
-    data['actor'] = viewerId
+    data['actor'] = viewer_id
     data['object'] = author_id
     serializer = FollowRequestSerializer(data = data)
 
