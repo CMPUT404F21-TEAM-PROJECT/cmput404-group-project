@@ -45,9 +45,14 @@ const NavBar = () => {
   };
 
 
+  /* todo
+    -move nav bar options to left
+
+  */
+
   return (
-    <AppBar position="static">
-      <Container maxWidth="xl">
+    <AppBar position="static" >
+      <Container maxWidth="100%" >
         <Toolbar disableGutters>
           {/* NOTE: un-comment this out if we need a logo in the nav bar
 
@@ -92,12 +97,20 @@ const NavBar = () => {
               }}
             >
               {pages.map((page) => (
+                <Link className="navLink" to={links[page]}>
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
+                  <Typography 
+                    textAlign="center" 
+                    sx={links[page] === currentPath ? {my: 2, color: "black", display: 'block', fontWeight: "bold"} : {my: 2, color: "rgba(0, 0, 0, 0.5)", display: 'block'}}
+                  >
+                    {page}
+                  </Typography>
                 </MenuItem>
+                </Link>
               ))}
             </Menu>
           </Box>
+          {/* NOTE: un-comment this out if we need a logo in the nav bar
           <Typography
             variant="h6"
             noWrap
@@ -106,7 +119,8 @@ const NavBar = () => {
           >
             LOGO
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, }}>
             {pages.map((page) => (
               <Link className="navLink" to={links[page]}>
                 <Button 
