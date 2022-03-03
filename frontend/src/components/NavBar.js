@@ -15,12 +15,17 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import {Link} from "react-router-dom";
+import {useLocation} from 'react-router-dom';
+import "./NavBar.css"
+
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post'];
-const settings = ['Profile', 'Logout'];
+const settings = ['Profile Settings', 'Logout'];
 const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post"}
 
+
 const NavBar = () => {
+  const currentPath = "." + useLocation()["pathname"];
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -39,15 +44,6 @@ const NavBar = () => {
     setAnchorElUser(null);
   };
 
-  /*
-  TODO:
-    -Get rid of underscores on links
-    -Highlight button of current page
-
-
-
-
-  */
 
   return (
     <AppBar position="static">
@@ -112,11 +108,11 @@ const NavBar = () => {
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
-              <Link to={links[page]}>
-                <Button
+              <Link className="navLink" to={links[page]}>
+                <Button 
                   key={page}
                   onClick={handleCloseNavMenu}
-                  sx={{ my: 2, color: 'white', display: 'block' }}
+                  sx={links[page] === currentPath ? {my: 2, color: "white", display: 'block', fontWeight: "bold"} : {my: 2, color: "rgba(255, 255, 255, 0.5)", display: 'block'}}
                 >
                   {page}
                 </Button>
@@ -127,7 +123,7 @@ const NavBar = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="user" src="" />
               </IconButton>
             </Tooltip>
             <Menu
