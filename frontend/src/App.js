@@ -16,17 +16,17 @@ function App() {
           </div>
         </Route>
         <Route exact path="/register">
-          <div className="App">
+          <div className="Register">
             <Register/>
           </div>
         </Route>
         <Route exact path="/inbox">
-          <div className="App">
+          <div className="Inbox">
             <Inbox/>
           </div>
         </Route>
         <Route exact path="/profile">
-          <div className="App">
+          <div className="Profile">
             <ProfileScreen/>
           </div>
         </Route>        
