@@ -51,8 +51,7 @@ class Inbox(models.Model):
     author = models.OneToOneField(Author,
                                   on_delete=models.CASCADE)
     posts = models.ManyToManyField(Post)
-    # likes = models.ManyToManyField(Like,
-                                    #  related_name='posts')
+    likes = models.ManyToManyField(Like)
     follow_requests = models.ManyToManyField(FollowRequest)
 
 class Comment(models.Model):

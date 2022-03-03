@@ -55,8 +55,8 @@ def get_inbox(request, author_id, inbox):
     data = serializer.data
     for post in data['posts']:
         items.append(post)
-    # for like in data['likes']:
-    #     items.append(likes)
+    for like in data['likes']:
+        items.append(likes)
     for fr in data['follow_requests']:
         items.append(fr)
     
@@ -70,7 +70,7 @@ def get_inbox(request, author_id, inbox):
     paginated_items = paginator.paginate_queryset(items, request)
 
     data.pop('posts')
-    # data.pop('likes')
+    data.pop('likes')
     data.pop('follow_requests')
     data['items'] = paginated_items 
 
@@ -93,7 +93,7 @@ def delete_inbox(request, author_id, inbox):
         return response
     
     inbox.posts.clear()
-    # inbox.likes.clear()
+    inbox.likes.clear()
     inbox.follow_requests.clear()
     response.status_code = 200
 
