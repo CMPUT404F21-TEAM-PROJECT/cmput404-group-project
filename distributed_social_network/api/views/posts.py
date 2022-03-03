@@ -53,8 +53,13 @@ def create_post_with_id(request, id):
 
     # Check authorization
     try:
-        cookie = request.COOKIES['jwt']
-        creatorId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        token = request.COOKIES.get('jwt')
+        # Request was not authenticated without a token
+        if not token:
+            token = request.headers['Authorization']
+            if not token:
+                return None
+        creatorId = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
         if not (str(request.data['author']) == creatorId):
             response.status_code = 401
             return response

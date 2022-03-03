@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import django.utils.timezone
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -41,9 +42,9 @@ class Post(models.Model):
     content = models.TextField()
     description = models.CharField(max_length=500)
     visibility = models.CharField(max_length=10) # TODO: Limit to only 'PUBLIC' or 'FRIENDS'
-    published = models.DateField()
-    source = models.CharField(max_length=200)
-    origin = models.CharField(max_length=200)
+    published = models.DateTimeField(default=django.utils.timezone.now)
+    source = models.CharField(default='', max_length=200)
+    origin = models.CharField(default='', max_length=200)
     categories = models.CharField(max_length=200) # Should be stored as space separated list of strings
     unlisted = models.BooleanField(default=False)
 

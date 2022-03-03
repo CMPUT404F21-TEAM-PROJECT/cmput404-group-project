@@ -5,7 +5,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from api.models import Author, Post, User
 from django.utils import timezone
-from datetime import datetime
 import copy, base64, os, json
 from django.db.models import Q
 from http.cookies import SimpleCookie
@@ -54,7 +53,7 @@ textPostPlain = {
     "content":"textPostContent1",
     "description":"textDescription1",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-10T09:26:03.478039-07:00",
     "source":"textSource1",
     "origin":"textOrigin1",
     "categories":"textCategories1",
@@ -68,7 +67,7 @@ textPostMarkdown = {
     "content":"textPostContent2",
     "description":"textDescription2",
     "visibility":"PUBLIC",
-    "published":"2022-01-11",
+    "published":"2022-01-11T09:26:03.478039-07:00",
     "source":"textSource2",
     "origin":"textOrigin2",
     "categories":"textCategories2",
@@ -83,7 +82,7 @@ imagePostPng = {
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.png", 'rb').read()),
     "description":"imageDescription1",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-10T09:26:03.478039-07:00",
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
@@ -97,7 +96,7 @@ imagePostJpeg = {
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.jpeg", 'rb').read()),
     "description":"imageDescription1",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-10T09:26:03.478039-07:00",
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
@@ -111,7 +110,7 @@ imagePostBase64 = {
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.png", 'rb').read()),
     "description":"imageDescription1",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-10T09:26:03.478039-07:00",
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
@@ -124,7 +123,7 @@ class PostTestCase(TestCase):
         self.post_id = uuid.uuid4()
         self.user = User.objects.create(id=self.id)
         self.author = Author.objects.create(id=self.user)
-        self.post = Post.objects.create(id=self.post_id, author=self.author, published=datetime.now())
+        self.post = Post.objects.create(id=self.post_id, author=self.author)
 
     def test_author_default_values(self):
         post = Post.objects.get(id=self.post_id)
