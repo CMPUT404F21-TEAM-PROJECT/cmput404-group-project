@@ -105,13 +105,26 @@ class FollowersEndpointTestCase(APITestCase):
         self.assertEqual('followers', responseJson['type'])
         self.assertEqual(str(self.actor.id.id), responseJson['items'][0]['id'])
         self.assertEqual(len(responseJson['items']), 1)
+    
+    def test_get_following(self):
+        """Test GET request for getting a list of people you follow."""
+        url = '/service/authors/' + str(self.actor.id.id) + '/following/'
+        
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        responseJson = response.json()
+        self.assertEqual('following', responseJson['type'])
+        self.assertEqual(str(self.object.id.id), responseJson['items'][0]['id'])
+        self.assertEqual(len(responseJson['items']), 1)
+        
 
     def test_remove_follower(self):
         """Test DELETE request for removing a follower."""
         loginUrl = "/service/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id)
+        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -129,7 +142,7 @@ class FollowersEndpointTestCase(APITestCase):
                                      actor=self.object,
                                      object=self.actor)
 
-        url = '/service/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id)
+        url = '/service/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id) + '/'
 
         response = self.client.put(url)
         fr = FollowRequest.objects.get(actor=self.object,
@@ -140,13 +153,13 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_follower(self):
         """Test GET request for checking if someone is a follower."""
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id)
+        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # testing a non follower
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id)
+        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id) + '/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

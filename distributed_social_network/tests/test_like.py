@@ -206,7 +206,7 @@ class LikeEndpointTestCase(APITestCase):
         self.client.put(addPostUrl, imagePostPng, format='json')
 
         postUrl =  "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-        getUrl = "/service/authors/{0}/posts/{1}/likes".format(self.likeTestPostAuthorID, self.likeTestPostID)
+        getUrl = "/service/authors/{0}/posts/{1}/likes/".format(self.likeTestPostAuthorID, self.likeTestPostID)
 
         #Add likes #NOTE doesnt currently work, add objects with sql instead
         #self.client.post(postUrl, postLike1, format="json")
@@ -263,7 +263,7 @@ class LikeEndpointTestCase(APITestCase):
         self.client.post(loginUrl, user1, format='json')
 
         postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-        getUrl = "/service/authors/{}/liked".format(self.likeTestPostAuthorID)
+        getUrl = "/service/authors/{}/liked/".format(self.likeTestPostAuthorID)
 
         #Add likes #NOTE doesnt currently work, add objects with sql instead
         #self.client.post(postUrl, postLike1, format="json")
