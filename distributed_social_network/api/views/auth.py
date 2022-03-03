@@ -6,9 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from ..models import User, Author, Inbox
 from ..serializers import AuthorSerializer, UserSerializer
 
-
-# Authenticates a request and returns the user id to be used within the apis
-def get_user_id(request):
+# Return the payload from the token of an authenticated request or None if not authenticated
+def get_payload(request):
     token = request.COOKIES.get('jwt')
     # Request was not authenticated without a token
     if not token:
@@ -19,7 +18,14 @@ def get_user_id(request):
     # Check whether the access token has expired
     try:
         payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        return payload
     except jwt.ExpiredSignatureError:
+        return None
+
+# Authenticates a request and returns the user id to be used within the apis
+def get_user_id(request):
+    payload = get_payload(request)
+    if not payload:
         return None
     
     user = User.objects.filter(id=payload['id']).first()

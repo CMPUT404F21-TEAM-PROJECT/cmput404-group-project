@@ -17,15 +17,19 @@ export default function Follower(props) {
 
     const removeFollower = async () => {
         // send DELETE request to author_id/followers/follower_id
-        console.log('clicked remove')
         try {
-          const response = await requests.delete(`service/authors/${props.currentUser}/follwers/${props.id}/`);
+          const response = await requests.delete(`service/authors/${props.currentUserId}/followers/${props.id}/`,
+          {headers: {
+                Authorization: localStorage.getItem('access_token'),
+                accept: 'application/json',
+          }},
+          {withCredentials: true});
         } catch {
           setError("Failed to remove follower.");
         }   
     }
     return (
-      <ListItem>
+      <ListItem divider>
         {error && (
         <Alert severity="error">
           {error}

@@ -23,7 +23,8 @@ class Login extends Component {
                 password: this.state.password
             }, {WithCredentials: true});
             localStorage.setItem('access_token', response.data);
-            requests.defaults.headers['Authorization'] = 'JWT ' + localStorage.getItem('access_token');
+            requests.defaults.headers['Authorization'] = localStorage.getItem('access_token');
+            console.log('response is')
             console.log(response.data);
             this.setState({successful_login: true})
         }

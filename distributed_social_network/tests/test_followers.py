@@ -105,6 +105,19 @@ class FollowersEndpointTestCase(APITestCase):
         self.assertEqual('followers', responseJson['type'])
         self.assertEqual(str(self.actor.id.id), responseJson['items'][0]['id'])
         self.assertEqual(len(responseJson['items']), 1)
+    
+    def test_get_following(self):
+        """Test GET request for getting a list of people you follow."""
+        url = '/service/authors/' + str(self.actor.id.id) + '/following/'
+        
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        responseJson = response.json()
+        self.assertEqual('following', responseJson['type'])
+        self.assertEqual(str(self.object.id.id), responseJson['items'][0]['id'])
+        self.assertEqual(len(responseJson['items']), 1)
+        
 
     def test_remove_follower(self):
         """Test DELETE request for removing a follower."""

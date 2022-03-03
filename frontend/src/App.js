@@ -3,6 +3,7 @@ import './App.css';
 import Login from "./components/LoginRegister/login";
 import Register from "./components/LoginRegister/Register";
 import Inbox from "./components/Inbox/Inbox";
+import FriendsPage from "./components/Followers/FriendsPage";
 import { BrowserRouter, BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import ProfileScreen from "./components/AccountDetails/profileScreen";
 
@@ -29,7 +30,12 @@ function App() {
           <div className="App">
             <ProfileScreen/>
           </div>
-        </Route>        
+        </Route>
+        <Route exact path="/friends">
+          <div className="App">
+            <FriendsPage/>
+          </div>
+        </Route>      
       </BrowserRouter>
     )
 }
