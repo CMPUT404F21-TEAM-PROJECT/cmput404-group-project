@@ -91,7 +91,6 @@ def get_follower(author_id, follower_id):
         responseDict['actor'] = AuthorSerializer(Author.objects.get(id=responseDict['actor'])).data
         responseDict['object'] = AuthorSerializer(Author.objects.get(id=responseDict['object'])).data
         response = JsonResponse(responseDict)
-        # response['actor'] = AuthorSerializer(response['actor'])
         response.status_code = 200
         return response
     else:
