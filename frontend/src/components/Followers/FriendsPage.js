@@ -100,7 +100,12 @@ class FriendsPage extends React.Component {
     render(){
         return (
             <div className="friendsPage">
-            <Box sx={{ flexDirection: 'row' }}>
+            <Box sx={{ display: 'flex',
+                       flexDirection: 'row',
+                       p: 1,
+                       m: 1,
+                       justifyContent: 'center'
+                    }}>
                 Send a Follow Request To:
                 <TextField id="outlined-basic" onChange={this.setAddFollowerId}/>
                 <Button 
