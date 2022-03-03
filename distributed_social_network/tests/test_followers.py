@@ -111,7 +111,7 @@ class FollowersEndpointTestCase(APITestCase):
         loginUrl = "/service/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id)
+        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -129,7 +129,7 @@ class FollowersEndpointTestCase(APITestCase):
                                      actor=self.object,
                                      object=self.actor)
 
-        url = '/service/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id)
+        url = '/service/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id) + '/'
 
         response = self.client.put(url)
         fr = FollowRequest.objects.get(actor=self.object,
@@ -140,13 +140,13 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_follower(self):
         """Test GET request for checking if someone is a follower."""
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id)
+        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # testing a non follower
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id)
+        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id) + '/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
