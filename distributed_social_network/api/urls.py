@@ -20,6 +20,6 @@ urlpatterns = [
   path('authors/<str:author_id>/posts/<str:post_id>/Comments', views.route_multiple_comments, name='Multiple Comments'),
   path('authors/<str:author_id>/posts/<str:post_id>/Comments/<uuid:comment_id>/', views.route_single_comment, name='Single Comment'),
   path('authors/<str:author_id>/inbox/', views.route_inbox, name='Inbox'),
-  path('authors/<str:author_id>/posts/<str:post_id>/Comments', views.route_multiple_comments, name='Multiple Comments'),
-  path('authors/<str:author_id>/posts/<str:post_id>/Comments/<uuid:comment_id>/', views.route_single_comment, name='Single Comment'),
+  path('authors/<str:author_id>/posts/<str:post_id>/comments/', views.route_multiple_comments, name='Multiple Comments'),
+  path('authors/<str:author_id>/posts/<str:post_id>/comments/<uuid:comment_id>/', views.route_single_comment, name='Single Comment'),
 ]
