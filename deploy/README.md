@@ -7,7 +7,7 @@ If docker is not installed, you may need to run \
 <b>sudo snap install docker</b> \
 Now you will have to build the Docker images using the Dockerfiles and this can be done via \
 <b>docker-compose build</b> \
-If you get a permission denied error, you will need to either re-run the command using sudo or add the current user to the docker group with \
+If you get a permission denied error, you will need to either re-run the command using sudo or add the current user to the docker group with
 ```
 sudo addgroup --system docker
 sudo adduser $USER docker
