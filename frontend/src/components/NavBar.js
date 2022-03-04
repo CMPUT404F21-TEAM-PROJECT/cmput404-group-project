@@ -33,7 +33,7 @@ const logout = async () => {
           accept: 'application/json',
     }},
     {withCredentials: true});
-    this.props.history.push('/')
+    window.location.href = "/";
   } catch {
     console.log("failed to logout")
   }
