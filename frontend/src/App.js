@@ -30,13 +30,6 @@ function App() {
           <div className="Inbox">
             <NavBar />
             <Inbox/>
-            <Post author= {{displayName: "authorname"}}
-            title="title"
-            contentType="application/base64"
-            content= "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1200px-Image_created_with_a_mobile_phone.png"
-            description= "description"
-            post= {{id: "0402b818-b38e-4379-afbf-06bf376b2056"}}
-            currentUser="5594ed47-e52a-4862-8dc8-ecc11305bd71"/>
           </div>
         </Route>
         <Route exact path="/profile">

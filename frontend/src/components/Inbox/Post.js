@@ -31,43 +31,70 @@ export default function Post(props) {
         console.log('clicked like');
         try {
           const response = await requests.post(`service/authors/${props.currentUser}/inbox/`,
-          {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-          },
-          summary: props.author.displayName + " likes your post.",
-          type: "Like",
-          author: props.author,
-          object: props.author.id + "/posts/" + props.post.id
-          },
-          {withCredentials: true});
+            {headers: {
+              Authorization: localStorage.getItem('access_token'),
+              accept: 'application/json',
+            },
+            summary: props.author.displayName + " likes your post.",
+            type: "Like",
+            author: props.author,
+            object: props.author.id + "/posts/" + props.post.id
+            },
+            {withCredentials: true});
+          sendToSelf(response.data);
+          console.log("like response data that will be sent", response.data)
         } catch {
           setError("Failed to send like.");
         }   
     }
 
-
     const comment = async () => {
         // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
         console.log('clicked comment')
-        //try {
-            const response = await requests.post(`service/authors/${props.currentUser}/posts/${props.post.id}/comments/`,
-            {
-            post_id: props.post.id,
-            comment: commentText,
-            contentType: "text/markdown",
-            author: props.author
-            },
+        try {
+            const response = await requests.post(`service/authors/${props.author.id}/posts/${props.post.id}/comments/`,
+              {
+              post_id: props.post.id,
+              comment: commentText,
+              contentType: "text/markdown",
+              author: props.currentUser,
+              type: "comment"
+              },
+              {headers: {
+                  Authorization: localStorage.getItem('access_token'),
+                  accept: 'application/json',
+                }
+              },
+              {withCredentials: true});
+            sendToSelf(response.data);
+            // send to recipients inbox
+            const response_recipient = await requests.post(`service/authors/${props.author.id}/inbox/`,
+            response.data,
             {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-              }
+              Authorization: localStorage.getItem('access_token'),
+              accept: 'application/json',
+            }
             },
-            {withCredentials: true});
-        /*} catch {
+          {withCredentials: true})
+        } catch(e) {
           setError("Failed to send comment.");
-        } */  
+          console.log(e)
+        }   
     }
+  
+    const sendToSelf = async (my_item) => {
+      const response_self = await requests.post(
+        `service/authors/${props.currentUser}/inbox/`,
+        my_item,
+        {headers: {
+          Authorization: localStorage.getItem('access_token'),
+          accept: 'application/json',
+        }},
+        {withCredentials:true});
+        console.log("response from sending to myself", response_self)
+    };
+
+
     return (
       <ListItem>
         <ListItemText

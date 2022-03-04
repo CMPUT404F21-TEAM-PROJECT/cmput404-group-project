@@ -17,7 +17,9 @@ export default function CommentNotification(props) {
           src={props.profileImage}
           />
         </ListItemAvatar>
-        <ListItemText primary={props.displayName + ' commented on your post'} />
+        {props.owned ? (<ListItemText primary="You commented on a post"/>)  
+            : (<ListItemText primary={props.displayName + ' commented on your post'}/>)
+        }
       </ListItem>
     );
 }

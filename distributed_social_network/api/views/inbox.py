@@ -135,7 +135,7 @@ def add_post(request, author_id, inbox):
 
     # check if author_id is following senderId, if not return unauthorized
     senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
+    if get_follower(senderId, author_id).status_code != 200 and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
     
@@ -157,7 +157,7 @@ def add_like(request, author_id, inbox):
 
     # check if author_id is following senderId, if not return unauthorized
     senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
+    if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
     
@@ -176,6 +176,7 @@ def add_like(request, author_id, inbox):
         serializer.save()
         response.status_code = 201
     else:
+        print(serializer.errors)
         # If the data is not valid, do not save the object to the database
         response.status_code = 400
 
@@ -187,7 +188,7 @@ def add_comment(request, author_id, inbox):
 
     # check if author_id is following senderId, if not return unauthorized
     senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
+    if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
     

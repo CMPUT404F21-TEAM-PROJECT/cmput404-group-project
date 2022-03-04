@@ -86,8 +86,9 @@ def add_comment(request, author_id, post_id):
     # If given data is valid, save the object to the database
     if serializer.is_valid():
         serializer.save()
+        responseDict = serializer.data
+        response = JsonResponse(responseDict)
         response.status_code = 201
-        response.content = "New comment successfully created"
         return response
     
     response.status_code = 400
