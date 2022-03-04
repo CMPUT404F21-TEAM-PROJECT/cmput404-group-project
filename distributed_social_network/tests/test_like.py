@@ -56,7 +56,7 @@ imagePostPng = {
     "content":base64.b64encode(open(os.getcwd() + "/testing_media/test.png", 'rb').read()),
     "description":"imageDescription1",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-11T09:26:03.478039-07:00",
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",

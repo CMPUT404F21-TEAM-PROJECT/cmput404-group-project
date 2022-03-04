@@ -30,7 +30,7 @@ textPostPlain = {
     "content":"textPostContent1",
     "description":"textDescription1",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-11T09:26:03.478039-07:00",
     "source":"textSource1",
     "origin":"textOrigin1",
     "categories":"textCategories1",
