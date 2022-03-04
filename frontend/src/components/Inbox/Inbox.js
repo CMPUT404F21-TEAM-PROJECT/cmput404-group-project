@@ -76,7 +76,7 @@ class Inbox extends React.Component {
             content= {item.content}
             description= {item.description}
             post= {{id: item.id}}
-            currentUser={this.state.currentUser.id}
+            currentUser={this.state.currentUser}
           />);
         } else if (item.type === 'Follow') {
           return (
@@ -90,7 +90,7 @@ class Inbox extends React.Component {
             />
             </Grid>
           );
-        } else if (item.type === 'like') {
+        } else if (item.type === 'Like') {
           return (
             <Grid item xs={6}>
             <LikeNotification

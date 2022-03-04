@@ -58,7 +58,7 @@ def get_inbox(request, author_id, inbox):
         items.append(post)
     for like in data['likes']:
         like['author'] = AuthorSerializer(Author.objects.get(id=like['author'])).data
-        items.append(likes)
+        items.append(like)
     for fr in data['follow_requests']:
         fr['actor'] = AuthorSerializer(Author.objects.get(id=fr['actor'])).data
         fr['object'] = AuthorSerializer(Author.objects.get(id=fr['object'])).data
@@ -165,6 +165,8 @@ def add_like(request, author_id, inbox):
     # create the like
     data = request.data.copy()
     data['author'] = data.get('author', senderId)
+    data['object'] = data.get('_object')
+    data.pop('_object')
 
     serializer = LikeSerializer(data = data)
 
@@ -173,8 +175,9 @@ def add_like(request, author_id, inbox):
         response.status_code = 404  
     elif serializer.is_valid():
         # If given data is valid, save the object to the database
-        serializer.save()
+        like = serializer.save()
         response.status_code = 201
+        inbox.likes.add(like)
     else:
         print(serializer.errors)
         # If the data is not valid, do not save the object to the database

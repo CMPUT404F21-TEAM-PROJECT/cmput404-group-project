@@ -30,20 +30,26 @@ export default function Post(props) {
         // send POST request to authors/{authorId}/inbox/ with a like
         console.log('clicked like');
         try {
-          const response = await requests.post(`service/authors/${props.currentUser}/inbox/`,
+          const data = {
+            summary: `${props.currentUser.displayName} likes your post.`,
+            type: "Like",
+            author: props.currentUser.id,
+            _object: `${props.author.id}/posts/${props.post.id}`
+          }
+
+          const response = await requests.post(`service/authors/${props.author.id}/inbox/`,
+            data,
             {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
-            },
-            summary: props.author.displayName + " likes your post.",
-            type: "Like",
-            author: props.author,
-            object: props.author.id + "/posts/" + props.post.id
-            },
+            }},
             {withCredentials: true});
-          sendToSelf(response.data);
-          console.log("like response data that will be sent", response.data)
-        } catch {
+          
+          // change summary of like, to send like to your own inbox
+          data.summary = `You liked ${props.author.displayName}'s post.`
+          sendToSelf(data);
+        } catch (e) {
+          console.log(e)
           setError("Failed to send like.");
         }   
     }
@@ -57,7 +63,7 @@ export default function Post(props) {
               post_id: props.post.id,
               comment: commentText,
               contentType: "text/markdown",
-              author: props.currentUser,
+              author: props.currentUser.id,
               type: "comment"
               },
               {headers: {
@@ -84,14 +90,13 @@ export default function Post(props) {
   
     const sendToSelf = async (my_item) => {
       const response_self = await requests.post(
-        `service/authors/${props.currentUser}/inbox/`,
+        `service/authors/${props.currentUser.id}/inbox/`,
         my_item,
         {headers: {
           Authorization: localStorage.getItem('access_token'),
           accept: 'application/json',
         }},
         {withCredentials:true});
-        console.log("response from sending to myself", response_self)
     };
 
 
