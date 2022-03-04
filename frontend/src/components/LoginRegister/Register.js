@@ -1,8 +1,9 @@
-import React, { useEffect, Component } from "react";
-// import './App.css';
+import React, { useEffect, useState, Component } from "react";
 import {
     Button,
     TextField,
+    Alert,
+    AlertTitle
   } from "@mui/material";
 import "../../styles/login-register.css";
 import requests from "../../requests";
@@ -13,33 +14,68 @@ class Register extends Component {
           username: "",
           password: "",
           confirm_password: "",
+          registration_error: false,
+          registration_success: false,
+          error_messages: ""
       }
 
-    handleRegister = async () => {
-        console.log(this.state);
-        if(this.state.password == this.state.confirm_password) {
-            const response = await requests.post(`service/register/`, {
-                username: this.state.username,
-                password: this.state.password
-            });
-            alert(response);
+    validateRegister() {
+        if (!this.state.username) {
+            this.setState({registration_error: true})
+            this.setState({registration_success: false})
+            this.setState({error_messages: "Username is empty"})
+            return false
         }
-        else {
-            console.log("Passwords Don't Match");
+        if (!this.state.password) {
+            this.setState({registration_error: true})
+            this.setState({registration_success: false})
+            this.setState({error_messages: "Password is Empty"})
+            return false
+        }
+        if (!(this.state.password == this.state.confirm_password)) {
+            this.setState({registration_error: true})
+            this.setState({registration_success: false})
+            this.setState({error_messages: "Passwords do not Match"})
+            return false
+        }
+        return true;
+    }
+
+    handleRegister = async () => {
+        if(this.validateRegister()) {
+            try {
+                const response = await requests.post(`service/register/`, {
+                    username: this.state.username,
+                    password: this.state.password
+                });
+                this.setState({registration_error: false})
+                this.setState({registration_success: true})
+            }
+            catch {
+                this.setState({registration_error: true})
+                this.setState({registration_success: false})
+                this.setState({error_messages: "Error occurred during registration"})
+            }
         }
     }
 
   render() {
       return (
-          <body class="background">
-          <div className="form">
+          <body className="background">
+          <div className="login-form">
+          {this.state.registration_success&&<Alert className="alert"  severity="success">
+                <AlertTitle><strong>Account Successfully Created</strong></AlertTitle>
+            </Alert>}
+            {this.state.registration_error&&<Alert className="alert"  severity="error">
+                <AlertTitle><strong>{this.state.error_messages}</strong></AlertTitle>
+            </Alert>}
             <h1>
                 Social Distributions
             </h1>
             <h3>
                 Create a new account
             </h3>
-            <div className="wrapper">
+            <div className="login-wrapper">
             <TextField
                 className="text-input"
                 size="small"
@@ -77,9 +113,9 @@ class Register extends Component {
                 confirm_password: target.value
                 })}
             />
+            {/* {this.state.username_error&&<div>HI</div>} */}
             <br/>
             <Button
-                className="avonmore-button"
                 disabled={this.state.loginBtnDisabled}
                 color="primary"
                 variant="contained"
@@ -87,8 +123,8 @@ class Register extends Component {
                 ref={node => (this.btn = node)}>
               Register
             </Button>
-            </div>
             <NavLink style={{ textDecoration: 'none', position: 'relative', top: '30px' }} to="/">Have an account? Log in</NavLink>
+            </div>
           </div>
           </body>
         );

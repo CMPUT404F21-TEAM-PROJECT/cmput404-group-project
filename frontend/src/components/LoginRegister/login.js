@@ -3,6 +3,8 @@ import React, { useEffect, Component } from "react";
 import {
     Button,
     TextField,
+    Alert,
+    AlertTitle
   } from "@mui/material";
 import "../../styles/login-register.css";
 import requests from "../../requests";
@@ -13,44 +15,56 @@ class Login extends Component {
     state = {
           username: "",
           password: "",
-          successful_login: false
+          successful_login: false,
+          error_login: false,
+          error_messages: ""
       }
-    handleLogin = async () => {
-        console.log(this.state);
-        try {
-            const response = await requests.post(`service/login/`, {
-                username: this.state.username,
-                password: this.state.password
-            }, {WithCredentials: true});
-            localStorage.setItem('access_token', response.data);
-            requests.defaults.headers['Authorization'] = localStorage.getItem('access_token');
-            console.log('response is')
-            console.log(response.data);
-            this.setState({successful_login: true})
-        }
-        catch(error) {
-            console.log(error);
-        }
-    }
 
-    verifyLogin = (e) => {
-        console.log(this.successful_login)
-        if (!this.successful_login) {
-            e.preventDefault();
+    validateLogin() {
+        if (!this.state.username) {
+            this.setState({error_login: true})
+            this.setState({error_messages: "Username is empty"})
+            return false
+        }
+        if (!this.state.password) {
+            this.setState({error_login: true})
+            this.setState({error_messages: "Password is Empty"})
+            return false
+        }
+        return true;
+    }
+    handleLogin = async () => {
+        if (this.validateLogin()) {
+            try {
+                const response = await requests.post(`service/login/`, {
+                    username: this.state.username,
+                    password: this.state.password
+                }, {WithCredentials: true});
+                localStorage.setItem('access_token', response.data);
+                requests.defaults.headers['Authorization'] = localStorage.getItem('access_token');
+                this.setState({successful_login: true})
+            }
+            catch {
+                this.setState({error_login: true})
+                this.setState({error_messages: "Username or password was incorrect"})
+            }
         }
     }
 
   render() {
       return (
-          <body class="background">
-          <div className="form">
+          <body className="background">
+          <div className="login-form">
+          {this.state.error_login&&<Alert className="alert"  severity="error">
+                <AlertTitle><strong>{this.state.error_messages}</strong></AlertTitle>
+            </Alert>}
             <h1>
                 Social Distributions
             </h1>
             <h3>
                 Please Log in to Continue
             </h3>
-            <div className="wrapper">
+            <div className="login-wrapper">
             <TextField
                 className="text-input"
                 size="small"

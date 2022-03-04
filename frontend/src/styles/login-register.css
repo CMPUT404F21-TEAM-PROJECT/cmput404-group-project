@@ -15,9 +15,8 @@ body {
   padding: 0;
 }
 
-.form {
-  height: 20em;
-  transform: translateY(45%);
+.login-form {
+  transform: translateY(40%);
   border-radius: 5px;
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   background-color: white;
@@ -30,11 +29,27 @@ body {
   margin: auto;
 }
 
-.wrapper {
+.login-form h1 {
+  margin: 0 !important;
+}
+
+.login-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 70%;
   text-align: center;
   margin: auto;
+}
+
+.login-form .alert {
+  width: 80%;
+  height: 2.2rem;
+  margin: auto;
+  position: relative;
+  bottom: 1rem;
+}
+
+.text-input {
+  display: grid !important;
 }
