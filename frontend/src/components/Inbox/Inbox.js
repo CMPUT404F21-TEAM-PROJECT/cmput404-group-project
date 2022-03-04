@@ -107,7 +107,7 @@ class Inbox extends React.Component {
   render(){
       return (
           <div className="inbox">
-            {this.state.inboxList.length && <Grid container
+            <Grid container
             justifyContent="center"
             alignItem="center">
               <Button 
@@ -116,7 +116,7 @@ class Inbox extends React.Component {
               onClick={this.clearInbox}>
                 Clear inbox
               </Button>
-            </Grid>}
+            </Grid>
           <Grid container spacing={2} justifyContent="center" alignItem="center">
             {this.state.inboxList.length ? this.renderInboxItems() : <h2>Inbox is empty</h2>}
           </Grid>
