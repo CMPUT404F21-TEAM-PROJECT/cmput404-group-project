@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from api.models import Author, FollowRequest, Like, Inbox, Post, User
+from api.models import Author, FollowRequest, Like, Inbox, Post, User, Comment
 from datetime import datetime
 import copy, base64, os
 import uuid
@@ -76,6 +76,13 @@ postLike1 = {
     "summary": "postLike1Summary",
 }
 
+commentPost1 = {
+    "id": "91111111-1111-1111-1111-111111111111",
+    "contentType":"text/html",
+    "comment":"My First Comment",
+    "published":"2022-01-11T09:26:03.478039-07:00",
+}
+
 PORT = "5438"
 HOST = "127.0.0.1"
 
@@ -123,7 +130,8 @@ class InboxEndpointTestCase(APITestCase):
 
         # get inbox and populate with a post
         self.inbox = Inbox.objects.get(author=self.author)
-        self.inbox.posts.add(Post.objects.create(**post1, author=self.actor))
+        post1_object = Post.objects.create(**post1, author=self.actor)
+        self.inbox.posts.add(post1_object)
 
         # make author follow actor (so actor can send stuff to author's inbox)
         FollowRequest.objects.create(summary='blah',
@@ -133,6 +141,8 @@ class InboxEndpointTestCase(APITestCase):
         
         # make another post that will be added to the inbox in a test
         Post.objects.create(**post2, author=self.actor)
+
+        Comment.objects.create(**commentPost1, author=self.author, post_id=post1_object)
 
 
     def test_get_inbox(self):
@@ -167,8 +177,9 @@ class InboxEndpointTestCase(APITestCase):
         # Check if the inbox was cleared
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(0, len(inbox.posts.all()))
-        # self.assertEqual(0, len(inbox.likes.all()))
+        self.assertEqual(0, len(inbox.likes.all()))
         self.assertEqual(0, len(inbox.follow_requests.all()))
+        self.assertEqual(0, len(inbox.comments.all()))
 
     def test_add_local_post(self):
         """Test POST request for sending a local post to an inbox."""
@@ -198,6 +209,27 @@ class InboxEndpointTestCase(APITestCase):
 
         inbox = Inbox.objects.get(author=self.author)
         self.assertEqual(1, len(inbox.follow_requests.all()))
+    
+    def test_add_local_comment(self):
+        """Test POST request for sending a local comment to an inbox."""
+         # make actor follow author (so author can send stuff to actor's inbox)
+        FollowRequest.objects.create(summary='blah',
+                                     actor=self.actor,
+                                     object=self.author,
+                                     accepted=True)
+        loginUrl = "/service/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+        url = '/service/authors/' + author2["id"] + '/inbox/'
+
+        local_comment = commentPost1.copy()
+        local_comment['type'] = 'comment'
+
+        response = self.client.post(url, local_comment, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        inbox = Inbox.objects.get(author=self.actor)
+        self.assertEqual(1, len(inbox.comments.all()))
 
     # TODO: Figure out AuthorSerializer() errors
     # def test_add_local_like(self):

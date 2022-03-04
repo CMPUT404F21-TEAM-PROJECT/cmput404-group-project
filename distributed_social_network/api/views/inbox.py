@@ -2,8 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
-from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer
-from ..views import get_follower, find_post, find_author
+from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer, CommentSerializer
+from ..views import get_follower, find_post, find_author, find_comment
 from .auth import get_payload
 
 from rest_framework.decorators import api_view
@@ -30,6 +30,8 @@ def route_inbox(request, author_id):
             return add_like(request, author_id, inbox)
         elif object_type == 'follow':
             return add_follow(request, author_id, inbox)
+        elif object_type == 'comment':
+            return add_comment(request, author_id, inbox)
         else:
             response.status_code = 400
             return response
@@ -61,6 +63,9 @@ def get_inbox(request, author_id, inbox):
         fr['actor'] = AuthorSerializer(Author.objects.get(id=fr['actor'])).data
         fr['object'] = AuthorSerializer(Author.objects.get(id=fr['object'])).data
         items.append(fr)
+    for comment in data['comments']:
+        comment['author'] = AuthorSerializer(Author.objects.get(id=comment['author'])).data
+        items.append(comment)
     
     # TODO: make sure pagination works as expected
     # initialize paginator
@@ -74,6 +79,7 @@ def get_inbox(request, author_id, inbox):
     data.pop('posts')
     data.pop('likes')
     data.pop('follow_requests')
+    data.pop('comments')
     data['items'] = paginated_items 
 
     response = JsonResponse(data)
@@ -92,6 +98,7 @@ def delete_inbox(request, author_id, inbox):
     inbox.posts.clear()
     inbox.likes.clear()
     inbox.follow_requests.clear()
+    inbox.comments.clear()
     response.status_code = 200
 
     return response
@@ -106,8 +113,8 @@ def add_follow(request, author_id, inbox):
     # TODO: handle remote actors
     # create the follow request
     data = request.data.copy()
-    data['actor'] = viewerId
-    data['object'] = author_id
+    data['actor'] = data.get('actor', viewerId)
+    data['object'] = data.get('object', author_id)
     serializer = FollowRequestSerializer(data = data)
 
     # If given data is valid, save the follow request to the database
@@ -157,7 +164,7 @@ def add_like(request, author_id, inbox):
     # TODO: handle remote actors
     # create the like
     data = request.data.copy()
-    data['author'] = senderId
+    data['author'] = data.get('author', senderId)
 
     serializer = LikeSerializer(data = data)
 
@@ -172,4 +179,26 @@ def add_like(request, author_id, inbox):
         # If the data is not valid, do not save the object to the database
         response.status_code = 400
 
+    return response
+
+# Create a comment and add it to author_id's inbox
+def add_comment(request, author_id, inbox):
+    response = HttpResponse()
+
+    # check if author_id is following senderId, if not return unauthorized
+    senderId = get_payload(request).get("id")
+    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
+        response.status_code = 401
+        return response
+    
+    # find the comment
+    # TODO: need to handle remote comment
+    comment = find_comment(request.data["id"])
+    if comment == None:
+        response.status_code = 400
+        return response
+
+    # add the post to author_id's inbox
+    inbox.comments.add(comment)
+    response.status_code = 200
     return response
