@@ -4,6 +4,8 @@ import { Alert, Button, List, Grid, Box, TextField, Stack, ListItemText } from "
 import FollowRequest from "../Followers/FollowRequest";
 import LikeNotification from "./LikeNotification";
 import CommentNotification from "./CommentNotification";
+import DeleteIcon from '@mui/icons-material/Delete';
+
   
 class Inbox extends React.Component {
   constructor(props){
@@ -46,6 +48,20 @@ class Inbox extends React.Component {
       } catch(error) {
           console.log(error)
       }
+  }
+
+  clearInbox = async () => {
+    try {
+      const response_inbox = await requests.delete(`service/authors/${this.state.currentUser.id}/inbox/`,
+            {headers: {
+              Authorization: localStorage.getItem('access_token'),
+              accept: 'application/json',
+              }},
+              {withCredentials:true})
+      this.setState({inboxList: []})
+    } catch(error) {
+        console.log(error)
+    }
   }
 
   renderInboxItems() {
@@ -91,8 +107,18 @@ class Inbox extends React.Component {
   render(){
       return (
           <div className="inbox">
+            {this.state.inboxList.length && <Grid container
+            justifyContent="center"
+            alignItem="center">
+              <Button 
+              variant="outlined"
+              startIcon={<DeleteIcon />}
+              onClick={this.clearInbox}>
+                Clear inbox
+              </Button>
+            </Grid>}
           <Grid container spacing={2} justifyContent="center" alignItem="center">
-            {this.renderInboxItems()}
+            {this.state.inboxList.length ? this.renderInboxItems() : <h2>Inbox is empty</h2>}
           </Grid>
           </div>
       )
