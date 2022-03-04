@@ -14,14 +14,30 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import {Link} from "react-router-dom";
+import {BrowserRouter,Link,Route, Redirect} from "react-router-dom";
 import {useLocation} from 'react-router-dom';
 import "./NavBar.css"
+import requests from '../requests';
 
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post'];
 const settings = ['Profile Settings', 'Logout'];
 const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post"}
+
+const logout = async () => {
+  // send POST request to /service/logout
+  try {
+    const response = await requests.post('service/logout/',
+    {headers: {
+          Authorization: localStorage.getItem('access_token'),
+          accept: 'application/json',
+    }},
+    {withCredentials: true});
+    this.props.history.push('/')
+  } catch {
+    console.log("failed to logout")
+  }
+}
 
 
 const NavBar = () => {
@@ -40,7 +56,14 @@ const NavBar = () => {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = (e) => {
+    // Handles the selected option
+    let selectedOption = e.currentTarget.innerText
+    switch(selectedOption) {
+      case "Logout":
+        logout();
+        break;
+    }
     setAnchorElUser(null);
   };
 

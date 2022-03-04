@@ -21,7 +21,7 @@ export default function FollowRequest(props) {
         // send PUT request to author_id/followers/follower_id
         console.log('clicked accept');
         try {
-          const response = await requests.put(`service/authors/${props.currentUser}/followers/${props.id}/`,
+          const response = await requests.put(`service/authors/${props.currentUserId}/followers/${props.id}/`,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
@@ -37,7 +37,7 @@ export default function FollowRequest(props) {
         // send DELETE request to author_id/followers/follower_id
         console.log('clicked reject')
         try {
-          const response = await requests.delete(`service/authors/${props.currentUser}/followers/${props.id}/`,
+          const response = await requests.delete(`service/authors/${props.currentUserId}/followers/${props.id}/`,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
@@ -59,10 +59,10 @@ export default function FollowRequest(props) {
           src={props.profileImage}
           />
         </ListItemAvatar>
-        <ListItemText
-          primary={props.displayName}
-        />
-        <ListItemSecondaryAction>
+        {props.accepted ? (<ListItemText primary={"You accepted " + props.displayName + "\'s follow request"}/>)  
+            : (<ListItemText primary={props.displayName + " wants to follow you"}
+        />)}
+        {!props.accepted && <ListItemSecondaryAction>
           <Button 
             startIcon={<CheckIcon />}
             onClick={acceptFollowRequest}>
@@ -73,7 +73,7 @@ export default function FollowRequest(props) {
             onClick={rejectFollowRequest}>
               Reject
           </Button>
-        </ListItemSecondaryAction>
+        </ListItemSecondaryAction>}
       </ListItem>
     );
 }

@@ -47,7 +47,7 @@ textPostPlain = {
     "content":"a",
     "description":"a",
     "visibility":"PUBLIC",
-    "published":"2022-01-10",
+    "published":"2022-01-11T09:26:03.478039-07:00",
     "source":"a",
     "origin":"a",
     "categories":"b",

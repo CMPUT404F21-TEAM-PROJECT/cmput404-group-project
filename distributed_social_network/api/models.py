@@ -48,13 +48,6 @@ class Post(models.Model):
     categories = models.CharField(max_length=200) # Should be stored as space separated list of strings
     unlisted = models.BooleanField(default=False)
 
-class Inbox(models.Model):
-    author = models.OneToOneField(Author,
-                                  on_delete=models.CASCADE)
-    posts = models.ManyToManyField(Post)
-    likes = models.ManyToManyField(Like)
-    follow_requests = models.ManyToManyField(FollowRequest)
-
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE) # When post is deleted, delete the comments
@@ -63,3 +56,10 @@ class Comment(models.Model):
     comment = models.CharField(max_length=200) # Actual content of the comment
     published = models.DateTimeField() # ISO FORMAT, Time is updated every time the comment is changed
 
+class Inbox(models.Model):
+    author = models.OneToOneField(Author,
+                                  on_delete=models.CASCADE)
+    posts = models.ManyToManyField(Post)
+    likes = models.ManyToManyField(Like)
+    follow_requests = models.ManyToManyField(FollowRequest)
+    comments = models.ManyToManyField(Comment)
