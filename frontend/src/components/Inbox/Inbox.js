@@ -107,7 +107,7 @@ class Inbox extends React.Component {
   render(){
       return (
           <div className="inbox">
-            <Grid container
+            <Grid container p={2}
             justifyContent="center"
             alignItem="center">
               <Button 
