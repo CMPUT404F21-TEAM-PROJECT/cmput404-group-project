@@ -19,7 +19,6 @@ import {useLocation} from 'react-router-dom';
 import "./NavBar.css"
 import requests from '../requests';
 
-
 const pages = ['Home', 'Friends', 'My Profile', 'Post'];
 const settings = ['Profile Settings', 'Logout'];
 const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post"}
@@ -33,7 +32,7 @@ const logout = async () => {
           accept: 'application/json',
     }},
     {withCredentials: true});
-    this.props.history.push('/')
+    window.location.href = "/";
   } catch {
     console.log("failed to logout")
   }
