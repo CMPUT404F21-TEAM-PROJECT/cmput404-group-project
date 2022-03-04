@@ -52,10 +52,14 @@ def get_inbox(request, author_id, inbox):
     items = []
     data = serializer.data
     for post in data['posts']:
+        post['author'] = AuthorSerializer(Author.objects.get(id=post['author'])).data
         items.append(post)
     for like in data['likes']:
+        like['author'] = AuthorSerializer(Author.objects.get(id=like['author'])).data
         items.append(likes)
     for fr in data['follow_requests']:
+        fr['actor'] = AuthorSerializer(Author.objects.get(id=fr['actor'])).data
+        fr['object'] = AuthorSerializer(Author.objects.get(id=fr['object'])).data
         items.append(fr)
     
     # TODO: make sure pagination works as expected
