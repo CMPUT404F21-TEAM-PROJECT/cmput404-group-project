@@ -49,7 +49,7 @@ class NewPost extends Component {
   };
 
   handleSubmit = async () => {
-    console.log(this.state);
+    //console.log(this.state);
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
       const url = "service/authors/" + this.state.author_id + "/posts/";
@@ -65,26 +65,43 @@ class NewPost extends Component {
         visibility: this.state.visibility,
         categories: this.state.categories,
       });
-      console.log(response.data);
+      //console.log(response.data);
       this.setState({ successful_post: true });
+      this.sendToFollowers(response.data);
     } catch (error) {
       console.log(error);
     }
   };
 
+  sendToFollowers = async (my_post) => {
+    // Get Followers
+    const response = await requests.get(
+      `service/authors/${my_post.author}/followers/`
+    );
+    
+    const followerList = response.data.items;
+    //console.log("followerList:", followerList);
+    //console.log("MY POST: ", my_post)
+
+    // For each follower: send post to inbox
+    for (let index = 0; index < followerList.length; ++index) {
+      const follower = followerList[index];
+      //console.log("FOLLOWER: ", follower)
+      const response = await requests.post(
+        `service/authors/${follower.id}/inbox/`,
+        my_post
+      );
+    }
+  };
+
   render() {
     return (
-      <Grid
-        container
-        justifyContent="center"
-        
-      >
+      <Grid container justifyContent="center">
         <FormControl
           component="fieldset"
           variant="filled"
           disabled
-          justifyContent="center"
-          style ={{width: '35em'}}
+          style={{ width: "35em" }}
         >
           <h1>New Post</h1>
           <FormGroup>

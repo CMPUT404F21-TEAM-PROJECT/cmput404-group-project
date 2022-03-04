@@ -73,6 +73,9 @@ def create_post_with_id(request, id):
     # If given data is valid, save the object to the database
     if serializer.is_valid():
         serializer.save()
+        # Return the created post
+        responseDict = serializer.data
+        response = JsonResponse(responseDict)
         response.status_code = 201
         return response
     print(serializer.errors)
