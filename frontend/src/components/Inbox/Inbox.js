@@ -70,17 +70,20 @@ class Inbox extends React.Component {
         console.log('item', item)
         if (item.type === 'post') {
           return (
-          <Post author= {item.author}
-            title={item.title}
-            contentType={item.contentType}
-            content= {item.content}
-            description= {item.description}
-            post= {{id: item.id}}
-            currentUser={this.state.currentUser}
-          />);
+            <Grid item xs={8}>
+              <Post author= {item.author}
+              title={item.title}
+              contentType={item.contentType}
+              content= {item.content}
+              description= {item.description}
+              post= {{id: item.id}}
+              currentUser={this.state.currentUser}
+              />
+            </Grid>
+          );
         } else if (item.type === 'Follow') {
           return (
-            <Grid item xs={6}>
+            <Grid item xs={8}>
             <FollowRequest
                 displayName={item.actor.displayName}
                 profileImage={item.actor.profileImage}
@@ -92,7 +95,7 @@ class Inbox extends React.Component {
           );
         } else if (item.type === 'Like') {
           return (
-            <Grid item xs={6}>
+            <Grid item xs={8}>
             <LikeNotification
               summary={item.summary}
               profileImage={item.author.profileImage}
@@ -102,7 +105,7 @@ class Inbox extends React.Component {
           );
         } else if (item.type === 'comment') {
           return (
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <CommentNotification
               profileImage={item.author.profileImage}
               displayName={item.author.displayName}
@@ -119,7 +122,8 @@ class Inbox extends React.Component {
           <div className="inbox">
             <Grid container p={2}
             justifyContent="center"
-            alignItem="center">
+            alignItem="center"
+            direction="column">
               <Button 
               variant="outlined"
               startIcon={<DeleteIcon />}
