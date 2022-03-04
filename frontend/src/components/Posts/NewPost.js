@@ -6,8 +6,8 @@ import {
   MenuItem,
   FormControl,
   FormGroup,
+  Grid,
 } from "@mui/material";
-import "../../styles/new-post.css";
 import requests from "../../requests";
 import { Redirect } from "react-router-dom";
 import FileBase64 from "react-file-base64";
@@ -74,127 +74,139 @@ class NewPost extends Component {
 
   render() {
     return (
-      <FormControl component="fieldset" variant="filled" disabled>
-        <h1>New Post</h1>
-        <FormGroup>
-          <TextField
-            className="text-input"
-            size="small"
-            type="text"
-            fullWidth={true}
-            label="Title"
-            value={this.state.title}
-            onChange={({ target }) =>
-              this.setState({
-                title: target.value,
-              })
-            }
-          />
-          <br />
-          <TextField
-            className="text-input"
-            size="small"
-            type="text"
-            fullWidth={true}
-            label="Description"
-            value={this.state.description}
-            onChange={({ target }) =>
-              this.setState({
-                description: target.value,
-              })
-            }
-          />
-          <br />
-          <TextField
-            select
-            value={this.state.content_type}
-            label="Content Type"
-            fullWidth={true}
-            onChange={({ target }) =>
-              this.setState({
-                content_type: target.value,
-              })
-            }
-          >
-            <MenuItem value="text/plain">text/plain</MenuItem>
-            <MenuItem value="text/markdown">text/markdown</MenuItem>
-            <MenuItem value="application/base64">application/base64</MenuItem>
-            <MenuItem value="image/png;base64">image/png</MenuItem>
-            <MenuItem value="image/jpeg;base64">image/jpeg</MenuItem>
-          </TextField>
-          <br />
-          {this.state.content_type === "image/jpeg;base64" ||
-          this.state.content_type === "image/png;base64" ? (
-            <FileBase64
-              className="image-input"
-              type="file"
-              accept=".png,.jpeg,.jpg"
-              label="Content"
-              value={this.state.content}
-              onDone={({ base64 }) => {
-                this.setState({
-                  // base64 includes data:image/png;base64, before content. So split.
-                  content: base64.split(",")[1],
-                });
-              }}
-            />
-          ) : (
+      <Grid
+        container
+        justifyContent="center"
+        
+      >
+        <FormControl
+          component="fieldset"
+          variant="filled"
+          disabled
+          justifyContent="center"
+          style ={{width: '35em'}}
+        >
+          <h1>New Post</h1>
+          <FormGroup>
             <TextField
               className="text-input"
-              size="medium"
-              multiline={true}
+              size="small"
               type="text"
               fullWidth={true}
-              label="Content"
-              value={this.state.content}
+              label="Title"
+              value={this.state.title}
               onChange={({ target }) =>
                 this.setState({
-                  content: target.value,
+                  title: target.value,
                 })
               }
             />
-          )}
-          <br />
-          <TextField
-            className="text-input"
-            type="text"
-            label="Categories"
-            fullWidth={true}
-            value={this.state.categories}
-            onChange={({ target }) =>
-              this.setState({
-                categories: target.value,
-              })
-            }
-          />
-          <br />
-          <p>Visibility</p>
-          <TextField
-            select
-            fullWidth={true}
-            value={this.state.visibility}
-            label="Visibility"
-            defaultValue="PUBLIC"
-            onChange={({ target }) =>
-              this.setState({
-                visibility: target.value,
-              })
-            }
-          >
-            <MenuItem value="PUBLIC">Public</MenuItem>
-            <MenuItem value="FRIENDS">Friends</MenuItem>
-          </TextField>
-          <br />
-          <Button
-            variant="contained"
-            onClick={this.handleSubmit}
-            ref={(node) => (this.btn = node)}
-          >
-            Post
-          </Button>
-          {this.state.successful_post && <Redirect to="/inbox" />}
-        </FormGroup>
-      </FormControl>
+            <br />
+            <TextField
+              className="text-input"
+              size="small"
+              type="text"
+              fullWidth={true}
+              label="Description"
+              value={this.state.description}
+              onChange={({ target }) =>
+                this.setState({
+                  description: target.value,
+                })
+              }
+            />
+            <br />
+            <TextField
+              select
+              value={this.state.content_type}
+              label="Content Type"
+              fullWidth={true}
+              onChange={({ target }) =>
+                this.setState({
+                  content_type: target.value,
+                })
+              }
+            >
+              <MenuItem value="text/plain">text/plain</MenuItem>
+              <MenuItem value="text/markdown">text/markdown</MenuItem>
+              <MenuItem value="application/base64">application/base64</MenuItem>
+              <MenuItem value="image/png;base64">image/png</MenuItem>
+              <MenuItem value="image/jpeg;base64">image/jpeg</MenuItem>
+            </TextField>
+            <br />
+            {this.state.content_type === "image/jpeg;base64" ||
+            this.state.content_type === "image/png;base64" ? (
+              <FileBase64
+                className="image-input"
+                type="file"
+                accept=".png,.jpeg,.jpg"
+                label="Content"
+                value={this.state.content}
+                onDone={({ base64 }) => {
+                  this.setState({
+                    // base64 includes data:image/png;base64, before content. So split.
+                    content: base64.split(",")[1],
+                  });
+                }}
+              />
+            ) : (
+              <TextField
+                className="text-input"
+                size="medium"
+                multiline={true}
+                type="text"
+                fullWidth={true}
+                label="Content"
+                value={this.state.content}
+                onChange={({ target }) =>
+                  this.setState({
+                    content: target.value,
+                  })
+                }
+              />
+            )}
+            <br />
+            <TextField
+              className="text-input"
+              type="text"
+              label="Categories"
+              fullWidth={true}
+              value={this.state.categories}
+              onChange={({ target }) =>
+                this.setState({
+                  categories: target.value,
+                })
+              }
+            />
+            <br />
+            <p>Visibility</p>
+            <TextField
+              select
+              fullWidth={true}
+              value={this.state.visibility}
+              label="Visibility"
+              defaultValue="PUBLIC"
+              onChange={({ target }) =>
+                this.setState({
+                  visibility: target.value,
+                })
+              }
+            >
+              <MenuItem value="PUBLIC">Public</MenuItem>
+              <MenuItem value="FRIENDS">Friends</MenuItem>
+            </TextField>
+            <br />
+            <Button
+              variant="contained"
+              onClick={this.handleSubmit}
+              ref={(node) => (this.btn = node)}
+            >
+              Post
+            </Button>
+            {this.state.successful_post && <Redirect to="/inbox" />}
+          </FormGroup>
+        </FormControl>
+      </Grid>
     );
   }
 }
