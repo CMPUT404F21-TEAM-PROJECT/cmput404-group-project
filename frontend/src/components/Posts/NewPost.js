@@ -31,6 +31,7 @@ class NewPost extends Component {
     content: "",
     categories: "",
     visibility: "PUBLIC",
+    unlisted: false,
     successful_post: false,
     author_id: "",
     jwt: localStorage.getItem("access_token"),
@@ -63,13 +64,16 @@ class NewPost extends Component {
         content: this.state.content,
         description: this.state.description,
         visibility: this.state.visibility,
+        unlisted: this.state.unlisted,
         categories: this.state.categories,
       });
       //console.log(response.data);
       this.setState({ successful_post: true });
       response.data.type = 'post'
-      this.sendToSelf(response.data)
-      this.sendToFollowers(response.data);
+      if (!response.data.unlisted) {
+        this.sendToSelf(response.data)
+        this.sendToFollowers(response.data);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -225,6 +229,18 @@ class NewPost extends Component {
               <MenuItem value="PUBLIC">Public</MenuItem>
               <MenuItem value="FRIENDS">Friends</MenuItem>
             </TextField>
+            <br />
+            <p>Unlisted</p>
+            <input 
+              type='checkbox'
+              value={this.state.unlisted}
+              label="Unlisted"
+              onChange={() =>
+                this.setState({
+                  unlisted: !this.state.unlisted,
+                })
+              }
+            />
             <br />
             <Button
               variant="contained"
