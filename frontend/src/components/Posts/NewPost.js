@@ -67,10 +67,23 @@ class NewPost extends Component {
       });
       //console.log(response.data);
       this.setState({ successful_post: true });
+      response.data.type = 'post'
+      this.sendToSelf(response.data)
       this.sendToFollowers(response.data);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  sendToSelf = async (my_post) => {
+    const response = await requests.post(
+      `service/authors/${this.state.author_id}/inbox/`,
+      my_post,
+      {headers: {
+        Authorization: localStorage.getItem('access_token'),
+        accept: 'application/json',
+      }},
+      {withCredentials:true});
   };
 
   sendToFollowers = async (my_post) => {
@@ -78,19 +91,19 @@ class NewPost extends Component {
     const response = await requests.get(
       `service/authors/${my_post.author}/followers/`
     );
-    
     const followerList = response.data.items;
-    //console.log("followerList:", followerList);
-    //console.log("MY POST: ", my_post)
 
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
-      //console.log("FOLLOWER: ", follower)
       const response = await requests.post(
         `service/authors/${follower.id}/inbox/`,
-        my_post
-      );
+        my_post,
+        {headers: {
+          Authorization: localStorage.getItem('access_token'),
+          accept: 'application/json',
+        }},
+        {withCredentials:true});
     }
   };
 
@@ -162,7 +175,7 @@ class NewPost extends Component {
                 onDone={({ base64 }) => {
                   this.setState({
                     // base64 includes data:image/png;base64, before content. So split.
-                    content: base64.split(",")[1],
+                    content: base64,
                   });
                 }}
               />

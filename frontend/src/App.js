@@ -6,6 +6,7 @@ import NavBar from "./components/NavBar.js";
 import Login from "./components/LoginRegister/login";
 import Register from "./components/LoginRegister/Register";
 import Inbox from "./components/Inbox/Inbox";
+import Post from "./components/Inbox/Post";
 import FriendsPage from "./components/Followers/FriendsPage";
 import { BrowserRouter, BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import ProfileScreen from "./components/AccountDetails/profileScreen";

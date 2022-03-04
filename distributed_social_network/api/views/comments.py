@@ -58,11 +58,19 @@ def get_comments(request, post_id):
 # Expects JSON request body with post and author attributes
 def add_comment(request, author_id, post_id):
     response = HttpResponse()
+    
     # Check authorization
     try:
-        cookie = request.COOKIES['jwt']
-        user_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-    except KeyError:
+        token = request.COOKIES.get('jwt')
+        # Request was not authenticated without a token
+        if not token:
+            token = request.headers['Authorization']
+            if not token:
+                response.status_code = 401
+                response.content = "Error: Not Authenticated"
+                return response
+        user_id = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
+    except:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
         return response
@@ -73,12 +81,14 @@ def add_comment(request, author_id, post_id):
 
     # Serialize a new Comment object
     serializer = CommentSerializer(data = request.data)
+    print(request.data)
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
         serializer.save()
+        responseDict = serializer.data
+        response = JsonResponse(responseDict)
         response.status_code = 201
-        response.content = "New comment successfully created"
         return response
     
     response.status_code = 400

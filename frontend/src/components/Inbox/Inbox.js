@@ -4,6 +4,7 @@ import { Alert, Button, List, Grid, Box, TextField, Stack, ListItemText } from "
 import FollowRequest from "../Followers/FollowRequest";
 import LikeNotification from "./LikeNotification";
 import CommentNotification from "./CommentNotification";
+import Post from "./Post";
 import DeleteIcon from '@mui/icons-material/Delete';
 
   
@@ -68,10 +69,21 @@ class Inbox extends React.Component {
     return this.state.inboxList.map((item) => {
         console.log('item', item)
         if (item.type === 'post') {
-          return (<p>a post</p>);
+          return (
+            <Grid item xs={8}>
+              <Post author= {item.author}
+              title={item.title}
+              contentType={item.contentType}
+              content= {item.content}
+              description= {item.description}
+              post= {{id: item.id}}
+              currentUser={this.state.currentUser}
+              />
+            </Grid>
+          );
         } else if (item.type === 'Follow') {
           return (
-            <Grid item xs={6}>
+            <Grid item xs={8}>
             <FollowRequest
                 displayName={item.actor.displayName}
                 profileImage={item.actor.profileImage}
@@ -81,9 +93,9 @@ class Inbox extends React.Component {
             />
             </Grid>
           );
-        } else if (item.type === 'like') {
+        } else if (item.type === 'Like') {
           return (
-            <Grid item xs={6}>
+            <Grid item xs={8}>
             <LikeNotification
               summary={item.summary}
               profileImage={item.author.profileImage}
@@ -93,10 +105,11 @@ class Inbox extends React.Component {
           );
         } else if (item.type === 'comment') {
           return (
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <CommentNotification
               profileImage={item.author.profileImage}
               displayName={item.author.displayName}
+              owned={item.author.id === this.state.currentUser.id}
               id={item.id}
             />
             </Grid>);
@@ -109,7 +122,8 @@ class Inbox extends React.Component {
           <div className="inbox">
             <Grid container p={2}
             justifyContent="center"
-            alignItem="center">
+            alignItem="center"
+            direction="column">
               <Button 
               variant="outlined"
               startIcon={<DeleteIcon />}

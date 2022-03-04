@@ -1,0 +1,23 @@
+li.MuiListItem-root {
+    display: inline-block;
+    text-align: center;
+}
+
+#comment-like-section {
+    display: inline-block;
+}
+
+#comment-section {
+    display: block;
+}
+
+#comment-button {
+    background-color: rgb(174, 206, 243);
+    margin-top: 0.5em;
+}
+
+#like-button {
+    background-color: rgb(174, 206, 243);
+    margin-top: 1em;
+    margin-bottom: 1.5em;
+}

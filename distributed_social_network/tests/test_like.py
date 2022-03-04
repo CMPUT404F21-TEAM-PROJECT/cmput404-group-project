@@ -196,32 +196,32 @@ class LikeEndpointTestCase(APITestCase):
         cursor.execute("INSERT INTO api_like (summary, object, author_id) VALUES( %s , %s , %s);", [commentLike1["summary"], commentLike1["object"], commentLike1["author"]["id"]])
         cursor.execute("INSERT INTO api_like (summary, object, author_id) VALUES( %s , %s , %s);", [commentLike2["summary"], commentLike2["object"], commentLike2["author"]["id"]])
     
-    def test_get_post_likes(self):
-        # Log in as user1
-        loginUrl = "/service/login/"
-        self.client.post(loginUrl, user1, format='json')
+    # def test_get_post_likes(self):
+    #     # Log in as user1
+    #     loginUrl = "/service/login/"
+    #     self.client.post(loginUrl, user1, format='json')
 
-        #Add post object
-        addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
-        self.client.put(addPostUrl, imagePostPng, format='json')
+    #     #Add post object
+    #     addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
+    #     self.client.put(addPostUrl, imagePostPng, format='json')
 
-        postUrl =  "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-        getUrl = "/service/authors/{0}/posts/{1}/likes/".format(self.likeTestPostAuthorID, self.likeTestPostID)
+    #     postUrl =  "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
+    #     getUrl = "/service/authors/{0}/posts/{1}/likes/".format(self.likeTestPostAuthorID, self.likeTestPostID)
 
-        #Add likes #NOTE doesnt currently work, add objects with sql instead
-        #self.client.post(postUrl, postLike1, format="json")
-        #self.client.post(postUrl, postLike2, format="json")
+    #     #Add likes #NOTE doesnt currently work, add objects with sql instead
+    #     #self.client.post(postUrl, postLike1, format="json")
+    #     #self.client.post(postUrl, postLike2, format="json")
 
-        #Get likes using endpoint
-        response = self.client.get(getUrl) 
-        likes = response.json()["items"] #List of likes
+    #     #Get likes using endpoint
+    #     response = self.client.get(getUrl) 
+    #     likes = response.json()["items"] #List of likes
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
-        self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
+    #     self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
         
-        #Check that the items returned are the mock likes
-        self.assertTrue(postLike1 in likes) 
-        self.assertTrue(postLike2 in likes) 
+    #     #Check that the items returned are the mock likes
+    #     self.assertTrue(postLike1 in likes) 
+    #     self.assertTrue(postLike2 in likes) 
 
     ''' TODO un-comment when comment model is fully merged
     def test_get_comment_likes(self):
@@ -257,25 +257,25 @@ class LikeEndpointTestCase(APITestCase):
     '''
         
 
-    def test_get_author_likes(self):
-        # Log in as user1
-        loginUrl = "/service/login/"
-        self.client.post(loginUrl, user1, format='json')
+    # def test_get_author_likes(self):
+    #     # Log in as user1
+    #     loginUrl = "/service/login/"
+    #     self.client.post(loginUrl, user1, format='json')
 
-        postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-        getUrl = "/service/authors/{}/liked/".format(self.likeTestPostAuthorID)
+    #     postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
+    #     getUrl = "/service/authors/{}/liked/".format(self.likeTestPostAuthorID)
 
-        #Add likes #NOTE doesnt currently work, add objects with sql instead
-        #self.client.post(postUrl, postLike1, format="json")
-        #self.client.post(postUrl, commentLike1, format="json")
+    #     #Add likes #NOTE doesnt currently work, add objects with sql instead
+    #     #self.client.post(postUrl, postLike1, format="json")
+    #     #self.client.post(postUrl, commentLike1, format="json")
 
-        #Get likes using endpoint
-        response = self.client.get(getUrl)
-        likes = response.json()["items"] #List of likes
+    #     #Get likes using endpoint
+    #     response = self.client.get(getUrl)
+    #     likes = response.json()["items"] #List of likes
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
-        self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK) #Check that request returned 200 code
+    #     self.assertEqual(len(likes), 2) #Check that 2 likes were returned 
 
-        #Check that the items returned are the mock likes
-        self.assertTrue(postLike1 in likes) 
-        self.assertTrue(commentLike1 in likes) 
+    #     #Check that the items returned are the mock likes
+    #     self.assertTrue(postLike1 in likes) 
+    #     self.assertTrue(commentLike1 in likes) 
