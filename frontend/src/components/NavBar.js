@@ -21,7 +21,7 @@ import "./NavBar.css"
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post'];
 const settings = ['Profile Settings', 'Logout'];
-const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./newpost"}
+const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post"}
 
 
 const NavBar = () => {

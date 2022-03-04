@@ -1,36 +1,3 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
 
 
-.background {
-  height: 100vh;
-  width: 100vw;
-  font-family: Roboto, Arial;
-  background-image: linear-gradient(45deg, #606c88 0%, #3f4c6b 120%);
-}
-
-.form h1 {
-  margin: 0;
-  padding: 0;
-}
-
-.form {
-  height: 25em;
-  transform: translateY(45%);
-  border-radius: 5px;
-  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 50em;
-  text-align: center;
-  margin: auto;
-}
-
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  margin: auto;
-}
