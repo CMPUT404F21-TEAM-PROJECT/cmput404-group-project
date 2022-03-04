@@ -175,7 +175,7 @@ class NewPost extends Component {
                 onDone={({ base64 }) => {
                   this.setState({
                     // base64 includes data:image/png;base64, before content. So split.
-                    content: base64.split(",")[1],
+                    content: base64,
                   });
                 }}
               />
