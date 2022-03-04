@@ -2,8 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
-from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer
-from ..views import get_follower, find_post, find_author
+from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer, CommentSerializer
+from ..views import get_follower, find_post, find_author, find_comment
 from .auth import get_payload
 
 from rest_framework.decorators import api_view
@@ -59,6 +59,9 @@ def get_inbox(request, author_id, inbox):
         items.append(likes)
     for fr in data['follow_requests']:
         items.append(fr)
+    for comment in data['comments']:
+        comment['author'] = AuthorSerializer(Author.objects.get(id=comment['author'])).data
+        items.append(comment)
     
     # TODO: make sure pagination works as expected
     # initialize paginator
@@ -72,6 +75,7 @@ def get_inbox(request, author_id, inbox):
     data.pop('posts')
     data.pop('likes')
     data.pop('follow_requests')
+    data.pop('comments')
     data['items'] = paginated_items 
 
     response = JsonResponse(data)
@@ -90,6 +94,7 @@ def delete_inbox(request, author_id, inbox):
     inbox.posts.clear()
     inbox.likes.clear()
     inbox.follow_requests.clear()
+    inbox.comments.clear()
     response.status_code = 200
 
     return response
@@ -182,22 +187,14 @@ def add_comment(request, author_id, inbox):
         response.status_code = 401
         return response
     
-    # TODO: handle remote actors
-    # create the like
-    data = request.data.copy()
-    data['author'] = data.get('author', senderId)
-
-    serializer = LikeSerializer(data = data)
-
-    if find_author(author_id) is None: 
-        # If author is not found, return 404
-        response.status_code = 404  
-    elif serializer.is_valid():
-        # If given data is valid, save the object to the database
-        serializer.save()
-        response.status_code = 201
-    else:
-        # If the data is not valid, do not save the object to the database
+    # find the comment
+    # TODO: need to handle remote comment
+    comment = find_comment(request.data["id"])
+    if comment == None:
         response.status_code = 400
+        return response
 
+    # add the post to author_id's inbox
+    inbox.comments.add(comment)
+    response.status_code = 200
     return response

@@ -45,17 +45,18 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 
-class InboxSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(read_only = True, default = 'inbox')
-    posts = PostSerializer(many = True)
-    # likes = LikeSerializer(many = True)
-    follow_requests = FollowRequestSerializer(many = True)
-    class Meta:
-        model = Inbox
-        fields = '__all__'
-
 class CommentSerializer(serializers.ModelSerializer):
     type = serializers.CharField(read_only = True, default = 'comment')
     class Meta:
         model = Comment
+        fields = '__all__'
+
+class InboxSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(read_only = True, default = 'inbox')
+    posts = PostSerializer(many = True)
+    likes = LikeSerializer(many = True)
+    follow_requests = FollowRequestSerializer(many = True)
+    comments = CommentSerializer(many = True)
+    class Meta:
+        model = Inbox
         fields = '__all__'
