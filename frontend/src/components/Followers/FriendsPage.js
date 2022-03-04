@@ -53,7 +53,7 @@ class FriendsPage extends React.Component {
         try {
             const data = {
                 type: 'follow',
-                summary: `${this.state.currentUser} wants to follow ${this.state.addFollowerId}`,
+                summary: `${this.state.currentUser.id} wants to follow ${this.state.addFollowerId}`,
             }
             const response = await requests.post(`service/authors/${this.state.addFollowerId}/inbox/`,
                 data,
