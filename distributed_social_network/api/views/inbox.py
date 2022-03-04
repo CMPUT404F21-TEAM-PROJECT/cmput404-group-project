@@ -30,6 +30,8 @@ def route_inbox(request, author_id):
             return add_like(request, author_id, inbox)
         elif object_type == 'follow':
             return add_follow(request, author_id, inbox)
+        elif object_type == 'comment':
+            return add_comment(request, author_id, inbox)
         else:
             response.status_code = 400
             return response
@@ -102,8 +104,8 @@ def add_follow(request, author_id, inbox):
     # TODO: handle remote actors
     # create the follow request
     data = request.data.copy()
-    data['actor'] = viewerId
-    data['object'] = author_id
+    data['actor'] = data.get('actor', viewerId)
+    data['object'] = data.get('object', author_id)
     serializer = FollowRequestSerializer(data = data)
 
     # If given data is valid, save the follow request to the database
@@ -153,7 +155,37 @@ def add_like(request, author_id, inbox):
     # TODO: handle remote actors
     # create the like
     data = request.data.copy()
-    data['author'] = senderId
+    data['author'] = data.get('author', senderId)
+
+    serializer = LikeSerializer(data = data)
+
+    if find_author(author_id) is None: 
+        # If author is not found, return 404
+        response.status_code = 404  
+    elif serializer.is_valid():
+        # If given data is valid, save the object to the database
+        serializer.save()
+        response.status_code = 201
+    else:
+        # If the data is not valid, do not save the object to the database
+        response.status_code = 400
+
+    return response
+
+# Create a comment and add it to author_id's inbox
+def add_comment(request, author_id, inbox):
+    response = HttpResponse()
+
+    # check if author_id is following senderId, if not return unauthorized
+    senderId = get_payload(request).get("id")
+    if get_follower(senderId, author_id).status_code != 200: # TODO: need to deal with remote senders 
+        response.status_code = 401
+        return response
+    
+    # TODO: handle remote actors
+    # create the like
+    data = request.data.copy()
+    data['author'] = data.get('author', senderId)
 
     serializer = LikeSerializer(data = data)
 
