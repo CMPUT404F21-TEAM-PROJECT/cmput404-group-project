@@ -109,8 +109,8 @@ def login_user(request):
 def log_user_out(request):
     response = HttpResponse()
     try:
-        cookie = request.COOKIES['jwt']
-        if cookie:
+        viewerId =get_payload(request).get("id")
+        if viewerId:
             response.delete_cookie('jwt')
             response.content = "User successfully logged out"
             response.status_code = 200
