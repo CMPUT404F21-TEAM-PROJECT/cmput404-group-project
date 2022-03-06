@@ -12,6 +12,7 @@ import { Alert,
         ImageListItem,
         TextField,
         } from "@mui/material";
+import ReactMarkdown from 'react-markdown'
 import ThumbUp from '@mui/icons-material/ThumbUp'
 import Send from '@mui/icons-material/Send'
 
@@ -111,7 +112,10 @@ export default function Post(props) {
           id="author"
           primary={"By: " + props.author.displayName}
         />
-        {(props.contentType == "text/markdown" || props.contentType == "text/plain") && <ListItemText
+        {props.contentType == "text/markdown" && <ReactMarkdown>
+          {props.content}
+          </ReactMarkdown>}
+        {(props.contentType == "text/plain") && <ListItemText
           primary={props.content}
         />}
         {(props.contentType == "application/base64" || props.contentType == "image/png;base64" || props.contentType == "image/jpeg;base64") && <ImageListItem

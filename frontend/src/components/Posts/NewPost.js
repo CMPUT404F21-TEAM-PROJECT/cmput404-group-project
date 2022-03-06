@@ -234,6 +234,7 @@ class NewPost extends Component {
             <br />
             <TextField
               className="text-input"
+              defaultValue=""
               size="small"
               type="text"
               fullWidth={true}

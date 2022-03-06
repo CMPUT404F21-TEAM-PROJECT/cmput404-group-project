@@ -47,7 +47,7 @@ class Post(models.Model):
     origin = models.CharField(default='', max_length=200)
     categories = models.CharField(max_length=200) # Should be stored as space separated list of strings
     unlisted = models.BooleanField(default=False)
-    viewableBy = models.CharField(default='', max_length=200)
+    viewableBy = models.CharField(default='', max_length=200, blank=True)
 
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)

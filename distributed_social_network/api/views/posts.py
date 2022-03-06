@@ -49,6 +49,8 @@ def create_post(request):
 def create_post_with_id(request, id):
     # Use the given id
     request.data["id"] = id
+    if not request.data['viewableBy']:
+        request.data['viewableBy'] = ''
     response = HttpResponse()
 
     # Check authorization
