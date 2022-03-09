@@ -178,7 +178,6 @@ class PostEndpointTestCase(APITestCase):
         # Check for correct attributes
         responseJson = response.json()
         self.assertEqual(responseJson["id"], textPostPlain["id"])
-        self.assertEqual(responseJson["author"], textPostPlain["author"])
         self.assertEqual(responseJson["title"], textPostPlain["title"])
         self.assertEqual(responseJson["contentType"], textPostPlain["contentType"])
         self.assertEqual(responseJson["content"], textPostPlain["content"])
@@ -189,6 +188,13 @@ class PostEndpointTestCase(APITestCase):
         self.assertEqual(responseJson["origin"], textPostPlain["origin"])
         self.assertEqual(responseJson["categories"], textPostPlain["categories"])
         self.assertEqual(responseJson["unlisted"], textPostPlain["unlisted"])
+        # Check for correct author object
+        self.assertEqual(responseJson["author"]["id"], author1["id"])
+        self.assertEqual(responseJson["author"]["url"], author1["url"])
+        self.assertEqual(responseJson["author"]["host"], author1["host"])
+        self.assertEqual(responseJson["author"]["displayName"], author1["displayName"])
+        self.assertEqual(responseJson["author"]["github"], author1["github"])
+        self.assertEqual(responseJson["author"]["profileImage"], author1["profileImage"])
 
     def test_get_multiple_posts(self):
         # This test posts 2 posts of different types to the multiple posts url

@@ -1,10 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
-from ..serializers import PostSerializer
+from ..serializers import PostSerializer, AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 import base64, jwt, uuid
-from ..models import FollowRequest, Post
+from ..models import FollowRequest, Post, Author
 from django.db.models import Q
 from itertools import chain
 
@@ -78,6 +78,7 @@ def create_post_with_id(request, id):
         serializer.save()
         # Return the created post
         responseDict = serializer.data
+        responseDict['author'] = AuthorSerializer(Author.objects.get(id=responseDict['author'])).data
         response = JsonResponse(responseDict)
         response.status_code = 201
         return response
@@ -215,6 +216,7 @@ def get_post(request, id):
     # Create the JSON response dictionary
     serializer = PostSerializer(post)
     responseDict = serializer.data
+    responseDict['author'] = AuthorSerializer(Author.objects.get(id=responseDict['author'])).data
 
     # Return the response
     response = JsonResponse(responseDict)
@@ -281,6 +283,8 @@ def get_multiple_posts(request):
     # Create the JSON response dictionary
     serializer = PostSerializer(posts, many=True)
     items = serializer.data
+    for post in items:
+        post['author'] = AuthorSerializer(Author.objects.get(id=post['author'])).data
     responseDict = {'type' : 'posts', 'items' : items}
 
     # Return the response

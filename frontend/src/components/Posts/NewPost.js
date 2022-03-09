@@ -82,7 +82,7 @@ class NewPost extends Component {
   };
 
   sendToSelf = async (my_post) => {
-    const response = await requests.post(
+    await requests.post(
       `service/authors/${this.state.author_id}/inbox/`,
       my_post,
       {headers: {
@@ -102,7 +102,7 @@ class NewPost extends Component {
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
-      const response = await requests.post(
+      await requests.post(
         `service/authors/${follower.id}/inbox/`,
         my_post,
         {headers: {
