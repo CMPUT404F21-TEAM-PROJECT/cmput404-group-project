@@ -34,6 +34,7 @@ class NewPost extends Component {
     unlisted: false,
     successful_post: false,
     author_id: "",
+    viewableBy: "",
     jwt: localStorage.getItem("access_token"),
   };
 
@@ -66,6 +67,7 @@ class NewPost extends Component {
         visibility: this.state.visibility,
         unlisted: this.state.unlisted,
         categories: this.state.categories,
+        viewableBy: this.state.viewableBy,
       });
       //console.log(response.data);
       this.setState({ successful_post: true });
@@ -229,6 +231,21 @@ class NewPost extends Component {
               <MenuItem value="PUBLIC">Public</MenuItem>
               <MenuItem value="FRIENDS">Friends</MenuItem>
             </TextField>
+            <br />
+            <TextField
+              className="text-input"
+              defaultValue=""
+              size="small"
+              type="text"
+              fullWidth={true}
+              label="Post only to"
+              value={this.state.viewableBy}
+              onChange={({ target }) =>
+                this.setState({
+                  viewableBy: target.value,
+                })
+              }
+            />
             <br />
             <p>Unlisted</p>
             <input 

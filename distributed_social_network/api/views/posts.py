@@ -49,6 +49,8 @@ def create_post(request):
 def create_post_with_id(request, id):
     # Use the given id
     request.data["id"] = id
+    if not request.data['viewableBy']:
+        request.data['viewableBy'] = ''
     response = HttpResponse()
 
     # Check authorization
@@ -58,7 +60,8 @@ def create_post_with_id(request, id):
         if not token:
             token = request.headers['Authorization']
             if not token:
-                return None
+                response.status_code = 401
+                return response
         creatorId = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
         if not (str(request.data['author']) == creatorId):
             response.status_code = 401
@@ -96,8 +99,14 @@ def delete_post(request, id):
 
     # Check authorization
     try:
-        cookie = request.COOKIES['jwt']
-        deleterId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        token = request.COOKIES.get('jwt')
+        # Request was not authenticated without a token
+        if not token:
+            token = request.headers['Authorization']
+            if not token:
+                response.status_code = 401
+                return response
+        deleterId = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
         if not (str(post.author_id) == deleterId):
             response.status_code = 401
             return response
@@ -126,8 +135,14 @@ def update_post(request, id):
 
     # Check authorization
     try:
-        cookie = request.COOKIES['jwt']
-        updaterId = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
+        token = request.COOKIES.get('jwt')
+        # Request was not authenticated without a token
+        if not token:
+            token = request.headers['Authorization']
+            if not token:
+                response.status_code = 401
+                return response
+        updaterId = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
         if not (str(post.author_id) == updaterId):
             response.status_code = 401
             return response
@@ -163,10 +178,34 @@ def get_post(request, id):
     if post.visibility == "FRIENDS":
         # Check if the current user is a friend of the author
         try:
-            cookie = request.COOKIES['jwt']
-            viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+            token = request.COOKIES.get('jwt')
+            # Request was not authenticated without a token
+            if not token:
+                token = request.headers['Authorization']
+                if not token:
+                    response.status_code = 401
+                    return response
+            viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
             followRequests = FollowRequest.objects.filter(Q(actor__exact=authorId) | Q(object__exact=authorId)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
             if len(followRequests) <= 0:
+                response.status_code = 401
+                return response
+        except KeyError:
+            response.status_code = 401
+            return response
+
+    # Check if post is viewable by single author only
+    if post.viewableBy != '':
+        try:
+            token = request.COOKIES.get('jwt')
+            # Request was not authenticated without a token
+            if not token:
+                token = request.headers['Authorization']
+                if not token:
+                    response.status_code = 401
+                    return response
+            viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+            if viewerId != uuid.UUID(post.viewableBy) and viewerId != post.author_id:
                 response.status_code = 401
                 return response
         except KeyError:
@@ -185,18 +224,33 @@ def get_post(request, id):
 # Get all posts
 def get_multiple_posts(request):
     # Get all public posts that are not unlisted
-    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False)
+    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
 
     friendsPosts = []
+    privatePosts = []
 
     # Get the current user id
     try:
-        cookie = request.COOKIES['jwt']
-        viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+        token = request.COOKIES.get('jwt')
+        # Request was not authenticated without a token
+        if not token:
+            token = request.headers['Authorization']
+            if not token:
+                permissionForAny = False
+            else:
+                viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
 
-        # Get all friends only posts that are not unlisted
-        friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
-        permissionForAny = True
+                # Get all friends only posts that are not unlisted
+                friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
+                privatePosts = Post.objects.filter(~Q(viewableBy__exact='')).filter(unlisted__exact=False)
+                permissionForAny = True
+        else:
+            viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+
+            # Get all friends only posts that are not unlisted
+            friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
+            privatePosts = Post.objects.filter(~Q(viewableBy__exact='')).filter(unlisted__exact=False)
+            permissionForAny = True
     except KeyError:
         permissionForAny = False
 
@@ -206,8 +260,15 @@ def get_multiple_posts(request):
         for post in friendsPosts:
             # Check if the current user is a friend of the author
             followRequests = FollowRequest.objects.filter(Q(actor__exact=post.author_id) | Q(object__exact=post.author_id)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
-            if len(followRequests) <= 0:
+            if len(followRequests) > 0:
                 allowedFriendsPosts.append(post)
+        
+        # Loop over private posts
+        allowedPrivatePosts = []
+        for post in privatePosts:
+            # Check if the current user is the viewableBy user
+            if uuid.UUID(post.viewableBy) == viewerId or post.author_id == viewerId:
+                allowedPrivatePosts.append(post)
 
     # Initialize paginator
     paginator = PageNumberPagination()
@@ -215,7 +276,7 @@ def get_multiple_posts(request):
     paginator.page_size_query_param = 'size'
 
     # Get posts, paginated
-    posts = paginator.paginate_queryset(list(chain(publicPosts, friendsPosts)), request)
+    posts = paginator.paginate_queryset(list(chain(publicPosts, allowedFriendsPosts, allowedPrivatePosts)), request)
 
     # Create the JSON response dictionary
     serializer = PostSerializer(posts, many=True)
@@ -242,10 +303,34 @@ def get_post_image(request, id):
     if post.visibility == "FRIENDS":
         # Check if the current user is a friend of the author
         try:
-            cookie = request.COOKIES['jwt']
-            viewerId = uuid.UUID(jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"])
+            token = request.COOKIES.get('jwt')
+            # Request was not authenticated without a token
+            if not token:
+                token = request.headers['Authorization']
+                if not token:
+                    response.status_code = 401
+                    return response
+            viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
             followRequests = FollowRequest.objects.filter(Q(actor__exact=authorId) | Q(object__exact=authorId)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
             if len(followRequests) <= 0:
+                response.status_code = 401
+                return response
+        except KeyError:
+            response.status_code = 401
+            return response
+
+    # Check if post is viewable by single author only
+    if post.viewableBy != '':
+        try:
+            token = request.COOKIES.get('jwt')
+            # Request was not authenticated without a token
+            if not token:
+                token = request.headers['Authorization']
+                if not token:
+                    response.status_code = 401
+                    return response
+            viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+            if viewerId != uuid.UUID(post.viewableBy) and viewerId != post.author_id:
                 response.status_code = 401
                 return response
         except KeyError:
