@@ -20,9 +20,9 @@ import "./NavBar.css"
 import requests from '../requests';
 
 
-const pages = ['Home', 'Friends', 'My Profile', 'Post'];
+const pages = ['Home', 'Friends', 'My Profile', 'Post', 'Public Posts'];
 const settings = ['Profile Settings', 'Logout'];
-const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post"}
+const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post", "Public Posts": "./public_posts"}
 
 const logout = async () => {
   // send POST request to /service/logout
