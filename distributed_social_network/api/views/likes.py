@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
 from ..models import Author, Like, Post, Comment
 from ..serializers import  LikeSerializer
+from ..views import find_post
 from django.db.models import Q
 
 
@@ -87,13 +88,6 @@ def get_author_likes(request, authorID):
     response = JsonResponse(responseDict)
     response.status_code = 200
     return response
-
-# Returns Post object if found, otherwise returns None
-def find_post(id): 
-    try:
-        return Post.objects.get(id=id)
-    except ObjectDoesNotExist:
-        return None
 
 # Returns Comment object if found, otherwise returns None
 def find_comment(id):
