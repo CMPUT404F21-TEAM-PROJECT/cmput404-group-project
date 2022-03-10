@@ -14,7 +14,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import {BrowserRouter,Link,Route, Redirect} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import {useLocation} from 'react-router-dom';
 import "./NavBar.css"
 import requests from '../requests';
@@ -23,27 +23,35 @@ import requests from '../requests';
 const pages = ['Home', 'Friends', 'My Profile', 'Post', 'Public Posts'];
 const settings = ['Profile Settings', 'Logout'];
 const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post", "Public Posts": "./public_posts"}
-
-const logout = async () => {
-  // send POST request to /service/logout
-  try {
-    const response = await requests.post('service/logout/',
-    {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-    }},
-    {withCredentials: true});
-    window.location.href = "/";
-  } catch {
-    console.log("failed to logout")
-  }
-}
-
+requests.defaults.headers["Authorization"] = localStorage.getItem('access_token');
 
 const NavBar = () => {
+  const history = useHistory();
   const currentPath = "." + useLocation()["pathname"];
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  
+  React.useState(function checkAuthenticated() {
+    // TODO check and simplify this to for expired accessToken
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+        history.push("/");
+        history.go(0);
+    }
+    // const response = requests.get('service/get-user/', {headers: {
+    //   accept: 'application/json',
+    // }}).then(data => {
+    //   if (data.status != 200) {
+    //     history.push("/");
+    //   }
+    // }
+    // );
+    // if (!accessToken || status_code != 200) {
+    //   console.log(status_code);
+    //   console.log("HERE");
+    //   history.push("/");
+    // }
+  });
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -56,10 +64,27 @@ const NavBar = () => {
     setAnchorElNav(null);
   };
 
+  const logout = async () => {
+    // send POST request to /service/logout
+    try {
+      const response = await requests.post('service/logout/', {headers: {
+        accept: 'application/json',
+      }});
+    } 
+    catch(error) {
+      console.log(error);
+    }
+    localStorage.removeItem("access_token");
+    history.push("/")
+  }
+
   const handleCloseUserMenu = (e) => {
     // Handles the selected option
     let selectedOption = e.currentTarget.innerText
     switch(selectedOption) {
+      case "Profile Settings":
+        history.push('/profile');
+        break;
       case "Logout":
         logout();
         break;
