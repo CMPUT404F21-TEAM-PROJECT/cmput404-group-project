@@ -24,8 +24,26 @@ class PublicPosts extends React.Component {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
         }});
-        this.setState({ allPosts: response.data.items });
+        
         console.log(this.state.allPosts)
+        // get list of likes for each post
+        const postPromises = response.data.items.map(async (item) => {
+          if (item.type === 'post') {
+            const like_response = await requests.get(`service/authors/${item.author.id}/posts/${item.id}/likes/`);
+            item.likes = like_response.data.items;
+            item.likedByCurrent = false;
+            // check if current viewer liked the post
+            item.likes.forEach((like) => {
+              if (like.author === this.state.currentUser.id) {
+                item.likedByCurrent = true;
+              }
+            })
+          }
+          return item;
+        })
+        // wait for promises then set inbox list
+        const postList = await Promise.all(postPromises)
+        this.setState({ allPosts: postList });
     } catch(error) {
         console.log(error)
     }
@@ -67,6 +85,8 @@ class PublicPosts extends React.Component {
               description= {item.description}
               post= {{id: item.id}}
               currentUser={this.state.currentUser}
+              likes={item.likes}
+              likedByCurrent={item.likedByCurrent}
               />
             </Grid>
           );

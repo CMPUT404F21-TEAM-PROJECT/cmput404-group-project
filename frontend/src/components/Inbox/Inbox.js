@@ -28,13 +28,14 @@ class Inbox extends React.Component {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
           }});
+
           this.setState({ currentUser: {
-              id: response.data.id ? response.data.id : '',
-              url: response.data.url ? response.data.url : '',
-              host: response.data.host ? response.data.host : '',
-              displayName: response.data.displayName ? response.data.displayName : '',
-              github: response.data.github ? response.data.github : '',
-              profileImage: response.data.profileImage ? response.data.profileImage : ''
+            id: response.data.id ? response.data.id : '',
+            url: response.data.url ? response.data.url : '',
+            host: response.data.host ? response.data.host : '',
+            displayName: response.data.displayName ? response.data.displayName : '',
+            github: response.data.github ? response.data.github : '',
+            profileImage: response.data.profileImage ? response.data.profileImage : ''
           }});
 
           const response_inbox = await requests.get(`service/authors/${this.state.currentUser.id}/inbox/`,
@@ -43,9 +44,26 @@ class Inbox extends React.Component {
               accept: 'application/json',
               }},
               {withCredentials:true})
-          this.setState({inboxList: response_inbox.data.items})
-          console.log(this.state.inboxList)
 
+
+          // get list of likes for each post
+          const inboxPromises = response_inbox.data.items.map(async (item) => {
+            if (item.type === 'post') {
+              const response = await requests.get(`service/authors/${item.author.id}/posts/${item.id}/likes/`);
+              item.likes = response.data.items;
+              item.likedByCurrent = false;
+              // check if current viewer liked the post
+              item.likes.forEach((like) => {
+                if (like.author === this.state.currentUser.id) {
+                  item.likedByCurrent = true;
+                }
+              })
+            }
+            return item;
+          })
+          // wait for promises then set inbox list
+          const inboxList = await Promise.all(inboxPromises)
+          this.setState({inboxList: inboxList})
       } catch(error) {
           console.log(error)
       }
@@ -53,7 +71,7 @@ class Inbox extends React.Component {
 
   clearInbox = async () => {
     try {
-      const response_inbox = await requests.delete(`service/authors/${this.state.currentUser.id}/inbox/`,
+      await requests.delete(`service/authors/${this.state.currentUser.id}/inbox/`,
             {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
@@ -67,8 +85,8 @@ class Inbox extends React.Component {
 
   renderInboxItems() {
     return this.state.inboxList.map((item) => {
-        console.log('item', item)
         if (item.type === 'post') {
+          console.log("item is", item)
           return (
             <Grid item xs={8}>
               <Post author= {item.author}
@@ -78,6 +96,8 @@ class Inbox extends React.Component {
               description= {item.description}
               post= {{id: item.id}}
               currentUser={this.state.currentUser}
+              likes={item.likes}
+              likedByCurrent={item.likedByCurrent}
               />
             </Grid>
           );

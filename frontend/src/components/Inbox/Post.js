@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import requests from "../../requests";
 import './Post.css'
 
@@ -20,6 +20,7 @@ import Send from '@mui/icons-material/Send'
 export default function Post(props) {
     const [error, setError] = useState("");
     const [commentText, setCommentText] = useState("")
+    const [liked, setLiked] = useState(false)
 
     const styles = theme => ({
         listItemText:{
@@ -29,7 +30,6 @@ export default function Post(props) {
 
     const like = async () => {
         // send POST request to authors/{authorId}/inbox/ with a like
-        console.log('clicked like');
         try {
           const data = {
             summary: `${props.currentUser.displayName} likes your post.`,
@@ -37,18 +37,21 @@ export default function Post(props) {
             author: props.currentUser.id,
             _object: `${props.author.id}/posts/${props.post.id}`
           }
-
-          const response = await requests.post(`service/authors/${props.author.id}/inbox/`,
-            data,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-            }},
-            {withCredentials: true});
+          // prevents sending a like twice when liking your own post
+          if (props.currentUser.id != props.author.id){
+            const response = await requests.post(`service/authors/${props.author.id}/inbox/`,
+              data,
+              {headers: {
+                Authorization: localStorage.getItem('access_token'),
+                accept: 'application/json',
+              }},
+              {withCredentials: true});
+          }
           
           // change summary of like, to send like to your own inbox
           data.summary = `You liked ${props.author.displayName}'s post.`
           sendToSelf(data);
+         setLiked(true)
         } catch (e) {
           console.log(e)
           setError("Failed to send like.");
@@ -57,7 +60,6 @@ export default function Post(props) {
 
     const comment = async () => {
         // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
-        console.log('clicked comment')
         try {
             const response = await requests.post(`service/authors/${props.author.id}/posts/${props.post.id}/comments/`,
               {
@@ -100,6 +102,9 @@ export default function Post(props) {
         {withCredentials:true});
     };
 
+    useEffect(() => {
+      setLiked(props.likedByCurrent);
+    }, [])
 
     return (
       <ListItem>
@@ -126,12 +131,18 @@ export default function Post(props) {
           primary={props.description}
         />
         <div id="comment-like-section">
-            <Button 
-            id="like-button"
-            startIcon={<ThumbUp />}
-            onClick={like}>
-                Like
-            </Button>
+        {liked ? (<Button
+                    disabled
+                    variant="contained">
+                      Liked
+                    </Button>)  
+            : (<Button 
+              id="like-button"
+              startIcon={<ThumbUp />}
+              onClick={like}>
+                  Like
+              </Button>)}
+            
             <span id="comment-section">
                 <TextField id="commentBox" label="Comment" variant="filled" defaultValue="" onChange={e => {setCommentText(e.target.value)}}/>
                 <Button
