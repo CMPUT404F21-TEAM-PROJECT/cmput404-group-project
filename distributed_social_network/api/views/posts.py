@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer, AuthorSerializer
@@ -26,7 +27,7 @@ def route_multiple_posts(request, author_id):
     if request.method == 'POST':
         return create_post(request)
     elif request.method == 'GET':
-        return get_multiple_posts(request)
+        return get_multiple_posts(request, author_id)
 
 # Routes the request for a single image post
 @api_view(['GET'])
@@ -206,7 +207,11 @@ def get_post(request, id):
                     response.status_code = 401
                     return response
             viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
-            if viewerId != uuid.UUID(post.viewableBy) and viewerId != post.author_id:
+            try:
+                viewableBy = uuid.UUID(post.viewableBy)
+            except:
+                viewableBy = None
+            if viewerId != viewableBy and viewerId != post.author_id:
                 response.status_code = 401
                 return response
         except KeyError:
@@ -223,10 +228,10 @@ def get_post(request, id):
     response.status_code = 200
     return response
 
-# Get all posts
-def get_multiple_posts(request):
+# Get all posts written by author_id given as an argument, that are viewable by the currently authenticated author
+def get_multiple_posts(request, author_id):
     # Get all public posts that are not unlisted
-    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
+    publicPosts = Post.objects.filter(author__exact=author_id).filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
 
     friendsPosts = []
     privatePosts = []
@@ -269,7 +274,11 @@ def get_multiple_posts(request):
         allowedPrivatePosts = []
         for post in privatePosts:
             # Check if the current user is the viewableBy user
-            if uuid.UUID(post.viewableBy) == viewerId or post.author_id == viewerId:
+            try:
+                viewableBy = uuid.UUID(post.viewableBy)
+            except:
+                viewableBy = None
+            if viewableBy == viewerId or post.author_id == viewerId:
                 allowedPrivatePosts.append(post)
 
     # Initialize paginator
@@ -278,7 +287,10 @@ def get_multiple_posts(request):
     paginator.page_size_query_param = 'size'
 
     # Get posts, paginated
-    posts = paginator.paginate_queryset(list(chain(publicPosts, allowedFriendsPosts, allowedPrivatePosts)), request)
+    if permissionForAny:
+        posts = paginator.paginate_queryset(list(chain(publicPosts, allowedFriendsPosts, allowedPrivatePosts)), request)
+    else:
+        posts = paginator.paginate_queryset(list(chain(publicPosts)), request)
 
     # Create the JSON response dictionary
     serializer = PostSerializer(posts, many=True)
