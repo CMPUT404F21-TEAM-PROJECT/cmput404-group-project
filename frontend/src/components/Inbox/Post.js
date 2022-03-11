@@ -35,7 +35,7 @@ export default function Post(props) {
             summary: `${props.currentUser.displayName} likes your post.`,
             type: "Like",
             author: props.currentUser.id,
-            _object: `${props.author.id}/posts/${props.post.id}`
+            object: `${props.author.id}/posts/${props.post.id}`
           }
           // prevents sending a like twice when liking your own post
           if (props.currentUser.id != props.author.id){

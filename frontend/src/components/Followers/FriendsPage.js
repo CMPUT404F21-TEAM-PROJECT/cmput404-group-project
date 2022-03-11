@@ -54,6 +54,7 @@ class FriendsPage extends React.Component {
             const data = {
                 type: 'follow',
                 summary: `${this.state.currentUser.id} wants to follow ${this.state.addFollowerId}`,
+                object: `${this.state.addFollowerId}`
             }
             const response = await requests.post(`service/authors/${this.state.addFollowerId}/inbox/`,
                 data,
@@ -100,15 +101,23 @@ class FriendsPage extends React.Component {
     render(){
         return (
             <div className="friendsPage">
-            <Box sx={{ display: 'flex',
+            <Box
+                sx={{ display: 'flex',
                        flexDirection: 'row',
-                       p: 1,
-                       m: 1,
+                       p: 2,
+                       m: 2,
+                       ml: 10,
+                       mr: 10,
                        justifyContent: 'center'
                     }}>
                 Send a Follow Request To:
-                <TextField id="outlined-basic" onChange={this.setAddFollowerId}/>
+                <TextField 
+                    fullWidth
+                    placeholder="Enter full ID (i.e. http://host:port/authors/id)" 
+                    id="outlined-basic"
+                    onChange={this.setAddFollowerId}/>
                 <Button 
+                sx={{ml: 2}}
                 startIcon={<PersonAddIcon />}
                 onClick={this.sendFollowRequest}>
                 Send

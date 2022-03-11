@@ -246,7 +246,6 @@ class InboxEndpointTestCase(APITestCase):
         url = '/service/authors/' + author2["id"] + '/inbox/'
         # postLike1['object'] = "http://{0}:{1}/service/authors/{2}/posts/{3}".format(HOST, PORT, author2, post1['id'])
         postLike1['object'] = post1['id']
-        postLike1['_object'] = post1['id'] # TODO: revisit this in add_like inbox method
         response = self.client.post(url, postLike1, format="json") 
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED) #Check that request returned 201 code

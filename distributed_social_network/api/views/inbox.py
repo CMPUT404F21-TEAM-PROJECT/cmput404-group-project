@@ -165,8 +165,6 @@ def add_like(request, author_id, inbox):
     # create the like
     data = request.data.copy()
     data['author'] = data.get('author', senderId)
-    data['object'] = data.get('_object')
-    data.pop('_object')
 
     serializer = LikeSerializer(data = data)
 
