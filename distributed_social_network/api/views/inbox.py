@@ -138,7 +138,7 @@ def add_post(request, author_id, inbox):
     if get_follower(senderId, author_id).status_code != 200 and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
-    
+
     # find the post
     # TODO: need to handle remote posts
     post = find_post(request.data["id"])

@@ -25,7 +25,6 @@ class PublicPosts extends React.Component {
             accept: 'application/json',
         }});
         
-        console.log(this.state.allPosts)
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
           if (item.type === 'post') {
@@ -77,15 +76,12 @@ class PublicPosts extends React.Component {
         if (item.type === 'post') {
           return (
             <Grid item xs={8}>
-              <Post author= {item.author}
-              title={item.title}
-              contentType={item.contentType}
-              content= {item.content}
-              description= {item.description}
-              post= {{id: item.id}}
+              <Post   
+              post= {item}
               currentUser={this.state.currentUser}
               likes={item.likes}
               likedByCurrent={item.likedByCurrent}
+              isPublic={item.visibility === 'PUBLIC' && item.viewableBy === ''}
               />
             </Grid>
           );
