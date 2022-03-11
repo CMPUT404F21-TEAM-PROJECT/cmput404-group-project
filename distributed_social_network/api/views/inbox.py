@@ -138,7 +138,7 @@ def add_post(request, author_id, inbox):
     if get_follower(senderId, author_id).status_code != 200 and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
-    
+
     # find the post
     # TODO: need to handle remote posts
     post = find_post(request.data["id"])
@@ -165,8 +165,6 @@ def add_like(request, author_id, inbox):
     # create the like
     data = request.data.copy()
     data['author'] = data.get('author', senderId)
-    data['object'] = data.get('_object')
-    data.pop('_object')
 
     serializer = LikeSerializer(data = data)
 

@@ -14,7 +14,7 @@ class FriendsPage extends React.Component {
             followerList: [],
             followingList: [],
             addFollowerId: '',
-            addFollowerError: '',
+            addFollowerResult: {message:'', severity:''},
         }
     }
 
@@ -54,6 +54,7 @@ class FriendsPage extends React.Component {
             const data = {
                 type: 'follow',
                 summary: `${this.state.currentUser.id} wants to follow ${this.state.addFollowerId}`,
+                object: `${this.state.addFollowerId}`
             }
             const response = await requests.post(`service/authors/${this.state.addFollowerId}/inbox/`,
                 data,
@@ -62,8 +63,9 @@ class FriendsPage extends React.Component {
                 accept: 'application/json',
                 }},
                 {withCredentials:true})
+            this.setState({addFollowerResult: {message:"Sent Follow Request", severity:'success'}});
         } catch(error) {
-            this.setState({addFollowerError: "Failed to Send Follow Request"});
+            this.setState({addFollowerResult: {message:"Failed to send Follow Request", severity:'error'}});
         }
     }
 
@@ -100,22 +102,30 @@ class FriendsPage extends React.Component {
     render(){
         return (
             <div className="friendsPage">
-            <Box sx={{ display: 'flex',
+            <Box
+                sx={{ display: 'flex',
                        flexDirection: 'row',
-                       p: 1,
-                       m: 1,
+                       p: 2,
+                       m: 2,
+                       ml: 10,
+                       mr: 10,
                        justifyContent: 'center'
                     }}>
                 Send a Follow Request To:
-                <TextField id="outlined-basic" onChange={this.setAddFollowerId}/>
+                <TextField 
+                    fullWidth
+                    placeholder="Enter author ID" 
+                    id="outlined-basic"
+                    onChange={this.setAddFollowerId}/>
                 <Button 
+                sx={{ml: 2}}
                 startIcon={<PersonAddIcon />}
                 onClick={this.sendFollowRequest}>
                 Send
                 </Button>
-                {this.state.addFollowerError && (
-                <Alert severity="error">
-                {this.state.addFollowerError}
+                {this.state.addFollowerResult && (
+                <Alert severity={this.state.addFollowerResult.severity}>
+                {this.state.addFollowerResult.message}
                 </Alert>
                 )}
             </Box>

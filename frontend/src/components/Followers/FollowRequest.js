@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import requests from "../../requests";
 
 import { Alert,
@@ -15,7 +15,8 @@ import CheckIcon from '@mui/icons-material/Check'
 // assuming props contains all the author attributes of the person who
 // sent the follow request, and the id of the current user
 export default function FollowRequest(props) {
-    const [error, setError] = useState("");
+    const [message, setMessage] = useState({});
+    const [accepted, setAccepted] = useState(false);
 
     const acceptFollowRequest = async () => {
         // send PUT request to author_id/followers/follower_id
@@ -27,8 +28,9 @@ export default function FollowRequest(props) {
             accept: 'application/json',
           }},
           {withCredentials: true});
+          setMessage({message: "Accepted follow request.", severity: "success"});
         } catch {
-          setError("Failed to accept follow request.");
+          setMessage({message: "Failed to accept follow request.", severity: "error"});
         }   
     }
 
@@ -43,15 +45,20 @@ export default function FollowRequest(props) {
             accept: 'application/json',
           }},
           {withCredentials: true});
+          setMessage({message: "Rejected follow request.", severity: "success"});
         } catch {
-          setError("Failed to reject follow request.");
+          setMessage({message: "Failed to reject follow request.", severity: "error"});
         }   
     }
+    useEffect(() => {
+      setAccepted(props.accepted);
+    }, [])
+
     return (
       <ListItem>
-        {error && (
-        <Alert severity="error">
-          {error}
+        {message.message && (
+        <Alert severity={message.severity}>
+          {message.message}
         </Alert>
         )}
         <ListItemAvatar>
@@ -59,10 +66,10 @@ export default function FollowRequest(props) {
           src={props.profileImage}
           />
         </ListItemAvatar>
-        {props.accepted ? (<ListItemText primary={"You accepted " + props.displayName + "\'s follow request"}/>)  
+        {accepted ? (<ListItemText primary={"You accepted " + props.displayName + "\'s follow request"}/>)  
             : (<ListItemText primary={props.displayName + " wants to follow you"}
         />)}
-        {!props.accepted && <ListItemSecondaryAction>
+        {!accepted && <ListItemSecondaryAction>
           <Button 
             startIcon={<CheckIcon />}
             onClick={acceptFollowRequest}>

@@ -51,7 +51,6 @@ class NewPost extends Component {
   };
 
   handleSubmit = async () => {
-    //console.log(this.state);
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
       const url = "service/authors/" + this.state.author_id + "/posts/";
@@ -69,7 +68,6 @@ class NewPost extends Component {
         categories: this.state.categories,
         viewableBy: this.state.viewableBy,
       });
-      //console.log(response.data);
       this.setState({ successful_post: true });
       response.data.type = 'post'
       if (!response.data.unlisted) {
@@ -95,7 +93,7 @@ class NewPost extends Component {
   sendToFollowers = async (my_post) => {
     // Get Followers
     const response = await requests.get(
-      `service/authors/${my_post.author}/followers/`
+      `service/authors/${my_post.author.id}/followers/`
     );
     const followerList = response.data.items;
 
