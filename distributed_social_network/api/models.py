@@ -22,6 +22,9 @@ class Like(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE) #Sender of the like
     object = models.CharField(max_length=200) #URL of the post or comment being liked
 
+    class Meta:
+        unique_together = ('author', 'object')
+
     
 class FollowRequest(models.Model):
     summary = models.CharField(max_length=200)
@@ -32,6 +35,9 @@ class FollowRequest(models.Model):
                                on_delete=models.CASCADE,
                                related_name='fr_received')
     accepted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('actor', 'object')
 
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)

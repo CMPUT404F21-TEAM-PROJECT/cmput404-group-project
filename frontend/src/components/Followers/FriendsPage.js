@@ -14,7 +14,7 @@ class FriendsPage extends React.Component {
             followerList: [],
             followingList: [],
             addFollowerId: '',
-            addFollowerError: '',
+            addFollowerResult: {message:'', severity:''},
         }
     }
 
@@ -63,8 +63,9 @@ class FriendsPage extends React.Component {
                 accept: 'application/json',
                 }},
                 {withCredentials:true})
+            this.setState({addFollowerResult: {message:"Sent Follow Request", severity:'success'}});
         } catch(error) {
-            this.setState({addFollowerError: "Failed to Send Follow Request"});
+            this.setState({addFollowerResult: {message:"Failed to send Follow Request", severity:'error'}});
         }
     }
 
@@ -113,7 +114,7 @@ class FriendsPage extends React.Component {
                 Send a Follow Request To:
                 <TextField 
                     fullWidth
-                    placeholder="Enter full ID (i.e. http://host:port/authors/id)" 
+                    placeholder="Enter author ID" 
                     id="outlined-basic"
                     onChange={this.setAddFollowerId}/>
                 <Button 
@@ -122,9 +123,9 @@ class FriendsPage extends React.Component {
                 onClick={this.sendFollowRequest}>
                 Send
                 </Button>
-                {this.state.addFollowerError && (
-                <Alert severity="error">
-                {this.state.addFollowerError}
+                {this.state.addFollowerResult && (
+                <Alert severity={this.state.addFollowerResult.severity}>
+                {this.state.addFollowerResult.message}
                 </Alert>
                 )}
             </Box>

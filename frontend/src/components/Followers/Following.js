@@ -13,7 +13,7 @@ import ClearIcon from '@mui/icons-material/Clear'
 
 // assuming props contains all the author attributes of the follower, and the id of the current user
 export default function Following(props) {
-    const [error, setError] = useState("");
+    const [message, setMessage] = useState({});
 
     const unfollow = async () => {
         // send DELETE request to
@@ -24,15 +24,16 @@ export default function Following(props) {
             accept: 'application/json',
             }},
             {withCredentials: true});
+          setMessage({message: "Unfollowed.", severity: "success"});
         } catch {
-          setError("Failed to unfollow.");
+          setMessage({message: "Failed to unfollow.", severity: "error"});
         }   
     }
     return (
       <ListItem divider>
-        {error && (
-        <Alert severity="error">
-          {error}
+        {message.message && (
+        <Alert severity={message.severity}>
+          {message.message}
         </Alert>
         )}
         <ListItemAvatar>
