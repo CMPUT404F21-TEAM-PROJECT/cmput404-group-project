@@ -74,7 +74,6 @@ class PublicPosts extends React.Component {
 
   renderInboxItems() {
     return this.state.allPosts.map((item) => {
-        console.log('item', item)
         if (item.type === 'post') {
           return (
             <Grid item xs={8}>

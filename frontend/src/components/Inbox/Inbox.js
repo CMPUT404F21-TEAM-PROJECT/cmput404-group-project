@@ -86,7 +86,6 @@ class Inbox extends React.Component {
   renderInboxItems() {
     return this.state.inboxList.map((item) => {
         if (item.type === 'post') {
-          console.log("item is", item)
           return (
             <Grid item xs={8}>
               <Post author= {item.author}
