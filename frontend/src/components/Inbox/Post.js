@@ -134,6 +134,9 @@ export default function Post(props) {
       setLiked(props.likedByCurrent);
     }, [])
 
+    console.log(props.currentUser.id);
+    console.log(props.post.id);
+    console.log(props.post.author);
     return (
       <ListItem>
         <ListItemText
@@ -175,7 +178,7 @@ export default function Post(props) {
                 <CommentDialogButton
                 current_author = {props.currentUser.id}
                 post_id = {props.post.id}
-                author_id = {props.author.id}/>
+                author_id = {props.post.author}/>
             </span>
             <span id="share-section">
               <Button
