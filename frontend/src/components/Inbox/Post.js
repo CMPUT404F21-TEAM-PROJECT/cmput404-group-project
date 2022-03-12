@@ -134,9 +134,6 @@ export default function Post(props) {
       setLiked(props.likedByCurrent);
     }, [])
 
-    console.log(props.currentUser.id);
-    console.log(props.post.id);
-    console.log(props.post.author);
     return (
       <ListItem>
         <ListItemText
