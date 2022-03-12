@@ -8,6 +8,7 @@ from rest_framework.pagination import PageNumberPagination
 from ..models import Comment, Post
 from ..serializers import CommentSerializer
 from ..views import find_post
+from .auth import get_payload
 
 # Routes the request for multiple comment
 # Expects JSON request body with post and author attributes
@@ -61,21 +62,11 @@ def add_comment(request, author_id, post_id):
     response = HttpResponse()
     
     # Check authorization
-    try:
-        token = request.COOKIES.get('jwt')
-        # Request was not authenticated without a token
-        if not token:
-            token = request.headers['Authorization']
-            if not token:
-                response.status_code = 401
-                response.content = "Error: Not Authenticated"
-                return response
-        user_id = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
-    except:
+    payload = get_payload(request)
+    if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
-        return response
-
+    user_id = payload['id']
     # Uses the current user and time as author and published respectively
     request.data["author"] = user_id
     request.data["published"] = timezone.localtime(timezone.now())
@@ -122,14 +113,12 @@ def get_comment(request, comment_id):
 # Expects JSON request body with post and author attributes
 def update_comment(request, comment_id):
     response = HttpResponse()
-    # Check authorization
-    try:
-        cookie = request.COOKIES['jwt']
-        user_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-    except KeyError:
+     # Check authorization
+    payload = get_payload(request)
+    if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
-        return response
+    user_id = payload['id']
 
     # Find the comment with the given comment_id
     comment = find_comment(comment_id)
@@ -171,13 +160,11 @@ def update_comment(request, comment_id):
 def delete_comment(request, comment_id):
     response = HttpResponse()
     # Check authorization
-    try:
-        cookie = request.COOKIES['jwt']
-        user_id = jwt.decode(cookie, key='secret', algorithms=['HS256'])["id"]
-    except KeyError:
+    payload = get_payload(request)
+    if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
-        return response
+    user_id = payload['id']
 
     # Find the comment with the given comment_id
     comment = find_comment(comment_id)
