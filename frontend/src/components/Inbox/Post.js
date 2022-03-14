@@ -19,6 +19,8 @@ import ShareIcon from '@mui/icons-material/Share';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ClassNames } from "@emotion/react";
+import { Link } from 'react-router-dom';
+
 
 // assuming props contains all the post attributes
 export default function Post(props) {
@@ -166,11 +168,6 @@ export default function Post(props) {
     };
 
 
-    const edit = async () => {
-      // Redirects to edit post page
-
-    }
-
 
     const deletePost = async () => {
       // Send DELETE request to service/authors/{AUTHOR_ID}/posts/{POST_ID}
@@ -245,9 +242,10 @@ export default function Post(props) {
             </span>
             <div id="edit-section">
               <Link to={{
-                  pathname: "./edit_post",
+                  pathname: "/edit_post",
                   state: props.post
                 }}
+                style={{textDecoration: "none"}}
               >
                 <Button
                   hidden={props.post.author.id === props.currentUser.id ? false : true}

@@ -24,6 +24,29 @@ class EditPost extends Component {
     this.getAuthorId();
   }
 
+
+
+
+  //NOTE: the commented out code below was supposed to set
+  // state to the state of an existing post (the one being edited)
+  // but it does not work.
+  /*
+  state = {
+    id: this.props.location.state.post.id,
+    title: this.props.location.state.post.title,
+    description: this.props.location.state.post.description,
+    content_type: this.props.location.state.post.content_type,
+    content: this.props.location.state.post.content,
+    categories: this.props.location.state.post.categories,
+    visibility: this.props.location.state.post.visibility,
+    unlisted: this.props.location.state.post.unlisted,
+    successful_post: false,
+    author_id: this.props.location.state.post.author_id,
+    viewableBy: this.props.location.state.post.viewableBy,
+    jwt: this.props.location.state.post.jwt,
+  };
+  */
+
   state = {
     title: "",
     description: "",
@@ -37,6 +60,7 @@ class EditPost extends Component {
     viewableBy: "",
     jwt: localStorage.getItem("access_token"),
   };
+  
 
   getAuthorId = async () => {
     const response = await requests.get("service/get-user/", {
@@ -54,10 +78,11 @@ class EditPost extends Component {
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
       const url = "service/authors/" + this.state.author_id + "/posts/";
-      const response = await requests.post(url, {
+      const response = await requests.put(url, {
         headers: {
           accept: "application/json",
         },
+        id: this.props.location.state.id, 
         title: this.state.title,
         author: this.state.author_id,
         contentType: this.state.content_type,
@@ -100,7 +125,7 @@ class EditPost extends Component {
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
-      await requests.post(
+      await requests.put(
         `service/authors/${follower.id}/inbox/`,
         my_post,
         {headers: {
@@ -113,7 +138,7 @@ class EditPost extends Component {
 
   render() {
     //https://stackoverflow.com/a/52238733
-    const {state} = this.props.location
+    const {state} = this.props.location 
     return (
       <Grid container justifyContent="center">
         <FormControl
