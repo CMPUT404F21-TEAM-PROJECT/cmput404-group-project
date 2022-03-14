@@ -16,6 +16,8 @@ import ReactMarkdown from 'react-markdown'
 import ThumbUp from '@mui/icons-material/ThumbUp'
 import Send from '@mui/icons-material/Send'
 import ShareIcon from '@mui/icons-material/Share';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { ClassNames } from "@emotion/react";
 
 // assuming props contains all the post attributes
@@ -163,6 +165,26 @@ export default function Post(props) {
         {withCredentials:true});
     };
 
+
+    const edit = async () => {
+      // Redirects to edit post page
+
+    }
+
+
+    const deletePost = async () => {
+      // Send DELETE request to service/authors/{AUTHOR_ID}/posts/{POST_ID}
+      let authorID = props.post.author.id;
+      let postID = props.post.id;
+      let url = `service/authors/${authorID}/posts/${postID}`;
+      let headers = {headers: {
+        Authorization: localStorage.getItem('access_token'),
+        accept: 'application/json',
+      }};
+      const response = await requests.delete(url, headers, {withCredentials: true});
+    
+    }
+
     useEffect(() => {
       setLiked(props.likedByCurrent);
     }, [])
@@ -221,6 +243,31 @@ export default function Post(props) {
                   Share
               </Button>
             </span>
+            <div id="edit-section">
+              <Link to={{
+                  pathname: "./edit_post",
+                  state: props.post
+                }}
+              >
+                <Button
+                  hidden={props.post.author.id === props.currentUser.id ? false : true}
+                  variant="contained"
+                  startIcon={<EditIcon/>}
+                >
+                  Edit
+                </Button>
+              </Link>
+            </div>
+            <div id="delete-section">
+              <Button
+                hidden={props.post.author.id === props.currentUser.id ? false : true}
+                variant="contained"
+                startIcon={<DeleteIcon/>}
+                onClick={deletePost}
+              >
+                Delete
+              </Button>
+            </div>
         {message.message && (
         <Alert severity={message.severity}>
           {message.message}

@@ -1,4 +1,4 @@
-from asyncio.windows_events import NULL
+#from asyncio.windows_events import NULL
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer, AuthorSerializer
@@ -10,7 +10,7 @@ from django.db.models import Q
 from itertools import chain
 
 # Routes the request for a single post
-@api_view(['GET', 'POST', 'DELETE', 'PUT'])
+@api_view(['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'])
 def route_single_post(request, author_id, post_id):
     if request.method == 'GET':
         return get_post(request, post_id)
@@ -20,6 +20,16 @@ def route_single_post(request, author_id, post_id):
         return delete_post(request, post_id)
     elif request.method == 'PUT':
         return create_post_with_id(request, post_id)
+    elif request.method == 'OPTIONS':
+        return handle_options(request)
+
+
+def handle_options(request):
+    response = HttpResponse()
+    response.status_code = 200
+    return response
+
+
 
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
@@ -92,9 +102,12 @@ def create_post_with_id(request, id):
 # Deletes the post with id 'id' from the database.
 def delete_post(request, id):
     response = HttpResponse()
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "DELETE"
 
     # Find the post with the given id
     post = find_post(id)
+    print("POST:", post)
     if post == None:
         response.status_code = 404
         return response
