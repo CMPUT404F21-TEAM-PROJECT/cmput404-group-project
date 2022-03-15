@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from "react";
 import requests from "../../requests";
+import CommentDialogButton from "../Posts/CommentDialog";
 import './Post.css'
 
 import { Alert,
@@ -57,40 +58,6 @@ export default function Post(props) {
         } catch (e) {
           console.log(e)
           setMessage({message: "Failed to send like.", severity: "error"});
-        }   
-    }
-
-    const comment = async () => {
-        // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
-        try {
-            const response = await requests.post(`service/authors/${props.post.author.id}/posts/${props.post.id}/comments/`,
-              {
-              post_id: props.post.id,
-              comment: commentText,
-              contentType: "text/markdown",
-              author: props.currentUser.id,
-              type: "comment"
-              },
-              {headers: {
-                  Authorization: localStorage.getItem('access_token'),
-                  accept: 'application/json',
-                }
-              },
-              {withCredentials: true});
-            sendToSelf(response.data);
-            // send to recipients inbox
-            const response_recipient = await requests.post(`service/authors/${props.post.author.id}/inbox/`,
-            response.data,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-            }
-            },
-          {withCredentials: true})
-          setMessage({message: "Sent comment.", severity: "success"});
-        } catch(e) {
-          setMessage({message: "Failed to send comment.", severity: "error"});
-          console.log(e)
         }   
     }
 
@@ -205,13 +172,10 @@ export default function Post(props) {
               </Button>)}
             
             <span id="comment-section">
-                <TextField id="commentBox" label="Comment" variant="filled" defaultValue="" onChange={e => {setCommentText(e.target.value)}}/>
-                <Button
-                id="comment-button" 
-                startIcon={<Send />}
-                onClick={comment}>
-                    Comment
-                </Button>
+                <CommentDialogButton
+                current_author = {props.currentUser.id}
+                post_id = {props.post.id}
+                author_id = {props.post.author}/>
             </span>
             <span id="share-section">
               <Button

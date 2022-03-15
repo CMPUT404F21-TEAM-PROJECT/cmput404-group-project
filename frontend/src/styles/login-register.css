@@ -7,7 +7,7 @@ body {
 }
 
 .background {
-  background-image: linear-gradient(45deg, #606c88 0%, #3f4c6b 120%);
+  background-image: linear-gradient(to right bottom, #1b9cfc, #2b92e8, #3487d5, #3a7dc2, #3d73af, #466ea9, #4d68a2, #53639b, #645f9c, #765b9a, #875596, #974f8e);
 }
 
 .form h1 {
