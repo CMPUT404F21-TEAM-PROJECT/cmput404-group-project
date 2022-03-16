@@ -65,7 +65,7 @@ class FollowersEndpointTestCase(APITestCase):
         cls.client = APIClient()
 
         # Create 2 new users if they don't already exist
-        registerUrl = "/service/register/"
+        registerUrl = "/register/"
         cls.client.post(registerUrl, user1, format='json')
         cls.client.post(registerUrl, user2, format='json')
         
@@ -78,8 +78,8 @@ class FollowersEndpointTestCase(APITestCase):
         user2["id"] = user2Id
 
         # Update authors
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        updateUrl1 = '/authors/' + author1["id"] + '/'
+        updateUrl2 = '/authors/' + author2["id"] + '/'
         
         cls.client.post(updateUrl1, author1, format='json')
         cls.client.post(updateUrl2, author2, format='json')
@@ -97,7 +97,7 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_followers(self):
         """Test GET request for getting a list of followers."""
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/'
+        url = '/authors/' + str(self.object.id.id) + '/followers/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -108,7 +108,7 @@ class FollowersEndpointTestCase(APITestCase):
     
     def test_get_following(self):
         """Test GET request for getting a list of people you follow."""
-        url = '/service/authors/' + str(self.actor.id.id) + '/following/'
+        url = '/authors/' + str(self.actor.id.id) + '/following/'
         
 
         response = self.client.get(url)
@@ -121,10 +121,10 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_remove_follower(self):
         """Test DELETE request for removing a follower."""
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
+        url = '/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -134,7 +134,7 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_add_follower(self):
         """Test PUT request for adding a follower (accepting a follow request)."""
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user2, format='json')
 
         # object has already sent a follow request to actor
@@ -142,7 +142,7 @@ class FollowersEndpointTestCase(APITestCase):
                                      actor=self.object,
                                      object=self.actor)
 
-        url = '/service/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id) + '/'
+        url = '/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id) + '/'
 
         response = self.client.put(url)
         fr = FollowRequest.objects.get(actor=self.object,
@@ -153,13 +153,13 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_follower(self):
         """Test GET request for checking if someone is a follower."""
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
+        url = '/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # testing a non follower
-        url = '/service/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id) + '/'
+        url = '/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id) + '/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

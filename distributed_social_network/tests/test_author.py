@@ -57,7 +57,7 @@ class AuthorEndpointTestCase(APITestCase):
         cls.client = APIClient()
 
         # Create 2 new users if they don't already exist
-        registerUrl = "/service/register/"
+        registerUrl = "/register/"
         cls.client.post(registerUrl, user1, format='json')
         cls.client.post(registerUrl, user2, format='json')
         
@@ -70,18 +70,18 @@ class AuthorEndpointTestCase(APITestCase):
         user2["id"] = user2Id
 
         # Update authors
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        updateUrl1 = '/authors/' + author1["id"] + '/'
+        updateUrl2 = '/authors/' + author2["id"] + '/'
         
         cls.client.post(updateUrl1, author1, format='json')
         cls.client.post(updateUrl2, author2, format='json')
 
     def test_get_multiple_authors(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = '/service/authors/'
+        url = '/authors/'
 
         # Get multiple authors
         response = self.client.get(url)
@@ -93,10 +93,10 @@ class AuthorEndpointTestCase(APITestCase):
 
     def test_update_author(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        updateUrl = '/service/authors/' + author1["id"] + '/'
+        updateUrl = '/authors/' + author1["id"] + '/'
 
         # Update the author
         author1Updated = copy.deepcopy(author2)
@@ -114,10 +114,10 @@ class AuthorEndpointTestCase(APITestCase):
 
     def test_get_single_author(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        getUrl = '/service/authors/' + author1["id"] + '/'
+        getUrl = '/authors/' + author1["id"] + '/'
 
         # Get the author
         response = self.client.get(getUrl)

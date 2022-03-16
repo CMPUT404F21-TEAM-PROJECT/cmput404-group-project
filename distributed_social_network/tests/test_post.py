@@ -57,7 +57,8 @@ textPostPlain = {
     "source":"textSource1",
     "origin":"textOrigin1",
     "categories":"textCategories1",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 textPostMarkdown = {
@@ -71,7 +72,8 @@ textPostMarkdown = {
     "source":"textSource2",
     "origin":"textOrigin2",
     "categories":"textCategories2",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 os.chdir(os.path.dirname(__file__))
@@ -86,7 +88,8 @@ imagePostPng = {
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 imagePostJpeg = {
@@ -100,7 +103,8 @@ imagePostJpeg = {
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 imagePostBase64 = {
@@ -114,7 +118,8 @@ imagePostBase64 = {
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 class PostTestCase(TestCase):
@@ -136,7 +141,7 @@ class PostEndpointTestCase(APITestCase):
         cls.client = APIClient()
 
         # Create 2 new users if they don't already exist
-        registerUrl = "/service/register/"
+        registerUrl = "/register/"
         cls.client.post(registerUrl, user1, format='json')
         cls.client.post(registerUrl, user2, format='json')
         
@@ -154,18 +159,18 @@ class PostEndpointTestCase(APITestCase):
         imagePostJpeg["author"] = user1Id
 
         # Update authors
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        updateUrl1 = '/authors/' + author1["id"] + '/'
+        updateUrl2 = '/authors/' + author2["id"] + '/'
         cls.client.post(updateUrl1, author1, format='json')
         cls.client.post(updateUrl2, author2, format='json')
 
     def test_get_text_post(self):
 
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        postUrl = '/service/authors/' + author1["id"] + '/posts/' + textPostPlain["id"] + '/'
+        postUrl = '/authors/' + author1["id"] + '/posts/' + textPostPlain["id"] + '/'
 
         # Add a text post
         response = self.client.put(postUrl, textPostPlain, format='json')
@@ -202,10 +207,10 @@ class PostEndpointTestCase(APITestCase):
         # It then verifies that the id of the post has changed and the content has not
         
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        postsUrl = '/service/authors/' + author1["id"] + '/posts/'
+        postsUrl = '/authors/' + author1["id"] + '/posts/'
 
         # Add 2 text posts
         response = self.client.post(postsUrl, textPostPlain, format='json')
@@ -237,11 +242,11 @@ class PostEndpointTestCase(APITestCase):
 
     def test_get_image_post_jpeg(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
         
-        addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/'
-        getPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/image/'
+        addPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/'
+        getPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostJpeg["id"] + '/image/'
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostJpeg, format='json', )
@@ -256,11 +261,11 @@ class PostEndpointTestCase(APITestCase):
 
     def test_get_image_post_png(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
-        getPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/image/'
+        addPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
+        getPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/image/'
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostPng, format='json')
@@ -275,11 +280,11 @@ class PostEndpointTestCase(APITestCase):
 
     def test_get_image_post_base64(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostBase64["id"] + '/'
-        getPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostBase64["id"] + '/image/'
+        addPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostBase64["id"] + '/'
+        getPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostBase64["id"] + '/image/'
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostBase64, format='json')

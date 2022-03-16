@@ -60,7 +60,8 @@ imagePostPng = {
     "source":"imageSource1",
     "origin":"imageOrigin1",
     "categories":"imageCategories1",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 
@@ -141,7 +142,7 @@ class LikeEndpointTestCase(APITestCase):
         cls.client = APIClient()
 
         # Create 2 new users if they don't already exist
-        registerUrl = "/service/register/"
+        registerUrl = "/register/"
         cls.client.post(registerUrl, user1, format='json')
         cls.client.post(registerUrl, user2, format='json')
         
@@ -169,14 +170,14 @@ class LikeEndpointTestCase(APITestCase):
         commentLike2["author"] = author2
         likeTestComment["post_id"] = cls.likeTestPostID
         likeTestComment["author_id"] = cls.likeTestPostAuthorID
-        postLike1["object"] = "http://{0}:{1}/service/authors/{2}/posts/{3}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID)
-        postLike2["object"] = "http://{0}:{1}/service/authors/{2}/posts/{3}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID)
-        commentLike1["object"] = "http://{0}:{1}/service/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID, cls.likeTestCommentID)
-        commentLike2["object"] = "http://{0}:{1}/service/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID, cls.likeTestCommentID)
+        postLike1["object"] = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID)
+        postLike2["object"] = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID)
+        commentLike1["object"] = "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID, cls.likeTestCommentID)
+        commentLike2["object"] = "http://{0}:{1}/authors/{2}/posts/{3}/comments/{4}".format(HOST, PORT, cls.likeTestPostAuthorID, cls.likeTestPostID, cls.likeTestCommentID)
         
         # Update authors
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        updateUrl1 = '/authors/' + author1["id"] + '/'
+        updateUrl2 = '/authors/' + author2["id"] + '/'
         
         cls.client.post(updateUrl1, author1, format='json')
         cls.client.post(updateUrl2, author2, format='json')
@@ -198,15 +199,15 @@ class LikeEndpointTestCase(APITestCase):
     
     # def test_get_post_likes(self):
     #     # Log in as user1
-    #     loginUrl = "/service/login/"
+    #     loginUrl = "/login/"
     #     self.client.post(loginUrl, user1, format='json')
 
     #     #Add post object
-    #     addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
+    #     addPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
     #     self.client.put(addPostUrl, imagePostPng, format='json')
 
-    #     postUrl =  "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-    #     getUrl = "/service/authors/{0}/posts/{1}/likes/".format(self.likeTestPostAuthorID, self.likeTestPostID)
+    #     postUrl =  "/authors/{}/inbox/".format(self.likeTestPostAuthorID)
+    #     getUrl = "/authors/{0}/posts/{1}/likes/".format(self.likeTestPostAuthorID, self.likeTestPostID)
 
     #     #Add likes #NOTE doesnt currently work, add objects with sql instead
     #     #self.client.post(postUrl, postLike1, format="json")
@@ -226,16 +227,16 @@ class LikeEndpointTestCase(APITestCase):
     ''' TODO un-comment when comment model is fully merged
     def test_get_comment_likes(self):
         # Log in as user1
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
         #Add post object
-        addPostUrl = '/service/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
+        addPostUrl = '/authors/' + author1["id"] + '/posts/' + imagePostPng["id"] + '/'
         self.client.put(addPostUrl, imagePostPng, format='json')
 
-        postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-        getUrl = "/service/authors/{0}/posts/{1}/comments/{2}/likes".format(self.likeTestPostAuthorID, self.likeTestPostID, self.likeTestCommentID)
-        postCommentUrl = "/service/authors/{0}/posts/{1}/comments".format(self.likeTestPostAuthorID, self.likeTestPostID)
+        postUrl = "/authors/{}/inbox/".format(self.likeTestPostAuthorID)
+        getUrl = "/authors/{0}/posts/{1}/comments/{2}/likes".format(self.likeTestPostAuthorID, self.likeTestPostID, self.likeTestCommentID)
+        postCommentUrl = "/authors/{0}/posts/{1}/comments".format(self.likeTestPostAuthorID, self.likeTestPostID)
 
         #Add comment object to db
         self.client.post(postCommentUrl, likeTestComment, format="json")
@@ -259,11 +260,11 @@ class LikeEndpointTestCase(APITestCase):
 
     # def test_get_author_likes(self):
     #     # Log in as user1
-    #     loginUrl = "/service/login/"
+    #     loginUrl = "/login/"
     #     self.client.post(loginUrl, user1, format='json')
 
-    #     postUrl = "/service/authors/{}/inbox/".format(self.likeTestPostAuthorID)
-    #     getUrl = "/service/authors/{}/liked/".format(self.likeTestPostAuthorID)
+    #     postUrl = "/authors/{}/inbox/".format(self.likeTestPostAuthorID)
+    #     getUrl = "/authors/{}/liked/".format(self.likeTestPostAuthorID)
 
     #     #Add likes #NOTE doesnt currently work, add objects with sql instead
     #     #self.client.post(postUrl, postLike1, format="json")

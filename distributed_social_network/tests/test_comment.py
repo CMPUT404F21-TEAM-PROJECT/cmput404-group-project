@@ -51,7 +51,8 @@ textPostPlain = {
     "source":"a",
     "origin":"a",
     "categories":"b",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 # Comment Mock Data 
@@ -90,7 +91,7 @@ class CommentEndpointTestCase(APITestCase):
         cls.client = APIClient()
 
         # Create 2 new users if they don't already exist
-        registerUrl = "/service/register/"
+        registerUrl = "/register/"
         cls.client.post(registerUrl, user1, format='json')
         cls.client.post(registerUrl, user2, format='json')
         
@@ -104,8 +105,8 @@ class CommentEndpointTestCase(APITestCase):
         textPostPlain["author"] = user1Id
 
         # Update authors
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
-        updateUrl2 = '/service/authors/' + author2["id"] + '/'
+        updateUrl1 = '/authors/' + author1["id"] + '/'
+        updateUrl2 = '/authors/' + author2["id"] + '/'
         
         cls.client.post(updateUrl1, author1, format='json')
         cls.client.post(updateUrl2, author2, format='json')
@@ -114,13 +115,13 @@ class CommentEndpointTestCase(APITestCase):
         """
             Test that a user is able to make comments for a post once it is created
         """
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/service/authors/' + jwt_id + '/posts/'
+        postsUrl = '/authors/' + jwt_id + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
@@ -129,7 +130,7 @@ class CommentEndpointTestCase(APITestCase):
 
         commentPost1["post_id"] = data["items"][0]['id']
         # Create a new comment using the created post id
-        commentUrl = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
+        commentUrl = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
         response = self.client.post(commentUrl, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -137,13 +138,13 @@ class CommentEndpointTestCase(APITestCase):
         """
             Test that a user is able to make and get multiple comments from one post
         """
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/service/authors/' + jwt_id + '/posts/'
+        postsUrl = '/authors/' + jwt_id + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
@@ -153,7 +154,7 @@ class CommentEndpointTestCase(APITestCase):
         commentPost1["post_id"] = data["items"][0]['id']
         commentPost2["post_id"] = data["items"][0]['id']
         # Create two comment objects
-        commentUrl = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
+        commentUrl = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
         response = self.client.post(commentUrl, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(commentUrl, commentPost2, format='json')
@@ -169,13 +170,13 @@ class CommentEndpointTestCase(APITestCase):
         """
             Test that a user is able to view a single comment from a post
         """
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/service/authors/' + jwt_id + '/posts/'
+        postsUrl = '/authors/' + jwt_id + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
@@ -184,7 +185,7 @@ class CommentEndpointTestCase(APITestCase):
         data = response.json()
         commentPost1["post_id"] = data["items"][0]['id']
         commentPost2["post_id"] = data["items"][0]['id']
-        commentUrl = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
+        commentUrl = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
         # Create two comment objects
         response = self.client.post(commentUrl, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -192,7 +193,7 @@ class CommentEndpointTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the second comment's data and verify it
-        singleCommentUrl = '/service/authors/' + jwt_id + '/posts/' + commentPost2["post_id"] +'/comments/' + commentPost2["id"] + '/'
+        singleCommentUrl = '/authors/' + jwt_id + '/posts/' + commentPost2["post_id"] +'/comments/' + commentPost2["id"] + '/'
         response = self.client.get(singleCommentUrl, commentPost2, format='json')
         responseJson = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -204,14 +205,14 @@ class CommentEndpointTestCase(APITestCase):
         """
             Test that a user is only able to edit their comments and not others
         """
-        loginUrl = "/service/login/"
-        logoutUrl = "/service/logout/"
+        loginUrl = "/login/"
+        logoutUrl = "/logout/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/service/authors/' + jwt_id + '/posts/'
+        postsUrl = '/authors/' + jwt_id + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
@@ -219,13 +220,13 @@ class CommentEndpointTestCase(APITestCase):
         
         data = response.json()
         commentPost1["post_id"] = data["items"][0]['id']
-        commentUrl = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
+        commentUrl = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
         # Create a new comment object
         response = self.client.post(commentUrl, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Update the first comment and verify it
-        singleCommentUrl = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/' + commentPost1["id"] + '/'
+        singleCommentUrl = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/' + commentPost1["id"] + '/'
         response = self.client.get(singleCommentUrl, commentPost1, format='json')
         responseJson = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -254,14 +255,14 @@ class CommentEndpointTestCase(APITestCase):
         """
             Test that a user is only able to delete their comments and not others
         """
-        loginUrl = "/service/login/"
-        logoutUrl = "/service/logout/"
+        loginUrl = "/login/"
+        logoutUrl = "/logout/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/service/authors/' + jwt_id + '/posts/'
+        postsUrl = '/authors/' + jwt_id + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
@@ -270,8 +271,8 @@ class CommentEndpointTestCase(APITestCase):
         data = response.json()
         commentPost1["post_id"] = data["items"][0]['id']
         commentPost2["post_id"] = data["items"][0]['id']
-        comment1Url = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
-        comment2Url = '/service/authors/' + jwt_id + '/posts/' + commentPost2["post_id"] +'/comments/'
+        comment1Url = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/'
+        comment2Url = '/authors/' + jwt_id + '/posts/' + commentPost2["post_id"] +'/comments/'
         # Create a two new comment object
         response = self.client.post(comment1Url, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -279,8 +280,8 @@ class CommentEndpointTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Delete the first comment and verify it
-        singleComment1Url = '/service/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/' + commentPost1["id"] + '/'
-        singleComment2Url = '/service/authors/' + jwt_id + '/posts/' + commentPost2["post_id"] +'/comments/' + commentPost2["id"] + '/'
+        singleComment1Url = '/authors/' + jwt_id + '/posts/' + commentPost1["post_id"] +'/comments/' + commentPost1["id"] + '/'
+        singleComment2Url = '/authors/' + jwt_id + '/posts/' + commentPost2["post_id"] +'/comments/' + commentPost2["id"] + '/'
         response = self.client.delete(singleComment1Url, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
