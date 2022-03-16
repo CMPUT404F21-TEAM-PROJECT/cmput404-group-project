@@ -20,7 +20,7 @@ class PublicPosts extends React.Component {
   getAllPosts = async () => {
     try {
         // Get all the author details
-        const response = await requests.get(`service/authors/${this.state.currentUser.id}/posts/`, {headers: {
+        const response = await requests.get(`authors/${this.state.currentUser.id}/posts/`, {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
         }});
@@ -28,7 +28,7 @@ class PublicPosts extends React.Component {
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
           if (item.type === 'post') {
-            const like_response = await requests.get(`service/authors/${item.author.id}/posts/${item.id}/likes/`);
+            const like_response = await requests.get(`authors/${item.author.id}/posts/${item.id}/likes/`);
             item.likes = like_response.data.items;
             item.likedByCurrent = false;
             // check if current viewer liked the post
@@ -51,7 +51,7 @@ class PublicPosts extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get('service/get-user/', {headers: {
+          const response = await requests.get('get-user/', {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
           }});

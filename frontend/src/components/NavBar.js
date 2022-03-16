@@ -38,7 +38,7 @@ const NavBar = () => {
         history.push("/");
         history.go(0);
     }
-    // const response = requests.get('service/get-user/', {headers: {
+    // const response = requests.get('get-user/', {headers: {
     //   accept: 'application/json',
     // }}).then(data => {
     //   if (data.status != 200) {
@@ -65,9 +65,9 @@ const NavBar = () => {
   };
 
   const logout = async () => {
-    // send POST request to /service/logout
+    // send POST request to /logout
     try {
-      const response = await requests.post('service/logout/', {headers: {
+      const response = await requests.post('logout/', {headers: {
         accept: 'application/json',
       }});
     } 

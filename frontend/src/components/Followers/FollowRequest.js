@@ -22,7 +22,7 @@ export default function FollowRequest(props) {
         // send PUT request to author_id/followers/follower_id
         console.log('clicked accept');
         try {
-          const response = await requests.put(`service/authors/${props.currentUserId}/followers/${props.id}/`,
+          const response = await requests.put(`authors/${props.currentUserId}/followers/${props.id}/`,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
@@ -39,7 +39,7 @@ export default function FollowRequest(props) {
         // send DELETE request to author_id/followers/follower_id
         console.log('clicked reject')
         try {
-          const response = await requests.delete(`service/authors/${props.currentUserId}/followers/${props.id}/`,
+          const response = await requests.delete(`authors/${props.currentUserId}/followers/${props.id}/`,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',

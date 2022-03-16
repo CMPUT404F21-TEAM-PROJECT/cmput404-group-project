@@ -39,7 +39,7 @@ class NewPost extends Component {
   };
 
   getAuthorId = async () => {
-    const response = await requests.get("service/get-user/", {
+    const response = await requests.get("get-user/", {
       headers: {
         Authorization: this.state.jwt,
         accept: "application/json",
@@ -53,7 +53,7 @@ class NewPost extends Component {
   handleSubmit = async () => {
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
-      const url = "service/authors/" + this.state.author_id + "/posts/";
+      const url = "authors/" + this.state.author_id + "/posts/";
       const response = await requests.post(url, {
         headers: {
           accept: "application/json",
@@ -81,7 +81,7 @@ class NewPost extends Component {
 
   sendToSelf = async (my_post) => {
     await requests.post(
-      `service/authors/${this.state.author_id}/inbox/`,
+      `authors/${this.state.author_id}/inbox/`,
       my_post,
       {headers: {
         Authorization: localStorage.getItem('access_token'),
@@ -93,7 +93,7 @@ class NewPost extends Component {
   sendToFollowers = async (my_post) => {
     // Get Followers
     const response = await requests.get(
-      `service/authors/${my_post.author.id}/followers/`
+      `authors/${my_post.author.id}/followers/`
     );
     const followerList = response.data.items;
 
@@ -101,7 +101,7 @@ class NewPost extends Component {
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
       await requests.post(
-        `service/authors/${follower.id}/inbox/`,
+        `authors/${follower.id}/inbox/`,
         my_post,
         {headers: {
           Authorization: localStorage.getItem('access_token'),

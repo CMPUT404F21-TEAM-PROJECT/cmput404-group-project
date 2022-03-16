@@ -44,7 +44,7 @@ class Register extends Component {
     handleRegister = async () => {
         if(this.validateRegister()) {
             try {
-                const response = await requests.post(`service/register/`, {
+                const response = await requests.post(`register/`, {
                     username: this.state.username,
                     password: this.state.password
                 });
