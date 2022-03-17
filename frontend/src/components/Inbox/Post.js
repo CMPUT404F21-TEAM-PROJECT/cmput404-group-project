@@ -42,7 +42,7 @@ export default function Post(props) {
           }
           // prevents sending a like twice when liking your own post
           if (props.currentUser.id != props.post.author.id){
-            const response = await requests.post(`service/authors/${props.post.author.id}/inbox/`,
+            const response = await requests.post(`authors/${props.post.author.id}/inbox/`,
               data,
               {headers: {
                 Authorization: localStorage.getItem('access_token'),
@@ -70,7 +70,7 @@ export default function Post(props) {
           sendToFollowers(props.post);
         // if post is private, make a copy then send to followers
         } else {
-          const url = "service/authors/" + props.currentUser.id + "/posts/";
+          const url = "authors/" + props.currentUser.id + "/posts/";
           const response = await requests.post(url, {
           headers: {
             accept: "application/json",
@@ -100,7 +100,7 @@ export default function Post(props) {
     const sendToFollowers = async (my_post) => {
       // Get Followers
       const response = await requests.get(
-        `service/authors/${props.currentUser.id}/followers/`
+        `authors/${props.currentUser.id}/followers/`
       );
       const followerList = response.data.items;
   
@@ -108,7 +108,7 @@ export default function Post(props) {
       for (let index = 0; index < followerList.length; ++index) {
         const follower = followerList[index];
         await requests.post(
-          `service/authors/${follower.id}/inbox/`,
+          `authors/${follower.id}/inbox/`,
           my_post,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
@@ -121,7 +121,7 @@ export default function Post(props) {
     // send a like or comment notification to your own inbox
     const sendToSelf = async (my_item) => {
       const response_self = await requests.post(
-        `service/authors/${props.currentUser.id}/inbox/`,
+        `authors/${props.currentUser.id}/inbox/`,
         my_item,
         {headers: {
           Authorization: localStorage.getItem('access_token'),

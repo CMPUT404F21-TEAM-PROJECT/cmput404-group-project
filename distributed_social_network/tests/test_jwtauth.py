@@ -34,7 +34,8 @@ textPostPlain = {
     "source":"textSource1",
     "origin":"textOrigin1",
     "categories":"textCategories1",
-    "unlisted":False
+    "unlisted":False,
+    "viewableBy":'',
 }
 
 class UserTestCase(TestCase):
@@ -56,7 +57,7 @@ class UserEndpointTestCase(APITestCase):
         cls.client = APIClient()
 
         # Create 2 new users if they don't already exist
-        registerUrl = "/service/register/"
+        registerUrl = "/register/"
         cls.client.post(registerUrl, user1, format='json')
         
         # Save their ids
@@ -66,7 +67,7 @@ class UserEndpointTestCase(APITestCase):
         textPostPlain["author"] = user1Id
 
         # Update authors
-        updateUrl1 = '/service/authors/' + author1["id"] + '/'
+        updateUrl1 = '/authors/' + author1["id"] + '/'
         cls.client.post(updateUrl1, author1, format='json')
     
     def test_login_endpoint(self):
@@ -74,7 +75,7 @@ class UserEndpointTestCase(APITestCase):
             Test that a valid user is able to login and receive a jwt access token
             Also tests that an invalid login will result in either a 401 or 404 if user is found but wrong credentials or not found respectively
         """
-        loginUrl = "/service/login/"
+        loginUrl = "/login/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
@@ -91,14 +92,14 @@ class UserEndpointTestCase(APITestCase):
         """
             Test that a user is able to login and make a new post, check that they cannot make another one when logging out
         """
-        loginUrl = "/service/login/"
-        logoutUrl = "/service/logout/"
+        loginUrl = "/login/"
+        logoutUrl = "/logout/"
         # Authenticate Current User
         valid_response = self.client.post(loginUrl, user1, format='json')
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/service/authors/' + jwt_id + '/posts/'
+        postsUrl = '/authors/' + jwt_id + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Log user out
