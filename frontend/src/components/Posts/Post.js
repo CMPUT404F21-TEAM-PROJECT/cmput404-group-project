@@ -204,7 +204,7 @@ export default function Post(props) {
                   Share
               </Button>
             </span>
-            <div id="edit-section">
+            <div id="edit-section" hidden={props.post.author.id === props.currentUser.id ? false : true}> 
               <Link to={{
                   pathname: "/edit_post",
                   state: props.post
@@ -212,7 +212,6 @@ export default function Post(props) {
                 style={{textDecoration: "none"}}
               >
                 <Button
-                  hidden={props.post.author.id === props.currentUser.id ? false : true}
                   variant="contained"
                   startIcon={<EditIcon/>}
                 >
@@ -220,9 +219,8 @@ export default function Post(props) {
                 </Button>
               </Link>
             </div>
-            <div id="delete-section">
+            <div id="delete-section" hidden={props.post.author.id === props.currentUser.id ? false : true}>
               <Button
-                hidden={props.post.author.id === props.currentUser.id ? false : true}
                 variant="contained"
                 startIcon={<DeleteIcon/>}
                 onClick={deletePost}
