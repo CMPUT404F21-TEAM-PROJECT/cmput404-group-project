@@ -37,6 +37,11 @@ def route_multiple_posts(request, author_id):
     elif request.method == 'GET':
         return get_multiple_posts(request, author_id)
 
+# Routes the request for public posts
+@api_view(['GET'])
+def route_public_posts(request):
+    return get_public_posts(request)
+
 # Routes the request for a single image post
 @api_view(['GET'])
 def route_single_image_post(request, author_id, post_id):
@@ -231,6 +236,30 @@ def get_post(request, id):
     serializer = PostSerializer(post)
     responseDict = serializer.data
     responseDict['author'] = AuthorSerializer(Author.objects.get(id=responseDict['author'])).data
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
+
+# Get all public posts that are viewable by the currently authenticated author
+def get_public_posts(request):
+    # Get all public posts that are not unlisted
+    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
+
+    # Initialize paginator
+    paginator = PageNumberPagination()
+    paginator.page_query_param = 'page'
+    paginator.page_size_query_param = 'size'
+
+    posts = paginator.paginate_queryset(list(chain(publicPosts)), request)
+
+    # Create the JSON response dictionary
+    serializer = PostSerializer(posts, many=True)
+    items = serializer.data
+    for post in items:
+        post['author'] = AuthorSerializer(Author.objects.get(id=post['author'])).data
+    responseDict = {'type' : 'posts', 'items' : items}
 
     # Return the response
     response = JsonResponse(responseDict)
