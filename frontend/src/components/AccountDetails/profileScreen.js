@@ -20,7 +20,7 @@ class ProfileScreen extends React.Component {
 
     getAuthorDetails = async () => {
         // Get the author details
-        const response = await requests.get('service/get-user/', {headers: {
+        const response = await requests.get('get-user/', {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
           }});
@@ -51,7 +51,7 @@ class ProfileScreen extends React.Component {
         if (document.getElementById('profileImage-input').value){
             updatesDict["profileImage"] = document.getElementById('profileImage-input').value;
         }
-        const response = await requests.post('service/authors/' + this.state.author.id + '/', updatesDict, {WithCredentials: true})
+        const response = await requests.post('authors/' + this.state.author.id + '/', updatesDict, {WithCredentials: true})
 
         // Keep values that were not updated
         const allKeys = Object.keys(this.state.author);

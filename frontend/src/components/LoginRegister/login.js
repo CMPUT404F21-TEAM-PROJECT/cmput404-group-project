@@ -36,7 +36,7 @@ class Login extends Component {
     handleLogin = async () => {
         if (this.validateLogin()) {
             try {
-                const response = await requests.post(`service/login/`, {
+                const response = await requests.post(`login/`, {
                     username: this.state.username,
                     password: this.state.password
                 }, {WithCredentials: true});

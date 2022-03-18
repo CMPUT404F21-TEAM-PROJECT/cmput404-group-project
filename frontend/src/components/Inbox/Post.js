@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from "react";
 import requests from "../../requests";
+import CommentDialogButton from "../Posts/CommentDialog";
 import './Post.css'
 
 import { Alert,
@@ -45,7 +46,7 @@ export default function Post(props) {
           }
           // prevents sending a like twice when liking your own post
           if (props.currentUser.id != props.post.author.id){
-            const response = await requests.post(`service/authors/${props.post.author.id}/inbox/`,
+            const response = await requests.post(`authors/${props.post.author.id}/inbox/`,
               data,
               {headers: {
                 Authorization: localStorage.getItem('access_token'),
@@ -64,40 +65,6 @@ export default function Post(props) {
         }   
     }
 
-    const comment = async () => {
-        // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
-        try {
-            const response = await requests.post(`service/authors/${props.post.author.id}/posts/${props.post.id}/comments/`,
-              {
-              post_id: props.post.id,
-              comment: commentText,
-              contentType: "text/markdown",
-              author: props.currentUser.id,
-              type: "comment"
-              },
-              {headers: {
-                  Authorization: localStorage.getItem('access_token'),
-                  accept: 'application/json',
-                }
-              },
-              {withCredentials: true});
-            sendToSelf(response.data);
-            // send to recipients inbox
-            const response_recipient = await requests.post(`service/authors/${props.post.author.id}/inbox/`,
-            response.data,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-            }
-            },
-          {withCredentials: true})
-          setMessage({message: "Sent comment.", severity: "success"});
-        } catch(e) {
-          setMessage({message: "Failed to send comment.", severity: "error"});
-          console.log(e)
-        }   
-    }
-
     const share = async () => {
       try {
         // if post is public, send to followers
@@ -107,7 +74,7 @@ export default function Post(props) {
           sendToFollowers(props.post);
         // if post is private, make a copy then send to followers
         } else {
-          const url = "service/authors/" + props.currentUser.id + "/posts/";
+          const url = "authors/" + props.currentUser.id + "/posts/";
           const response = await requests.post(url, {
           headers: {
             accept: "application/json",
@@ -137,7 +104,7 @@ export default function Post(props) {
     const sendToFollowers = async (my_post) => {
       // Get Followers
       const response = await requests.get(
-        `service/authors/${props.currentUser.id}/followers/`
+        `authors/${props.currentUser.id}/followers/`
       );
       const followerList = response.data.items;
   
@@ -145,7 +112,7 @@ export default function Post(props) {
       for (let index = 0; index < followerList.length; ++index) {
         const follower = followerList[index];
         await requests.post(
-          `service/authors/${follower.id}/inbox/`,
+          `authors/${follower.id}/inbox/`,
           my_post,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
@@ -158,7 +125,7 @@ export default function Post(props) {
     // send a like or comment notification to your own inbox
     const sendToSelf = async (my_item) => {
       const response_self = await requests.post(
-        `service/authors/${props.currentUser.id}/inbox/`,
+        `authors/${props.currentUser.id}/inbox/`,
         my_item,
         {headers: {
           Authorization: localStorage.getItem('access_token'),
@@ -224,13 +191,10 @@ export default function Post(props) {
               </Button>)}
             
             <span id="comment-section">
-                <TextField id="commentBox" label="Comment" variant="filled" defaultValue="" onChange={e => {setCommentText(e.target.value)}}/>
-                <Button
-                id="comment-button" 
-                startIcon={<Send />}
-                onClick={comment}>
-                    Comment
-                </Button>
+                <CommentDialogButton
+                current_author = {props.currentUser.id}
+                post_id = {props.post.id}
+                author_id = {props.post.author}/>
             </span>
             <span id="share-section">
               <Button

@@ -1,4 +1,3 @@
-#from asyncio.windows_events import NULL
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer, AuthorSerializer

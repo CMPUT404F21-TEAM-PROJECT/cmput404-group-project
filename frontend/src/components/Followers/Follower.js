@@ -18,7 +18,7 @@ export default function Follower(props) {
     const removeFollower = async () => {
         // send DELETE request to author_id/followers/follower_id
         try {
-          const response = await requests.delete(`service/authors/${props.currentUserId}/followers/${props.id}/`,
+          const response = await requests.delete(`authors/${props.currentUserId}/followers/${props.id}/`,
           {headers: {
                 Authorization: localStorage.getItem('access_token'),
                 accept: 'application/json',
