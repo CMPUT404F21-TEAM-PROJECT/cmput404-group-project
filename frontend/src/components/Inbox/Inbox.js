@@ -4,7 +4,7 @@ import { Alert, Button, List, Grid, Box, TextField, Stack, ListItemText } from "
 import FollowRequest from "../Followers/FollowRequest";
 import LikeNotification from "./LikeNotification";
 import CommentNotification from "./CommentNotification";
-import Post from "./Post";
+import Post from "../Posts/Post";
 import DeleteIcon from '@mui/icons-material/Delete';
 
   

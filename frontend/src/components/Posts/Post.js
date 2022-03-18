@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 import requests from "../../requests";
-import CommentDialogButton from "../Posts/CommentDialog";
+import CommentDialogButton from "./CommentDialog";
 import './Post.css'
 
 import { Alert,

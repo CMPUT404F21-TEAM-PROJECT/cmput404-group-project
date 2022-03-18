@@ -1,7 +1,7 @@
 import React from "react";
 import requests from "../../requests";
 import { Grid } from "@mui/material";
-import Post from "../Inbox/Post";
+import Post from "./Post";
 
   
 class PublicPosts extends React.Component {
