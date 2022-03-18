@@ -260,7 +260,7 @@ def get_multiple_posts(request, author_id):
         foreign = True
 
     # Get the current user id
-    if not foreign:
+    if not foreign and payload != None:
         try:
             token = request.COOKIES.get('jwt')
             # Request was not authenticated without a token
