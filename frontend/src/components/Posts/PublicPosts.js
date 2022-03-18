@@ -17,12 +17,12 @@ class PublicPosts extends React.Component {
       this.initializeDetails();
   }
 
-  getAllPosts = async () => {
+  getAllPublicPosts = async () => {
     try {
-        // Get all the author details
-        const response = await requests.get(`authors/${this.state.currentUser.id}/posts/`, {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
+        // Get all the public post details
+        const response = await requests.get(`public-posts/`, {headers: {
+          Authorization: localStorage.getItem('access_token'),
+          accept: 'application/json',
         }});
         
         // get list of likes for each post
@@ -64,14 +64,14 @@ class PublicPosts extends React.Component {
               profileImage: response.data.profileImage ? response.data.profileImage : ''
           }});
 
-        this.getAllPosts();
+        this.getAllPublicPosts();
 
       } catch(error) {
           console.log(error)
       }
   }
 
-  renderInboxItems() {
+  renderPostList() {
     return this.state.allPosts.map((item) => {
         if (item.type === 'post') {
           return (
@@ -98,7 +98,7 @@ class PublicPosts extends React.Component {
             direction="column">
             </Grid>
           <Grid container spacing={2} justifyContent="center" alignItem="center">
-            {this.state.allPosts.length ? this.renderInboxItems() : <h2>Inbox is empty</h2>}
+            {this.state.allPosts.length ? this.renderPostList() : <h2>No Public Posts Available</h2>}
           </Grid>
           </div>
       )
