@@ -38,6 +38,7 @@ class PostManager(models.Manager):
         localHost = env("LOCAL_HOST")
         for post in queryset:
             if not (localHost in post.id):
+                print("POSTID", post.id)
                 response = requests.get(post.id)
                 if response.status_code == 200 or response.status_code == 201 or response.status_code == 204 or response.status_code == 304:
                     newData = response.json()

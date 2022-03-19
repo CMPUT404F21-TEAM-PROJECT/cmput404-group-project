@@ -16,11 +16,11 @@ environ.Env.read_env()
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
 def route_single_post(request, author_id, post_id):
     if request.method == 'GET':
-        return get_post(request, post_id)
+        return get_post(request, author_id, post_id)
     elif request.method == 'POST':
-        return update_post(request, post_id)
+        return update_post(request, author_id, post_id)
     elif request.method == 'DELETE':
-        return delete_post(request, post_id)
+        return delete_post(request, author_id, post_id)
     elif request.method == 'PUT':
         return create_post_with_id(request, post_id)
 
@@ -28,7 +28,7 @@ def route_single_post(request, author_id, post_id):
 @api_view(['POST', 'GET'])
 def route_multiple_posts(request, author_id):
     if request.method == 'POST':
-        return create_post(request)
+        return create_post(request, author_id)
     elif request.method == 'GET':
         return get_multiple_posts(request, author_id)
 
@@ -41,23 +41,26 @@ def route_public_posts(request):
 @api_view(['GET'])
 def route_single_image_post(request, author_id, post_id):
     if request.method == 'GET':
-        return get_post_image(request, post_id)
+        return get_post_image(request, author_id, post_id)
 
 # Adds a new post to the database.
 # Generates a new id for the post
-def create_post(request):   
+def create_post(request, author_id):   
     # Generate a new id
-    post_id = request.data["author"] + "/" + str(uuid.uuid4())
+    post_id = request.data["author"] + "posts/" + str(uuid.uuid4())
     # If id already exists make a new one
-    while get_post(request, post_id).status_code == 200:
-        post_id = request.data["author"] + "/" + str(uuid.uuid4())
+    while get_post(request, author_id, post_id).status_code == 200:
+        post_id = request.data["author"] + "posts/" + str(uuid.uuid4())
     return create_post_with_id(request, post_id)
 
 # Adds a new post to the database.
 # Expects JSON request body with post attributes.
 def create_post_with_id(request, id):
     # Use the given id
-    request.data["id"] = id
+    if env("LOCAL_HOST") in id:
+        request.data["id"] = id
+    else:
+        request.data["id"] = request.data["author"] + "posts/" + id
     if not request.data['viewableBy']:
         request.data['viewableBy'] = ''
     response = HttpResponse()
@@ -98,11 +101,11 @@ def create_post_with_id(request, id):
     return response
 
 # Deletes the post with id 'id' from the database.
-def delete_post(request, id):
+def delete_post(request, authorId, id):
     response = HttpResponse()
 
     # Find the post with the given id
-    post = find_post(id)
+    post = find_post(id, authorId)
     if post == None:
         response.status_code = 404
         return response
@@ -131,14 +134,14 @@ def delete_post(request, id):
     return response
 
 # Updates the post with id 'id' in the database.
-def update_post(request, id):
+def update_post(request, authorId, id):
     response = HttpResponse()
 
     # Use the given id
     request.data["id"] = id
 
     # Find the post with the given id
-    post = find_post(id)
+    post = find_post(id, authorId)
     if post == None:
         response.status_code = 404
         return response
@@ -174,11 +177,11 @@ def update_post(request, id):
     return response
 
 # Get the post with id 'id' in the database
-def get_post(request, id):
+def get_post(request, authorId, id):
     response = HttpResponse()
 
     # Find the post with the given id
-    post = find_post(id)
+    post = find_post(id, authorId)
     if post == None:
         response.status_code = 404
         return response
@@ -278,6 +281,7 @@ def get_public_posts(request):
 
 # Get all posts written by author_id given as an argument, that are viewable by the currently authenticated author
 def get_multiple_posts(request, author_id):
+    author_id = env("LOCAL_HOST") + "/authors/" + author_id + "/"
     # Get all public posts that are not unlisted
     publicPosts = Post.objects.filter(author__exact=author_id).filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
 
@@ -301,14 +305,14 @@ def get_multiple_posts(request, author_id):
                 if not token:
                     permissionForAny = False
                 else:
-                    viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+                    viewerId = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
 
                     # Get all friends only posts that are not unlisted
                     friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
                     privatePosts = Post.objects.filter(~Q(viewableBy__exact='')).filter(unlisted__exact=False)
                     permissionForAny = True
             else:
-                viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+                viewerId = jwt.decode(token, key='secret', algorithms=['HS256'])["id"]
 
                 # Get all friends only posts that are not unlisted
                 friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
@@ -361,11 +365,11 @@ def get_multiple_posts(request, author_id):
     return response
 
 # Get the image post with id 'id' in the database and return a binary response
-def get_post_image(request, id):
+def get_post_image(request, authorId, id):
     response = HttpResponse()
 
     # Find the post with the given id
-    post = find_post(id)
+    post = find_post(id, authorId)
     if post == None:
         response.status_code = 404
         return response
@@ -436,9 +440,9 @@ def get_post_image(request, id):
     return response
 
 # Returns the post object if found, otherwise returns None
-def find_post(id):
+def find_post(id, authorId):
     # Find the post with the given id
     try:
-        return Post.objects.get(id=id)
+        return Post.objects.get(id=env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id)
     except ObjectDoesNotExist:
         return None

@@ -122,20 +122,6 @@ commentLike2 = {
     "object": ""
 }
 
-
-class LikeTestCase(TestCase):
-    def setUp(self):
-        self.id = uuid.uuid4()
-        self.user = User.objects.create(id=self.id)
-        self.author = Author.objects.create(id=self.user)
-        Like.objects.create(summary="test_like_summary", author=self.author, object="test_like_object") 
-
-    def test_like_default_values(self):
-        like = Like.objects.get(Q(author=self.author) & Q(object="test_like_object"))
-        self.assertEqual(like.summary, "test_like_summary")
-        self.assertEqual(like.author, self.author)
-        self.assertEqual(like.object, "test_like_object")
-
 class LikeEndpointTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):

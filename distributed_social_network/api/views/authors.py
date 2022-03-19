@@ -70,13 +70,9 @@ def update_author(request, id):
     if author == None:
         response.status_code = 404
         return response
-    
-    # Don't allow the primary key (id) to be changed
-    if request.data.get("id") != id:
-        response.status_code = 400
-        return response
 
     # Collect the request data
+    request.data["id"] = env("LOCAL_HOST") + "/authors/" + id + "/"
     serializer = AuthorSerializer(partial = True, instance = author, data=request.data)
 
     # If given data is valid, save the updated object to the database

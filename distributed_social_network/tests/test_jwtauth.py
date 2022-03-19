@@ -1,9 +1,12 @@
-import uuid, jwt
+import uuid, jwt, environ
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from api.models import Author, User, Post
 from datetime import datetime
+
+env = environ.Env()
+environ.Env.read_env()
 
 # User Mock Data
 
@@ -37,19 +40,6 @@ textPostPlain = {
     "unlisted":False,
     "viewableBy":'',
 }
-
-class UserTestCase(TestCase):
-
-    def setUp(self):
-        self.id = uuid.uuid4()
-        self.post_id = uuid.uuid4()
-        self.user = User.objects.create(id=self.id)
-        self.author = Author.objects.create(id=self.user)
-        self.post = Post.objects.create(id=self.post_id, author=self.author, published=datetime.now())
-
-    def test_user_default_values(self):
-        user = User.objects.get(id=self.id)
-        self.assertEqual(user.id, self.user.id)
 
 class UserEndpointTestCase(APITestCase):
     @classmethod
@@ -99,7 +89,7 @@ class UserEndpointTestCase(APITestCase):
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = '/authors/' + jwt_id + '/posts/'
+        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + 'posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Log user out
