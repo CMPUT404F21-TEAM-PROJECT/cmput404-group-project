@@ -136,6 +136,7 @@ class InboxEndpointTestCase(APITestCase):
         response = self.client.put(postUrl, post2, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # make a comment for use in a test
         commentUrl = commentPost1["post_id"].replace(env("LOCAL_HOST"), "") + '/comments/'
         response = self.client.post(commentUrl, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
