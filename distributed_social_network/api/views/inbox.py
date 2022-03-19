@@ -128,7 +128,7 @@ def add_follow(request, author_id, inbox):
         if not actor:
             response.status_code = 400
             return response
-        data['actor'] = actorId
+        data['actor'] = actor.id
 
     serializer = FollowRequestSerializer(data = data)
 
@@ -170,23 +170,39 @@ def add_post(request, author_id, inbox):
 def add_like(request, author_id, inbox):
     response = HttpResponse()
 
-    # check if author_id is following senderId, if not return unauthorized
+    data = request.data.copy()
     senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
+
+    # remote sender
+    if senderId == 'foreign':
+        senderId = data.get('author', senderId)
+        # didn't include author field in request
+        if senderId == 'foreign': 
+            response.status_code = 400
+            return response
+        
+        sender = find_or_create_author(senderId)
+        # unable to create local copy of remote actor
+        if not sender:
+            response.status_code = 400
+            return response
+        
+        # check if authord_id is following senderId
+        author = find_author(author_id)
+        follower_response = requests.get('{sender.url}/followers/{author.url}')
+        if code != 200: # TODO: verify expected response with other teams
+            response.status_code = 400
+            return response
+        data['author'] = sender.id
+
+    # not a remote sender, check if author_id is following senderId
+    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
         response.status_code = 401
         return response
-    
-    # TODO: handle remote actors
-    # create the like
-    data = request.data.copy()
-    data['author'] = data.get('author', senderId)
 
     serializer = LikeSerializer(data = data)
 
-    if find_author(author_id) is None: 
-        # If author is not found, return 404
-        response.status_code = 404  
-    elif serializer.is_valid():
+    if serializer.is_valid():
         # If given data is valid, save the object to the database
         like = serializer.save()
         response.status_code = 201
