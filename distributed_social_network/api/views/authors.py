@@ -168,4 +168,3 @@ def find_or_create_author(id):
             author = None
     
     return author
-    

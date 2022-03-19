@@ -1,21 +1,38 @@
+import base64
 from telnetlib import AUTHENTICATION
 from importlib_metadata import re
 import jwt, datetime, environ, uuid
 from rest_framework.decorators import api_view
 from django.http import HttpResponse, JsonResponse
-from ..models import User, Author, Inbox
+from ..models import User, Author, Inbox, Node
 from ..serializers import AuthorSerializer, UserSerializer
 
 env = environ.Env()
 environ.Env.read_env()
 
 # Return the payload from the token of an authenticated request or None if not authenticated
-def get_payload(request):
+def get_payload(request, check_foreign):
+    # Foreign authentication
+    if check_foreign:
+        nodes = Node.objects.all()
+        try:
+            userpass = request.headers.get('Authorization')
+            if userpass != None:
+                startIndex = userpass.index("Basic") + 6
+                userpass = userpass[startIndex:].strip()
+                userpass = base64.b64decode(userpass).decode('utf-8')
+                (username, password) = userpass.split(':')
+                for node in nodes:
+                    if node.username == username and node.password == password:
+                        return {"id":"foreign"}
+        except ValueError:
+            print("HTTP Basic Auth not used")
+
     token = request.COOKIES.get('jwt')
     # Request was not authenticated without a token
     if not token:
-        token = request.headers['Authorization']
-        if not token:
+        token = request.headers.get('Authorization')
+        if not token or "Basic" in token:
             return None
     
     # Check whether the access token has expired

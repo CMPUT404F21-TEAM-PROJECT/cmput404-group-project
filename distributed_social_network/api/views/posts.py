@@ -4,6 +4,7 @@ from ..serializers import PostSerializer, AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 import base64, jwt, uuid, environ
+from .auth import get_payload
 from ..models import FollowRequest, Post, Author
 from django.db.models import Q
 from itertools import chain
@@ -30,6 +31,11 @@ def route_multiple_posts(request, author_id):
         return create_post(request)
     elif request.method == 'GET':
         return get_multiple_posts(request, author_id)
+
+# Routes the request for public posts
+@api_view(['GET'])
+def route_public_posts(request):
+    return get_public_posts(request)
 
 # Routes the request for a single image post
 @api_view(['GET'])
@@ -178,8 +184,19 @@ def get_post(request, id):
         return response
     authorId = post.author_id
 
+    # Check if the current user is from foreign node
+    foreign = False
+    payload = get_payload(request, True)
+    if payload != None and payload.get("id") == "foreign":
+        foreign = True
+
     # Check if the post is friends only
     if post.visibility == "FRIENDS":
+        # Deny access to foreign node users
+        if foreign:
+            response.status_code = 401
+            return response
+
         # Check if the current user is a friend of the author
         try:
             token = request.COOKIES.get('jwt')
@@ -200,6 +217,11 @@ def get_post(request, id):
 
     # Check if post is viewable by single author only
     if post.viewableBy != '':
+        # Deny access to foreign node users
+        if foreign:
+            response.status_code = 401
+            return response
+
         try:
             token = request.COOKIES.get('jwt')
             # Request was not authenticated without a token
@@ -230,6 +252,30 @@ def get_post(request, id):
     response.status_code = 200
     return response
 
+# Get all public posts that are viewable by the currently authenticated author
+def get_public_posts(request):
+    # Get all public posts that are not unlisted
+    publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
+
+    # Initialize paginator
+    paginator = PageNumberPagination()
+    paginator.page_query_param = 'page'
+    paginator.page_size_query_param = 'size'
+
+    posts = paginator.paginate_queryset(list(chain(publicPosts)), request)
+
+    # Create the JSON response dictionary
+    serializer = PostSerializer(posts, many=True)
+    items = serializer.data
+    for post in items:
+        post['author'] = AuthorSerializer(Author.objects.get(id=post['author'])).data
+    responseDict = {'type' : 'posts', 'items' : items}
+
+    # Return the response
+    response = JsonResponse(responseDict)
+    response.status_code = 200
+    return response
+
 # Get all posts written by author_id given as an argument, that are viewable by the currently authenticated author
 def get_multiple_posts(request, author_id):
     # Get all public posts that are not unlisted
@@ -238,14 +284,29 @@ def get_multiple_posts(request, author_id):
     friendsPosts = []
     privatePosts = []
 
+    # Check if the current user is from foreign node
+    permissionForAny = False
+    foreign = False
+    payload = get_payload(request, True)
+    if payload != None and payload.get("id") == "foreign":
+        foreign = True
+
     # Get the current user id
-    try:
-        token = request.COOKIES.get('jwt')
-        # Request was not authenticated without a token
-        if not token:
-            token = request.headers['Authorization']
+    if not foreign and payload != None:
+        try:
+            token = request.COOKIES.get('jwt')
+            # Request was not authenticated without a token
             if not token:
-                permissionForAny = False
+                token = request.headers['Authorization']
+                if not token:
+                    permissionForAny = False
+                else:
+                    viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+
+                    # Get all friends only posts that are not unlisted
+                    friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
+                    privatePosts = Post.objects.filter(~Q(viewableBy__exact='')).filter(unlisted__exact=False)
+                    permissionForAny = True
             else:
                 viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
 
@@ -253,35 +314,28 @@ def get_multiple_posts(request, author_id):
                 friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
                 privatePosts = Post.objects.filter(~Q(viewableBy__exact='')).filter(unlisted__exact=False)
                 permissionForAny = True
-        else:
-            viewerId = uuid.UUID(jwt.decode(token, key='secret', algorithms=['HS256'])["id"])
+        except KeyError:
+            permissionForAny = False
 
-            # Get all friends only posts that are not unlisted
-            friendsPosts = Post.objects.filter(visibility__exact="FRIENDS").filter(unlisted__exact=False)
-            privatePosts = Post.objects.filter(~Q(viewableBy__exact='')).filter(unlisted__exact=False)
-            permissionForAny = True
-    except KeyError:
-        permissionForAny = False
-
-    if permissionForAny:
-        # Loop over friends posts
-        allowedFriendsPosts = []
-        for post in friendsPosts:
-            # Check if the current user is a friend of the author
-            followRequests = FollowRequest.objects.filter(Q(actor__exact=post.author_id) | Q(object__exact=post.author_id)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
-            if len(followRequests) > 0:
-                allowedFriendsPosts.append(post)
-        
-        # Loop over private posts
-        allowedPrivatePosts = []
-        for post in privatePosts:
-            # Check if the current user is the viewableBy user
-            try:
-                viewableBy = uuid.UUID(post.viewableBy)
-            except:
-                viewableBy = None
-            if viewableBy == viewerId or post.author_id == viewerId:
-                allowedPrivatePosts.append(post)
+        if permissionForAny:
+            # Loop over friends posts
+            allowedFriendsPosts = []
+            for post in friendsPosts:
+                # Check if the current user is a friend of the author
+                followRequests = FollowRequest.objects.filter(Q(actor__exact=post.author_id) | Q(object__exact=post.author_id)).filter(accepted__exact=True).filter(Q(actor__exact=viewerId) | Q(object__exact=viewerId))
+                if len(followRequests) > 0:
+                    allowedFriendsPosts.append(post)
+            
+            # Loop over private posts
+            allowedPrivatePosts = []
+            for post in privatePosts:
+                # Check if the current user is the viewableBy user
+                try:
+                    viewableBy = uuid.UUID(post.viewableBy)
+                except:
+                    viewableBy = None
+                if viewableBy == viewerId or post.author_id == viewerId:
+                    allowedPrivatePosts.append(post)
 
     # Initialize paginator
     paginator = PageNumberPagination()
@@ -289,7 +343,7 @@ def get_multiple_posts(request, author_id):
     paginator.page_size_query_param = 'size'
 
     # Get posts, paginated
-    if permissionForAny:
+    if permissionForAny and not foreign:
         posts = paginator.paginate_queryset(list(chain(publicPosts, allowedFriendsPosts, allowedPrivatePosts)), request)
     else:
         posts = paginator.paginate_queryset(list(chain(publicPosts)), request)
@@ -317,8 +371,19 @@ def get_post_image(request, id):
         return response
     authorId = post.author_id
 
+    # Check if the current user is from foreign node
+    foreign = False
+    payload = get_payload(request, True)
+    if payload != None and payload.get("id") == "foreign":
+        foreign = True
+
     # Check if the post is friends only
     if post.visibility == "FRIENDS":
+        # Deny access to foreign node users
+        if foreign:
+            response.status_code = 401
+            return response
+
         # Check if the current user is a friend of the author
         try:
             token = request.COOKIES.get('jwt')
@@ -339,6 +404,11 @@ def get_post_image(request, id):
 
     # Check if post is viewable by single author only
     if post.viewableBy != '':
+        # Deny access to foreign node users
+        if foreign:
+            response.status_code = 401
+            return response
+
         try:
             token = request.COOKIES.get('jwt')
             # Request was not authenticated without a token

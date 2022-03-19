@@ -108,7 +108,7 @@ export function AddCommentListItem(props) {
               {withCredentials: true});
             sendToSelf(response.data);
             // send to recipients inbox
-            const response_recipient = await requests.post(`authors/${props.post_author}/inbox/`,
+            const response_recipient = await requests.post(`authors/${props.post_author.id}/inbox/`,
             response.data,
             {headers: {
               Authorization: localStorage.getItem('access_token'),
