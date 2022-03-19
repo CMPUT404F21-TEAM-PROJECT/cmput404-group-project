@@ -44,7 +44,7 @@ def get_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response
@@ -90,7 +90,7 @@ def delete_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response
@@ -108,7 +108,7 @@ def add_follow(request, author_id, inbox):
     response = HttpResponse()
 
     # get person who sent the follow request
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, True).get("id") # TODO: deal with the case where get_payload returns {"id":"foreign"}
     
     # TODO: handle remote actors
     # create the follow request
@@ -134,7 +134,7 @@ def add_post(request, author_id, inbox):
     response = HttpResponse()
 
     # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
+    senderId = get_payload(request, True).get("id") # TODO: deal with the case where get_payload returns {"id":"foreign"}
     if get_follower(senderId, author_id).status_code != 200 and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
@@ -156,7 +156,7 @@ def add_like(request, author_id, inbox):
     response = HttpResponse()
 
     # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
+    senderId = get_payload(request, True).get("id") # TODO: deal with the case where get_payload returns {"id":"foreign"}
     if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response
@@ -188,7 +188,7 @@ def add_comment(request, author_id, inbox):
     response = HttpResponse()
 
     # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
+    senderId = get_payload(request, True).get("id") # TODO: deal with the case where get_payload returns {"id":"foreign"}
     if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
         response.status_code = 401
         return response

@@ -32,7 +32,7 @@ def add_follower(request, author_id, follower_id):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response
@@ -58,7 +58,7 @@ def remove_follower(request, author_id, follower_id):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId or follower_id == viewerId):
         response.status_code = 401
         return response
