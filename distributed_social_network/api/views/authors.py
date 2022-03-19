@@ -4,8 +4,10 @@ from ..serializers import AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from ..models import Author
-import requests
+import requests, environ
 
+env = environ.Env()
+environ.Env.read_env()
 
 # Routes the request for a single author
 @api_view(['DELETE', 'POST', 'GET'])
@@ -130,7 +132,7 @@ def get_multiple_authors(request):
 def find_author(id):
     # Find the author with the given id
     try:
-        return Author.objects.get(id=id)
+        return Author.objects.get(id=env("LOCAL_HOST") + "/authors/" + id + "/")
     except ObjectDoesNotExist:
         return None
 
@@ -145,7 +147,7 @@ def get_uuid_from_id(id):
 # Returns None if unable to create author
 # This will be used to create local copies of remote authors
 def find_or_create_author(id):
-    uuid = get_uuid_from_id(actorId)
+    uuid = get_uuid_from_id(id)
     author = find_author(uuid)
     if not author:
         # request to get author details from remote server

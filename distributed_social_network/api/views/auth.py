@@ -1,10 +1,13 @@
 from telnetlib import AUTHENTICATION
 from importlib_metadata import re
-import jwt, datetime
+import jwt, datetime, environ, uuid
 from rest_framework.decorators import api_view
 from django.http import HttpResponse, JsonResponse
 from ..models import User, Author, Inbox
 from ..serializers import AuthorSerializer, UserSerializer
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Return the payload from the token of an authenticated request or None if not authenticated
 def get_payload(request):
@@ -37,6 +40,7 @@ def get_user_id(request):
 @api_view(['POST'])
 def create_new_user(request):
     response = HttpResponse()
+    request.data['id'] = env("LOCAL_HOST") + "/authors/" + str(uuid.uuid4()) + "/"
     serializer = UserSerializer(data = request.data)
     if serializer.is_valid():
         serializer.save()

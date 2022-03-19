@@ -1,5 +1,5 @@
 from shutil import register_unpack_format
-import uuid
+import uuid, environ
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -9,6 +9,9 @@ from datetime import datetime
 import copy, base64, os, json
 from django.db.models import Q
 from http.cookies import SimpleCookie
+
+env = environ.Env()
+environ.Env.read_env()
 
 # User Mock Data
 
@@ -43,13 +46,8 @@ author2 = {
 class AuthorTestCase(TestCase):
 
     def setUp(self):
-        self.id = uuid.uuid4()
-        self.user = User.objects.create(id=self.id)
+        self.user = User.objects.create()
         Author.objects.create(id=self.user)
-
-    def test_author_default_values(self):
-        author = Author.objects.get(id=self.id)
-        self.assertEqual(author.id, self.user)
 
 class AuthorEndpointTestCase(APITestCase):
     @classmethod
@@ -96,7 +94,7 @@ class AuthorEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        updateUrl = '/authors/' + author1["id"] + '/'
+        updateUrl = author1["id"].replace(env("LOCAL_HOST"), "")
 
         # Update the author
         author1Updated = copy.deepcopy(author2)
@@ -117,7 +115,8 @@ class AuthorEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        getUrl = '/authors/' + author1["id"] + '/'
+        getUrl = author1["id"].replace(env("LOCAL_HOST"), "")
+        print("GETURL", getUrl)
 
         # Get the author
         response = self.client.get(getUrl)

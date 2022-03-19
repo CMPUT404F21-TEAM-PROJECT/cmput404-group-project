@@ -3,10 +3,13 @@ from django.http import JsonResponse, HttpResponse
 from ..serializers import PostSerializer, AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
-import base64, jwt, uuid
+import base64, jwt, uuid, environ
 from ..models import FollowRequest, Post, Author
 from django.db.models import Q
 from itertools import chain
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Routes the request for a single post
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -38,10 +41,10 @@ def route_single_image_post(request, author_id, post_id):
 # Generates a new id for the post
 def create_post(request):   
     # Generate a new id
-    post_id = uuid.uuid4()
+    post_id = request.data["author"] + "/" + str(uuid.uuid4())
     # If id already exists make a new one
     while get_post(request, post_id).status_code == 200:
-        post_id = uuid.uuid4()
+        post_id = request.data["author"] + "/" + str(uuid.uuid4())
     return create_post_with_id(request, post_id)
 
 # Adds a new post to the database.
