@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
 from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer, CommentSerializer
-from ..views import get_follower, find_post, find_author, find_comment, find_or_create_author, get_uuid_from_id
+from ..views import get_follower, find_post, find_author, find_comment
 from .auth import get_payload
 
 from rest_framework.decorators import api_view
@@ -108,7 +108,7 @@ def add_follow(request, author_id, inbox):
     response = HttpResponse()
 
     # get person who sent the follow request
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, True).get("id")
     
     # create the follow request
     data = request.data.copy()
@@ -147,16 +147,40 @@ def add_follow(request, author_id, inbox):
 # Get the post and add it to author_id's inbox
 def add_post(request, author_id, inbox):
     response = HttpResponse()
+    senderId = get_payload(request, True).get("id")
+    data = request.data.copy()
 
-    # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200 and author_id != senderId: # TODO: need to deal with remote senders 
+    # remote sender
+    if senderId == 'foreign':
+        senderId = data.get('author', senderId)
+        # didn't include author field in request
+        if senderId == 'foreign':
+            response.status_code = 400
+            return response
+        
+        sender = find_or_create_author(senderId)
+        # unable to create local copy of remote sender
+        if not sender:
+            response.status_code = 400
+            return response
+        
+        # check if authord_id is following senderId
+        author = find_author(author_id)
+        follower_response = requests.get('{sender.url}/followers/{author.url}')
+        if follower_response.code != 200: # TODO: verify expected response with other teams
+            response.status_code = 400
+            return response
+        data['author'] = sender.id
+
+    # not a remote sender, check if author_id is following senderId
+    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
         response.status_code = 401
         return response
-
-    # find the post
-    # TODO: need to handle remote posts
-    post = find_post(request.data["id"])
+    else:
+        data['author'] = senderId # local sender
+    
+    # find the comment
+    post = find_or_create_post(data["id"], data['author'])
     if post == None:
         response.status_code = 400
         return response
@@ -170,7 +194,7 @@ def add_post(request, author_id, inbox):
 def add_like(request, author_id, inbox):
     response = HttpResponse()
     data = request.data.copy()
-    senderId = get_payload(request).get("id")
+    senderId = get_payload(request, True).get("id")
     data['author'] = data.get('author', senderId)
 
     # remote sender
@@ -216,13 +240,14 @@ def add_like(request, author_id, inbox):
 # Create a comment and add it to author_id's inbox
 def add_comment(request, author_id, inbox):
     response = HttpResponse()
-    senderId = get_payload(request).get("id")
+    senderId = get_payload(request, True).get("id")
+    data = request.data.copy()
 
     # remote sender
     if senderId == 'foreign':
         senderId = data.get('author', senderId)
         # didn't include author field in request
-        if senderId == 'foreign': 
+        if senderId == 'foreign':
             response.status_code = 400
             return response
         
@@ -238,14 +263,18 @@ def add_comment(request, author_id, inbox):
         if follower_response.code != 200: # TODO: verify expected response with other teams
             response.status_code = 400
             return response
+        data['author'] = sender.id
+        
 
     # not a remote sender, check if author_id is following senderId
     elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
         response.status_code = 401
         return response
-    
+    else:
+        data['author'] = senderId # local sender
+
     # find the comment
-    comment = find_or_create_comment(request.data["id"])
+    comment = find_or_create_comment(data["id"], data['author'])
     if comment == None:
         response.status_code = 400
         return response
@@ -255,10 +284,43 @@ def add_comment(request, author_id, inbox):
     response.status_code = 200
     return response
 
+# Returns a string of the UUID given a resource id
+def get_uuid_from_id(id):
+    # assumes all uuids are at the end of the id such as: http://host/authors/uuid
+    parts = id.split('/')
+    uuid = parts[-1] if parts[-1] else parts[-2]
+    return uuid
+
+# Returns the author object if found, otherwise creates the author
+# Returns None if unable to create author
+# This will be used to create local copies of remote authors
+def find_or_create_author(id):
+    uuid = get_uuid_from_id(id)
+    author = find_author(uuid)
+    if not author:
+        # request to get author details from remote server
+        response = requests.get(id)
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json()
+        response_data['id'] = uuid
+        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
+        #       otherwise do not create the author and return None
+        serializer = AuthorSerializer(data = response_data)
+
+        # If given data is valid, save the object to the database
+        if serializer.is_valid():
+            return serializer.save()
+        else:
+            return None
+    else:
+        return author
+
 # Returns the comment object if found, otherwise creates the comment
 # Returns None if unable to create comment
 # This will be used to create local copies of remote comments
-def find_or_create_comment(id):
+def find_or_create_comment(id, author_id):
     uuid = get_uuid_from_id(id)
     comment = find_comment(uuid)
     if not comment:
@@ -275,7 +337,38 @@ def find_or_create_comment(id):
         # Assumes that response_data['post'] is an id from our server in
         # the format http://ourhost/authors/author_uuid/posts/post_uuid
         response_data['post'] = get_uuid_from_id(response_data['post'])
+        # replace remote author with local copy
+        response_data['author'] = author_id
         serializer = CommentSerializer(data = response_data)
+
+        # If given data is valid, save the object to the database
+        if serializer.is_valid():
+            return serializer.save()
+        else:
+            return None
+    else:
+        return comment
+
+# Returns the post object if found, otherwise creates the post
+# Returns None if unable to create post
+# This will be used to create local copies of remote posts
+def find_or_create_post(id, author_id):
+    uuid = get_uuid_from_id(id)
+    post = find_post(uuid)
+    if not post:
+        # request to get post details from remote server
+        response = requests.get(id)
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json()
+        response_data['id'] = uuid
+        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
+        #       otherwise do not create the author and return None
+
+        # replace remote author with local copy
+        response_data['author'] = author_id
+        serializer = PostSerializer(data = response_data)
 
         # If given data is valid, save the object to the database
         if serializer.is_valid():
