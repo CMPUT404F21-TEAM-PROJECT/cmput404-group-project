@@ -145,7 +145,7 @@ def get_uuid_from_id(id):
 # Returns None if unable to create author
 # This will be used to create local copies of remote authors
 def find_or_create_author(id):
-    uuid = get_uuid_from_id(actorId)
+    uuid = get_uuid_from_id(id)
     author = find_author(uuid)
     if not author:
         # request to get author details from remote server
@@ -163,7 +163,7 @@ def find_or_create_author(id):
         if serializer.is_valid():
             return serializer.save()
         else:
-            author = None
-    
-    return author
+            return None
+    else:
+        return author
     
