@@ -62,7 +62,7 @@ def add_comment(request, author_id, post_id):
     response = HttpResponse()
     
     # Check authorization
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
@@ -114,7 +114,7 @@ def get_comment(request, comment_id):
 def update_comment(request, comment_id):
     response = HttpResponse()
      # Check authorization
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
@@ -160,7 +160,7 @@ def update_comment(request, comment_id):
 def delete_comment(request, comment_id):
     response = HttpResponse()
     # Check authorization
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"

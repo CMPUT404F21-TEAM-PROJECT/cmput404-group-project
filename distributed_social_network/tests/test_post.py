@@ -76,6 +76,21 @@ textPostMarkdown = {
     "viewableBy":'',
 }
 
+textPostPlainFriends = {
+    "id": "61111111-1111-1111-1111-111111111111",
+    "title":"textPostTitle2",
+    "contentType":"text/plain",
+    "content":"textPostContent2",
+    "description":"textDescription2",
+    "visibility":"FRIENDS",
+    "published":"2022-01-10T09:26:03.478039-07:00",
+    "source":"textSource2",
+    "origin":"textOrigin2",
+    "categories":"textCategories2",
+    "unlisted":False,
+    "viewableBy":'',
+}
+
 os.chdir(os.path.dirname(__file__))
 imagePostPng = {
     "id": "11111111-1111-1111-1111-111111111111",
@@ -154,6 +169,7 @@ class PostEndpointTestCase(APITestCase):
         user2["id"] = user2Id
         textPostPlain["author"] = user1Id
         textPostMarkdown["author"] = user1Id
+        textPostPlainFriends["author"] = user1Id
         imagePostBase64["author"] = user1Id
         imagePostPng["author"] = user1Id
         imagePostJpeg["author"] = user1Id
@@ -297,3 +313,47 @@ class PostEndpointTestCase(APITestCase):
         # Check if the image matches the posted image
         self.assertEqual(response.content, open(os.getcwd() + "/testing_media/test.png", 'rb').read())
 
+    def test_get_public_posts(self):
+        # This test posts 2 public posts of different types to the multiple posts url
+        # It then posts 1 friends only post
+        # It then gets all public posts using the public posts url
+        # It then verifies that the id of the post has changed and the content has not
+        
+        # Log in as user1
+        loginUrl = "/login/"
+        self.client.post(loginUrl, user1, format='json')
+
+        postsUrl = '/authors/' + author1["id"] + '/posts/'
+        publicPostsUrl = '/public-posts/'
+
+        # Add 2 text posts
+        response = self.client.post(postsUrl, textPostPlain, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(postsUrl, textPostMarkdown, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(postsUrl, textPostPlainFriends, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get public posts
+        response = self.client.get(publicPostsUrl)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure 2 posts returned
+        responseJson = response.json()
+        self.assertEqual(len(responseJson['items']), 2)
+
+        # Since Pagenation can return random order, determine which is which
+        if responseJson['items'][0]['content'] == textPostPlain['content']:
+            plainPost = responseJson['items'][0]
+            markdownPost = responseJson['items'][1]
+        else:
+            plainPost = responseJson['items'][1]
+            markdownPost = responseJson['items'][0]
+        
+        # Assert the id has changed but the content has not
+        self.assertNotEqual(plainPost['id'], textPostPlain['id'])
+        self.assertEqual(plainPost['content'], textPostPlain['content'])
+        self.assertEqual(plainPost['visibility'], "PUBLIC")
+        self.assertNotEqual(markdownPost['id'], textPostMarkdown['id'])
+        self.assertEqual(markdownPost['content'], textPostMarkdown['content'])
+        self.assertEqual(markdownPost['visibility'], "PUBLIC")

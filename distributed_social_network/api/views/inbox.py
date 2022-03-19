@@ -44,7 +44,7 @@ def get_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response
@@ -90,7 +90,7 @@ def delete_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response

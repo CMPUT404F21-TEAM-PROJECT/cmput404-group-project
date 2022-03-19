@@ -71,6 +71,10 @@ class Inbox(models.Model):
     follow_requests = models.ManyToManyField(FollowRequest)
     comments = models.ManyToManyField(Comment)
 
+class Node(models.Model):
+    username = models.CharField(max_length=200)
+    password = models.CharField(max_length=200)
+
 # class AuthorManager(models.Manager):
 #     def get_queryset(self):
 #         queryset = super().get_queryset() 
