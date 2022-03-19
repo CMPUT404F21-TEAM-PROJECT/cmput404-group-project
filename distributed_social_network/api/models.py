@@ -14,8 +14,8 @@ class Author(models.Model):
     displayName = models.CharField(max_length=30)
     github = models.CharField(max_length=100, null=True, blank=True)
     profileImage = models.CharField(max_length=200, null=True, blank=True) # this will likely be a url or file path
-    #friends = models.CharField(max_length=200) # not sure about this attribute yet
 
+    # objects = AuthorManager()
 
 class Like(models.Model):
     summary = models.CharField(max_length=200) #Description of like
@@ -70,3 +70,13 @@ class Inbox(models.Model):
     likes = models.ManyToManyField(Like)
     follow_requests = models.ManyToManyField(FollowRequest)
     comments = models.ManyToManyField(Comment)
+
+# class AuthorManager(models.Manager):
+#     def get_queryset(self):
+#         queryset = super().get_queryset() 
+#         # TODO: Iterate through the queryset and for any author with a foreign 'host' field (doesn't match our host name):
+#         # 1. do a get request to get the author's latest details from the remote host
+#         # 2. update the author in our database if those details are different from what we have
+#         #    or if we recieve a 404 response, delete the author from our database 
+#         # save all changes to the database then return an updated queryset
+#         return super().get_queryset()
