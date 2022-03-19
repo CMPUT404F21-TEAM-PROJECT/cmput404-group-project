@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author
 from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer, CommentSerializer
-from ..views import get_follower, find_post, find_author, find_comment
+from ..views import get_follower, find_post, find_author, find_comment, find_or_create_author
 from .auth import get_payload
 
 from rest_framework.decorators import api_view
@@ -110,11 +110,26 @@ def add_follow(request, author_id, inbox):
     # get person who sent the follow request
     viewerId = get_payload(request).get("id")
     
-    # TODO: handle remote actors
     # create the follow request
     data = request.data.copy()
     data['actor'] = data.get('actor', viewerId)
     data['object'] = data.get('object', author_id)
+
+    # remote actor
+    if viewerId == 'foreign':
+        actorId = data['actor']
+        # remote actor didn't include actor field in request
+        if actorId == 'foreign':
+            response.status_code = 400
+            return response
+        
+        actor = find_or_create_author(actorId)
+        # unable to create local copy of remote actor
+        if not actor:
+            response.status_code = 400
+            return response
+        data['actor'] = actorId
+
     serializer = FollowRequestSerializer(data = data)
 
     # If given data is valid, save the follow request to the database

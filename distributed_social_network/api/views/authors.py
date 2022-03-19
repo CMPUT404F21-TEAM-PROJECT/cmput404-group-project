@@ -4,6 +4,7 @@ from ..serializers import AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from ..models import Author
+import requests
 
 
 # Routes the request for a single author
@@ -132,3 +133,37 @@ def find_author(id):
         return Author.objects.get(id=id)
     except ObjectDoesNotExist:
         return None
+
+# Returns a string of the UUID given an author's id
+def get_uuid_from_id(id):
+    # assumes all ids follow this format: http://host/authors/uuid
+    parts = id.split('/')
+    uuid = parts[-1] if parts[-1] else parts[-2]
+    return uuid
+
+# Returns the author object if found, otherwise creates the author
+# Returns None if unable to create author
+# This will be used to create local copies of remote authors
+def find_or_create_author(id):
+    uuid = get_uuid_from_id(actorId)
+    author = find_author(uuid)
+    if not author:
+        # request to get author details from remote server
+        response = requests.get(id)
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json()
+        response_data['id'] = uuid
+        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
+        #       otherwise do not create the author and return None
+        serializer = AuthorSerializer(data = response_data)
+
+        # If given data is valid, save the object to the database
+        if serializer.is_valid():
+            return serializer.save()
+        else:
+            author = None
+    
+    return author
+    
