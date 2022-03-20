@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+# from .settings_base import *
+import os
 import environ
 
 env = environ.Env()
@@ -29,7 +31,8 @@ SECRET_KEY = 'django-insecure-@s#e=vn8ng-#+zz$h@gbw8njfzzt9*2ce8_bx78o(^dk8x(tzr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
+CSRF_TRUSTED_ORIGINS = ["{}{}".format("https://", env("HOST_SERVER"))]
 
 AUTH_USER_MODEL = 'api.User'
 
@@ -38,8 +41,7 @@ AUTH_USER_MODEL = 'api.User'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-    'DEFAULT_AUTHENTICATION_CLASSES': []
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
 
 INSTALLED_APPS = [
@@ -62,7 +64,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
