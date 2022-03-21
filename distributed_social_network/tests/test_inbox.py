@@ -228,7 +228,6 @@ class InboxEndpointTestCase(APITestCase):
         inbox = Inbox.objects.get(author=self.actor)
         self.assertEqual(1, len(inbox.comments.all()))
 
-    # TODO: Figure out AuthorSerializer() errors
     def test_add_local_like(self):
         """Test POST request for sending a like for a local post/comment to an inbox."""
         # make actor follow author (so author can send stuff to actor's inbox)
