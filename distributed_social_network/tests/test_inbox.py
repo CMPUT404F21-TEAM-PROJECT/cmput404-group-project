@@ -113,15 +113,20 @@ class InboxEndpointTestCase(APITestCase):
         self.actor = Author.objects.get(id=author2["id"])
 
         # Update post authors
-        post1["author"] = self.actor
-        post2["author"] = self.actor
-        commentPost1["author"] = self.author
+        post1["author"] = self.actor.id
+        post2["author"] = self.actor.id
+        commentPost1["author"] = self.author.id
+
+        # Log in as actor
+        loginUrl = "/login/"
+        self.client.post(loginUrl, user2, format='json')
 
         # get inbox and populate with a post
         self.inbox = Inbox.objects.get(author=self.author.id)
-        postUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "posts/" + post1['id'] + "/"
+        postUrl = author2["id"].replace(env("LOCAL_HOST"), "") + "posts/" + post1['id'] + "/"
         response = self.client.put(postUrl, post1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # post1["id"] = response.json()["id"]
         commentPost1["post_id"] = response.json()["id"]
         self.inbox.posts.add(Post.objects.get(id=response.json()["id"]))
 
@@ -132,14 +137,16 @@ class InboxEndpointTestCase(APITestCase):
                                      accepted=True)
         
         # make another post that will be added to the inbox in a test
-        postUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "posts/" + post2['id'] + "/"
+        postUrl = author2["id"].replace(env("LOCAL_HOST"), "") + "posts/" + post2['id'] + "/"
         response = self.client.put(postUrl, post2, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # make a comment for use in a test
+        self.client.post(loginUrl, user1, format='json')
         commentUrl = commentPost1["post_id"].replace(env("LOCAL_HOST"), "") + '/comments/'
         response = self.client.post(commentUrl, commentPost1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        commentPost1["id"] = response.json()["id"]
 
 
     def test_get_inbox(self):
@@ -147,12 +154,12 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
         
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         responseJson = response.json()
-        self.assertEqual(str(self.author.id.id), responseJson['author'])
+        self.assertEqual(self.author.id, responseJson['author'])
         self.assertEqual(len(responseJson['items']), 1)
 
     def test_get_paginated_inbox(self):
@@ -166,7 +173,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -183,10 +190,11 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user2, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
 
         local_post = post2.copy()
         local_post['type'] = 'post'
+        local_post['id'] = author2["id"] + "posts/" + post2['id']
 
         response = self.client.post(url, local_post, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -199,7 +207,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user2, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
 
         response = self.client.post(url, follow_request, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -217,7 +225,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = author2["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
+        url = author2["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
 
         local_comment = commentPost1.copy()
         local_comment['type'] = 'comment'
@@ -239,7 +247,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
         # postLike1['object'] = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, author2, post1['id'])
         postLike1['object'] = post1['id']
         response = self.client.post(url, postLike1, format="json") 

@@ -131,7 +131,6 @@ def get_followers(author_id):
 
 # Get a list of people who author author_id is following
 def get_following(author_id):
-    print("id from get-following", author_id)
     response = HttpResponse()
 
     # find accepted friend requests

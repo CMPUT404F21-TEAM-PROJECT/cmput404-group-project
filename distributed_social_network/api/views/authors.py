@@ -126,41 +126,11 @@ def get_multiple_authors(request):
 
 # Returns the author object if found, otherwise returns None
 def find_author(id):
+    # if id is only a uuid and not full url assume it is from local
+    if id[:7] != "http://":
+        id = env("LOCAL_HOST") + "/authors/" + id + "/"
     # Find the author with the given id
     try:
-        return Author.objects.get(id=env("LOCAL_HOST") + "/authors/" + id + "/")
+        return Author.objects.get(id=id)
     except ObjectDoesNotExist:
         return None
-
-# Returns a string of the UUID given an author's id
-def get_uuid_from_id(id):
-    # assumes all ids follow this format: http://host/authors/uuid
-    parts = id.split('/')
-    uuid = parts[-1] if parts[-1] else parts[-2]
-    return uuid
-
-# Returns the author object if found, otherwise creates the author
-# Returns None if unable to create author
-# This will be used to create local copies of remote authors
-def find_or_create_author(id):
-    uuid = get_uuid_from_id(id)
-    author = find_author(uuid)
-    if not author:
-        # request to get author details from remote server
-        response = requests.get(id)
-        if response.status_code != 200:
-            return None
-
-        response_data = response.json()
-        response_data['id'] = uuid
-        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
-        #       otherwise do not create the author and return None
-        serializer = AuthorSerializer(data = response_data)
-
-        # If given data is valid, save the object to the database
-        if serializer.is_valid():
-            return serializer.save()
-        else:
-            author = None
-    
-    return author
