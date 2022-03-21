@@ -14,7 +14,7 @@ services:
   server:
     build:
       context: ../distributed_social_network
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     restart: always
     environment:
       DB_NAME: social_network
