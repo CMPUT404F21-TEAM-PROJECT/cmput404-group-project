@@ -137,16 +137,18 @@ export default function Post(props) {
 
 
     const deletePost = async () => {
-      // Send DELETE request to service/authors/{AUTHOR_ID}/posts/{POST_ID}
-      let authorID = props.post.author.id;
-      let postID = props.post.id;
-      let url = `service/authors/${authorID}/posts/${postID}`;
-      let headers = {headers: {
-        Authorization: localStorage.getItem('access_token'),
-        accept: 'application/json',
-      }};
-      const response = await requests.delete(url, headers, {withCredentials: true});
-    
+      if (window.confirm("Do you really want to delete this post?")) {
+        // Send DELETE request to authors/{AUTHOR_ID}/posts/{POST_ID}
+        let authorID = props.post.author.id;
+        let postID = props.post.id;
+        let url = `authors/${authorID}/posts/${postID}/`;
+        let headers = {headers: {
+          Authorization: localStorage.getItem('access_token'),
+          accept: 'application/json',
+        }};
+        const response = await requests.delete(url, headers, {withCredentials: true});
+        window.location.reload();
+      }
     }
 
     useEffect(() => {
