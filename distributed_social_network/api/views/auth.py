@@ -41,7 +41,7 @@ def get_payload(request, check_foreign):
 
 # Authenticates a request and returns the user id to be used within the apis
 def get_user_id(request):
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         return None
     
@@ -126,7 +126,7 @@ def login_user(request):
 def log_user_out(request):
     response = HttpResponse()
     try:
-        viewerId =get_payload(request).get("id")
+        viewerId =get_payload(request, False).get("id")
         if viewerId:
             response.delete_cookie('jwt')
             response.content = "User successfully logged out"
