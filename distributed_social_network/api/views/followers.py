@@ -4,10 +4,23 @@ from django.http import JsonResponse, HttpResponse
 from ..models import FollowRequest, Author
 from ..serializers import AuthorSerializer, FollowRequestSerializer
 from .auth import get_payload
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Routes the request for a single follower
+# author_id: will always be a local uuid
+# follower_id: could be local uuid or full id (http://host/authors/xx)
 @api_view(['DELETE', 'PUT', 'GET'])
 def route_single_follower(request, author_id, follower_id):
+    author_id = env("LOCAL_HOST") + "/authors/" + author_id + "/"
+    # if follower_id is a local uuid, transform to full id
+    if follower_id[:7] != "http://":
+        follower_id = env("LOCAL_HOST") + "/authors/" + follower_id
+    # add trailing slash to id
+    follower_id += '/'
+
     if request.method == 'DELETE':
         return remove_follower(request, author_id, follower_id)
     elif request.method == 'PUT':
@@ -18,12 +31,14 @@ def route_single_follower(request, author_id, follower_id):
 # Routes the request for list of followers
 @api_view(['GET'])
 def route_multiple_followers(request, author_id):
+    author_id = env("LOCAL_HOST") + "/authors/" + author_id + "/"
     if request.method == 'GET':
         return get_followers(author_id)
 
 # Routes the request for list of following
 @api_view(['GET'])
 def route_multiple_following(request, author_id):
+    author_id = env("LOCAL_HOST") + "/authors/" + author_id + "/"
     if request.method == 'GET':
         return get_following(author_id)
 

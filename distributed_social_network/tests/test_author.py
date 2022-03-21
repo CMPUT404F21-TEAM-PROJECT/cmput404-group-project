@@ -1,5 +1,5 @@
 from shutil import register_unpack_format
-import uuid
+import uuid, environ
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -9,6 +9,9 @@ from datetime import datetime
 import copy, base64, os, json
 from django.db.models import Q
 from http.cookies import SimpleCookie
+
+env = environ.Env()
+environ.Env.read_env()
 
 # User Mock Data
 
@@ -40,17 +43,6 @@ author2 = {
     "profileImage":"testingProfileImage2"
 }
 
-class AuthorTestCase(TestCase):
-
-    def setUp(self):
-        self.id = uuid.uuid4()
-        self.user = User.objects.create(id=self.id)
-        Author.objects.create(id=self.user)
-
-    def test_author_default_values(self):
-        author = Author.objects.get(id=self.id)
-        self.assertEqual(author.id, self.user)
-
 class AuthorEndpointTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
@@ -68,13 +60,6 @@ class AuthorEndpointTestCase(APITestCase):
         author2["id"] = user2Id
         user1["id"] = user1Id
         user2["id"] = user2Id
-
-        # Update authors
-        updateUrl1 = '/authors/' + author1["id"] + '/'
-        updateUrl2 = '/authors/' + author2["id"] + '/'
-        
-        cls.client.post(updateUrl1, author1, format='json')
-        cls.client.post(updateUrl2, author2, format='json')
 
     def test_get_multiple_authors(self):
         # Log in as user1
@@ -96,11 +81,10 @@ class AuthorEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        updateUrl = '/authors/' + author1["id"] + '/'
+        updateUrl = author1["id"].replace(env("LOCAL_HOST"), "")
 
         # Update the author
         author1Updated = copy.deepcopy(author2)
-        author1Updated["id"] = author1["id"]
         response = self.client.post(updateUrl, author1Updated, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -117,7 +101,7 @@ class AuthorEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        getUrl = '/authors/' + author1["id"] + '/'
+        getUrl = author1["id"].replace(env("LOCAL_HOST"), "")
 
         # Get the author
         response = self.client.get(getUrl)
@@ -126,8 +110,3 @@ class AuthorEndpointTestCase(APITestCase):
         # Check for correct attributes
         responseJson = response.json()
         self.assertEqual(responseJson["id"], author1["id"])
-        self.assertEqual(responseJson["url"], author1["url"])
-        self.assertEqual(responseJson["host"], author1["host"])
-        self.assertEqual(responseJson["displayName"], author1["displayName"])
-        self.assertEqual(responseJson["github"], author1["github"])
-        self.assertEqual(responseJson["profileImage"], author1["profileImage"])
