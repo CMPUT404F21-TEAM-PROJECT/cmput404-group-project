@@ -10,6 +10,7 @@ import "../../styles/login-register.css";
 import requests from "../../requests";
 import ProfileScreen from "../AccountDetails/profileScreen";
 import {useHstory, Redirect, NavLink } from "react-router-dom";
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
   
 class Login extends Component {
     state = {
@@ -36,7 +37,7 @@ class Login extends Component {
     handleLogin = async () => {
         if (this.validateLogin()) {
             try {
-                const response = await requests.post(`login/`, {
+                const response = await requests.post("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/login/", {
                     username: this.state.username,
                     password: this.state.password
                 }, {WithCredentials: true});

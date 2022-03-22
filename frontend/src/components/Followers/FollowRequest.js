@@ -11,6 +11,7 @@ import { Alert,
         } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear'
 import CheckIcon from '@mui/icons-material/Check'
+import getUuidFromAuthorUrl from "../../util"
 
 // assuming props contains all the author attributes of the person who
 // sent the follow request, and the id of the current user
@@ -22,7 +23,9 @@ export default function FollowRequest(props) {
         // send PUT request to author_id/followers/follower_id
         console.log('clicked accept');
         try {
-          const response = await requests.put(`authors/${props.currentUserId}/followers/${props.id}/`,
+          var url = props.currentUserId + "followers/";
+          url = url + getUuidFromAuthorUrl(props.id);
+          const response = await requests.put(url,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
@@ -39,7 +42,9 @@ export default function FollowRequest(props) {
         // send DELETE request to author_id/followers/follower_id
         console.log('clicked reject')
         try {
-          const response = await requests.delete(`authors/${props.currentUserId}/followers/${props.id}/`,
+          var url = props.currentUserId + "followers/";
+          url = url + getUuidFromAuthorUrl(props.id);
+          const response = await requests.delete(url,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
