@@ -6,7 +6,7 @@ import LikeNotification from "./LikeNotification";
 import CommentNotification from "./CommentNotification";
 import Post from "../Posts/Post";
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
   
 class Inbox extends React.Component {
   constructor(props){
@@ -24,7 +24,7 @@ class Inbox extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get('get-user/', {headers: {
+          const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "get-user/", {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
           }});

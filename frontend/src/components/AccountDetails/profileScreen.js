@@ -10,6 +10,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import './profileScreen.css'
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
 
 class ProfileScreen extends React.Component {
     constructor(props){
@@ -20,7 +21,7 @@ class ProfileScreen extends React.Component {
 
     getAuthorDetails = async () => {
         // Get the author details
-        const response = await requests.get('get-user/', {headers: {
+        const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
           }});
@@ -51,7 +52,7 @@ class ProfileScreen extends React.Component {
         if (document.getElementById('profileImage-input').value){
             updatesDict["profileImage"] = document.getElementById('profileImage-input').value;
         }
-        const response = await requests.post('authors/' + this.state.author.id + '/', updatesDict, {WithCredentials: true})
+        const response = await requests.post(this.state.author.id, updatesDict, {WithCredentials: true})
 
         // Keep values that were not updated
         const allKeys = Object.keys(this.state.author);

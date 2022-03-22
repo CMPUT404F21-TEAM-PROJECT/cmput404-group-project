@@ -8,6 +8,7 @@ import {
 import "../../styles/login-register.css";
 import requests from "../../requests";
 import { NavLink } from "react-router-dom";
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
   
 class Register extends Component {
     state = {
@@ -44,7 +45,7 @@ class Register extends Component {
     handleRegister = async () => {
         if(this.validateRegister()) {
             try {
-                const response = await requests.post(`register/`, {
+                const response = await requests.post("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/register/", {
                     username: this.state.username,
                     password: this.state.password
                 });

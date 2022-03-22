@@ -150,8 +150,7 @@ def get_user(request):
         response.status_code = 401
         response.content = "Error: Not Authenticated"
         return response
-    user = User.objects.filter(id=userid).first()
-    author = Author.objects.filter(id=user).first()
+    author = Author.objects.filter(id=userid).first()
     serializer = AuthorSerializer(author)
     response = JsonResponse(serializer.data)
     return response

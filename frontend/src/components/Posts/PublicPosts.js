@@ -2,7 +2,7 @@ import React from "react";
 import requests from "../../requests";
 import { Grid } from "@mui/material";
 import Post from "./Post";
-
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
   
 class PublicPosts extends React.Component {
   constructor(props){
@@ -51,7 +51,7 @@ class PublicPosts extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get('get-user/', {headers: {
+          const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
           }});

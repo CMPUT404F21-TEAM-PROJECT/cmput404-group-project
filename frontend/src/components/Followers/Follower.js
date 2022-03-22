@@ -10,6 +10,7 @@ import { Alert,
         ListItemSecondaryAction,
         } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear'
+import getUuidFromAuthorUrl from "../../util"
 
 // assuming props contains all the author attributes of the follower, and the id of the current user
 export default function Follower(props) {
@@ -18,7 +19,9 @@ export default function Follower(props) {
     const removeFollower = async () => {
         // send DELETE request to author_id/followers/follower_id
         try {
-          const response = await requests.delete(`authors/${props.currentUserId}/followers/${props.id}/`,
+          var url = props.currentUserId + "followers/";
+          url = url + getUuidFromAuthorUrl(props.id);
+          const response = await requests.delete(url,
           {headers: {
                 Authorization: localStorage.getItem('access_token'),
                 accept: 'application/json',

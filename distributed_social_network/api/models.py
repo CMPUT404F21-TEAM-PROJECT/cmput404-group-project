@@ -91,7 +91,7 @@ class Author(models.Model):
     host = models.CharField(max_length=200, null=True, blank=True)
     displayName = models.CharField(max_length=30)
     github = models.CharField(max_length=100, null=True, blank=True)
-    profileImage = models.CharField(max_length=200, null=True, blank=True) # this will likely be a url or file path
+    profileImage = models.CharField(max_length=10000, null=True, blank=True) # this will likely be a url or file path
 
     objects = AuthorManager()
 
