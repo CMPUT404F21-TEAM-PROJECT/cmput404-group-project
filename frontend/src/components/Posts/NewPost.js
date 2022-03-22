@@ -11,6 +11,7 @@ import {
 import requests from "../../requests";
 import { Redirect } from "react-router-dom";
 import FileBase64 from "react-file-base64";
+import {BACKEND_PORT, BACKEND_URL} from "../../constants";
 // TODO: Add form validation
 //import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
@@ -39,7 +40,7 @@ class NewPost extends Component {
   };
 
   getAuthorId = async () => {
-    const response = await requests.get("get-user/", {
+    const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {
       headers: {
         Authorization: this.state.jwt,
         accept: "application/json",
@@ -53,7 +54,7 @@ class NewPost extends Component {
   handleSubmit = async () => {
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
-      const url = "authors/" + this.state.author_id + "/posts/";
+      const url = `${this.state.addFollowerId}posts/`;
       const response = await requests.post(url, {
         headers: {
           accept: "application/json",
@@ -80,8 +81,9 @@ class NewPost extends Component {
   };
 
   sendToSelf = async (my_post) => {
+    const url = `${this.state.author_id}inbox/` 
     await requests.post(
-      `authors/${this.state.author_id}/inbox/`,
+      url,
       my_post,
       {headers: {
         Authorization: localStorage.getItem('access_token'),
@@ -92,16 +94,18 @@ class NewPost extends Component {
 
   sendToFollowers = async (my_post) => {
     // Get Followers
+    const url = `${my_post.author.id}followers/`
     const response = await requests.get(
-      `authors/${my_post.author.id}/followers/`
+      url
     );
     const followerList = response.data.items;
 
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
+      const url = `${follower.id}inbox/`
       await requests.post(
-        `authors/${follower.id}/inbox/`,
+        url,
         my_post,
         {headers: {
           Authorization: localStorage.getItem('access_token'),
