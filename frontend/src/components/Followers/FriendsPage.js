@@ -4,7 +4,7 @@ import { Alert, Button, List, Grid, Box, TextField } from "@mui/material";
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Follower from "./Follower";
 import Following from "./Following";
-
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
 
 class FriendsPage extends React.Component {
     constructor(props){
@@ -25,7 +25,7 @@ class FriendsPage extends React.Component {
     initializeDetails = async () => {
         try {
             // Get the author details
-            const response = await requests.get('get-user/', {headers: {
+            const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {headers: {
                 Authorization: localStorage.getItem('access_token'),
                 accept: 'application/json',
             }});
@@ -38,10 +38,10 @@ class FriendsPage extends React.Component {
                 profileImage: response.data.profileImage ? response.data.profileImage : ''
             }});
 
-            const response_follower = await requests.get(`authors/${this.state.currentUser.id}/followers/`)
+            const response_follower = await requests.get(`${this.state.currentUser.id}followers/`)
             this.setState({followerList: response_follower.data.items})
 
-            const response_following = await requests.get(`authors/${this.state.currentUser.id}/following/`)
+            const response_following = await requests.get(`${this.state.currentUser.id}following/`)
             this.setState({followingList: response_following.data.items})
         } catch(error) {
             console.log(error)
@@ -56,7 +56,7 @@ class FriendsPage extends React.Component {
                 summary: `${this.state.currentUser.id} wants to follow ${this.state.addFollowerId}`,
                 object: `${this.state.addFollowerId}`
             }
-            const response = await requests.post(`authors/${this.state.addFollowerId}/inbox/`,
+            const response = await requests.post(`${this.state.addFollowerId}inbox/`,
                 data,
                 {headers: {
                 Authorization: localStorage.getItem('access_token'),

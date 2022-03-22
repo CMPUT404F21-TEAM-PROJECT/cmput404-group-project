@@ -11,6 +11,7 @@ import {
 import requests from "../../requests";
 import { Redirect } from "react-router-dom";
 import FileBase64 from "react-file-base64";
+import { BACKEND_PORT, BACKEND_URL } from "../../constants";
 // TODO: Add form validation
 //import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
@@ -39,7 +40,7 @@ class NewPost extends Component {
   };
 
   getAuthorId = async () => {
-    const response = await requests.get("get-user/", {
+    const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {
       headers: {
         Authorization: this.state.jwt,
         accept: "application/json",
