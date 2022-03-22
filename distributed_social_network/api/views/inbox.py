@@ -183,7 +183,7 @@ def add_post(request, author_id, inbox):
         return response
     
     # find the post
-    post = find_or_create_post(data["id"])
+    post = find_or_create_post(data["id"], sender.id)
     if post == None:
         response.status_code = 400
         return response
@@ -286,6 +286,9 @@ def add_comment(request, author_id, inbox):
 # Returns None if unable to create author
 # This will be used to create local copies of remote authors
 def find_or_create_author(id):
+    if "http://" not in id:
+        id = "http://tik-tak-toe-cmput404.herokuapp.com/authors/" + id + "/"
+
     author = Author.objects.get(id=id)
     if not author:
         # request to get author details from remote server
@@ -332,8 +335,10 @@ def find_or_create_comment(id):
 # Returns the post object if found, otherwise creates the post
 # Returns None if unable to create post
 # This will be used to create local copies of remote posts
-def find_or_create_post(id):
+def find_or_create_post(id, authorId):
     try:
+        if "http://" not in id:
+            id = authorId + "posts/" + id
         return Post.objects.get(id=id)
     except ObjectDoesNotExist:
         # request to get post details from remote server
