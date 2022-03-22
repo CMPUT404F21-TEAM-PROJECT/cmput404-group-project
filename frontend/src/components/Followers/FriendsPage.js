@@ -4,7 +4,7 @@ import { Alert, Button, List, Grid, Box, TextField } from "@mui/material";
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Follower from "./Follower";
 import Following from "./Following";
-import { BACKEND_PORT, BACKEND_URL } from "../../constants";
+import { BACKEND_URL } from "../../constants";
 
 class FriendsPage extends React.Component {
     constructor(props){
@@ -25,7 +25,7 @@ class FriendsPage extends React.Component {
     initializeDetails = async () => {
         try {
             // Get the author details
-            const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {headers: {
+            const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
                 Authorization: localStorage.getItem('access_token'),
                 accept: 'application/json',
             }});

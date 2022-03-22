@@ -10,7 +10,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import './profileScreen.css'
-import { BACKEND_PORT, BACKEND_URL } from "../../constants";
+import { BACKEND_URL } from "../../constants";
 
 class ProfileScreen extends React.Component {
     constructor(props){
@@ -21,7 +21,7 @@ class ProfileScreen extends React.Component {
 
     getAuthorDetails = async () => {
         // Get the author details
-        const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/get-user/", {headers: {
+        const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
             Authorization: localStorage.getItem('access_token'),
             accept: 'application/json',
           }});
