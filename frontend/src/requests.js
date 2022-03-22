@@ -5,7 +5,7 @@ import { BACKEND_PORT, BACKEND_URL } from "./constants";
 // const url = process.env.REACT_APP_BACKEND_URL ? process.env.REACT_APP_BACKEND_URL : `http://${BACKEND_URL}:${BACKEND_PORT}/`;
 
 // FOR PRODUCTION
-const url = "https://deployservertest.herokuapp.com/";
+const url = "";
 
 export default axios.create({
   baseURL: url,
