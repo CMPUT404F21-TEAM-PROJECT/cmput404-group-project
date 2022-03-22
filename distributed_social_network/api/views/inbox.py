@@ -1,17 +1,23 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 import jwt
-from ..models import Inbox, Author
+from ..models import Inbox, Author, Post, Comment
 from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer, CommentSerializer
 from ..views import get_follower, find_post, find_author, find_comment
 from .auth import get_payload
 
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
+import environ
+import requests
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Routes the request for inbox
 @api_view(['GET', 'POST', 'DELETE'])
 def route_inbox(request, author_id):
+    author_id = env("LOCAL_HOST") + "/authors/" + author_id + "/"
     response = HttpResponse()
     try:
         inbox = Inbox.objects.get(author=author_id)
@@ -44,7 +50,7 @@ def get_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response
@@ -90,7 +96,7 @@ def delete_inbox(request, author_id, inbox):
     response = HttpResponse()
 
     # Check authorization
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, False).get("id")
     if not (author_id == viewerId):
         response.status_code = 401
         return response
@@ -108,13 +114,28 @@ def add_follow(request, author_id, inbox):
     response = HttpResponse()
 
     # get person who sent the follow request
-    viewerId = get_payload(request).get("id")
+    viewerId = get_payload(request, True).get("id")
     
-    # TODO: handle remote actors
     # create the follow request
     data = request.data.copy()
     data['actor'] = data.get('actor', viewerId)
     data['object'] = data.get('object', author_id)
+
+    # remote actor
+    if viewerId == 'foreign':
+        actorId = data['actor']
+        # remote actor didn't include actor field in request
+        if actorId == 'foreign':
+            response.status_code = 400
+            return response
+        
+        actor = find_or_create_author(actorId)
+        # unable to create local copy of remote actor
+        if not actor:
+            response.status_code = 400
+            return response
+        data['actor'] = actor.id
+
     serializer = FollowRequestSerializer(data = data)
 
     # If given data is valid, save the follow request to the database
@@ -132,16 +153,37 @@ def add_follow(request, author_id, inbox):
 # Get the post and add it to author_id's inbox
 def add_post(request, author_id, inbox):
     response = HttpResponse()
+    senderId = get_payload(request, True).get("id")
+    data = request.data.copy()
 
-    # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200 and author_id != senderId: # TODO: need to deal with remote senders 
+    # remote sender
+    if senderId == 'foreign':
+        senderId = data.get('author', senderId)
+        # didn't include author field in request
+        if senderId == 'foreign':
+            response.status_code = 400
+            return response
+        
+        sender = find_or_create_author(senderId)
+        # unable to create local copy of remote sender
+        if not sender:
+            response.status_code = 400
+            return response
+        
+        # check if authord_id is following senderId
+        author = find_author(author_id)
+        follower_response = requests.get('{sender.id}/followers/{author.id}')
+        if follower_response.code != 200: # TODO: verify expected response with other teams
+            response.status_code = 400
+            return response
+
+    # not a remote sender, check if author_id is following senderId
+    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
         response.status_code = 401
         return response
-
+    
     # find the post
-    # TODO: need to handle remote posts
-    post = find_post(request.data["id"])
+    post = find_or_create_post(data["id"])
     if post == None:
         response.status_code = 400
         return response
@@ -154,24 +196,38 @@ def add_post(request, author_id, inbox):
 # Create a like and add it to author_id's inbox
 def add_like(request, author_id, inbox):
     response = HttpResponse()
+    data = request.data.copy()
+    senderId = get_payload(request, True).get("id")
+    data['author'] = data.get('author', senderId)
 
-    # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
+    # remote sender
+    if senderId == 'foreign':
+        # didn't include author field in request
+        if data['author'] == 'foreign': 
+            response.status_code = 400
+            return response
+        
+        sender = find_or_create_author(data['author'])
+        # unable to create local copy of remote actor
+        if not sender:
+            response.status_code = 400
+            return response
+        
+        # check if authord_id is following senderId
+        author = find_author(author_id)
+        follower_response = requests.get('{sender.id}/followers/{author.id}')
+        if follower_response.code != 200: # TODO: verify expected response with other teams
+            response.status_code = 400
+            return response
+
+    # not a remote sender, check if author_id is following senderId
+    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
         response.status_code = 401
         return response
-    
-    # TODO: handle remote actors
-    # create the like
-    data = request.data.copy()
-    data['author'] = data.get('author', senderId)
 
     serializer = LikeSerializer(data = data)
 
-    if find_author(author_id) is None: 
-        # If author is not found, return 404
-        response.status_code = 404  
-    elif serializer.is_valid():
+    if serializer.is_valid():
         # If given data is valid, save the object to the database
         like = serializer.save()
         response.status_code = 201
@@ -186,21 +242,112 @@ def add_like(request, author_id, inbox):
 # Create a comment and add it to author_id's inbox
 def add_comment(request, author_id, inbox):
     response = HttpResponse()
+    senderId = get_payload(request, True).get("id")
+    data = request.data.copy()
 
-    # check if author_id is following senderId, if not return unauthorized
-    senderId = get_payload(request).get("id")
-    if get_follower(senderId, author_id).status_code != 200  and author_id != senderId: # TODO: need to deal with remote senders 
+    # remote sender
+    if senderId == 'foreign':
+        senderId = data.get('author', senderId)
+        # didn't include author field in request
+        if senderId == 'foreign':
+            response.status_code = 400
+            return response
+        
+        sender = find_or_create_author(senderId)
+        # unable to create local copy of remote sender
+        if not sender:
+            response.status_code = 400
+            return response
+        
+        # check if authord_id is following senderId
+        author = find_author(author_id)
+        follower_response = requests.get('{sender.id}/followers/{author.id}')
+        if follower_response.code != 200: # TODO: verify expected response with other teams
+            response.status_code = 400
+            return response
+        
+    # not a remote sender, check if author_id is following senderId
+    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
         response.status_code = 401
         return response
-    
+
     # find the comment
-    # TODO: need to handle remote comment
-    comment = find_comment(request.data["id"])
+    comment = find_or_create_comment(data["id"])
     if comment == None:
         response.status_code = 400
         return response
 
-    # add the post to author_id's inbox
+    # add the comment to author_id's inbox
     inbox.comments.add(comment)
     response.status_code = 200
     return response
+
+# Returns the author object if found, otherwise creates the author
+# Returns None if unable to create author
+# This will be used to create local copies of remote authors
+def find_or_create_author(id):
+    author = Author.objects.get(id=id)
+    if not author:
+        # request to get author details from remote server
+        response = requests.get(id)
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json()
+        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
+        #       otherwise do not create the author and return None
+        serializer = AuthorSerializer(data = response_data)
+
+        # If given data is valid, save the object to the database
+        if serializer.is_valid():
+            return serializer.save()
+        else:
+            return None
+    else:
+        return author
+
+# Returns the comment object if found, otherwise creates the comment
+# Returns None if unable to create comment
+# This will be used to create local copies of remote comments
+def find_or_create_comment(id):
+    try:
+        return Comment.objects.get(id=id)
+    except ObjectDoesNotExist:
+        # request to get comment details from remote server
+        response = requests.get(id)
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json()
+        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
+        #       otherwise do not create the author and return None
+        serializer = CommentSerializer(data = response_data)
+
+        # If given data is valid, save the object to the database
+        if serializer.is_valid():
+            return serializer.save()
+        else:
+            return None
+
+# Returns the post object if found, otherwise creates the post
+# Returns None if unable to create post
+# This will be used to create local copies of remote posts
+def find_or_create_post(id):
+    try:
+        return Post.objects.get(id=id)
+    except ObjectDoesNotExist:
+        # request to get post details from remote server
+        response = requests.get(id)
+        if response.status_code != 200:
+            return None
+
+        response_data = response.json()
+        # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
+        #       otherwise do not create the author and return None
+        serializer = PostSerializer(data = response_data)
+
+        # If given data is valid, save the object to the database
+        if serializer.is_valid():
+            return serializer.save()
+        else:
+            return None

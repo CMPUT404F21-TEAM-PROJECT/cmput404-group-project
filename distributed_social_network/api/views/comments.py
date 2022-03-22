@@ -1,5 +1,5 @@
 from importlib_metadata import re
-import jwt
+import jwt, uuid, environ
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
@@ -10,12 +10,15 @@ from ..serializers import CommentSerializer
 from ..views import find_post
 from .auth import get_payload
 
+env = environ.Env()
+environ.Env.read_env()
+
 # Routes the request for multiple comment
 # Expects JSON request body with post and author attributes
 @api_view(['GET', 'POST'])
 def route_multiple_comments(request, post_id, author_id):
     if request.method == 'GET':
-        return get_comments(request, post_id)
+        return get_comments(request, post_id, author_id)
     elif request.method == 'POST':
         return add_comment(request, author_id, post_id)
 
@@ -23,17 +26,17 @@ def route_multiple_comments(request, post_id, author_id):
 @api_view(['GET', 'PUT', 'DELETE'])
 def route_single_comment(request, post_id, author_id, comment_id):
     if request.method == 'GET':
-        return get_comment(request, comment_id)
+        return get_comment(request, author_id, post_id, comment_id)
     elif request.method == 'PUT':
-        return update_comment(request, comment_id)
+        return update_comment(request, author_id, post_id, comment_id)
     elif request.method == 'DELETE':
-        return delete_comment(request, comment_id)
+        return delete_comment(request, author_id, post_id, comment_id)
 
 # Gets all comments for a particular post
-def get_comments(request, post_id):
+def get_comments(request, post_id, author_id):
     response = HttpResponse()
     # Checks that the provided post_id exists within the database
-    if not find_post(post_id):
+    if not find_post(post_id, author_id):
         response.status_code = 404
         response.content = "Error: Post Not Found"
         return response
@@ -44,7 +47,7 @@ def get_comments(request, post_id):
     paginator.page_size_query_param = 'size'
 
     # Get all comments, ordered by the latest published dates paginated
-    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=post_id).order_by('-published'), request)
+    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=env("LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id).order_by('-published'), request)
 
     # Create the JSON response dictionary
     serializer = CommentSerializer(comments, many=True)
@@ -62,7 +65,7 @@ def add_comment(request, author_id, post_id):
     response = HttpResponse()
     
     # Check authorization
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
@@ -70,10 +73,10 @@ def add_comment(request, author_id, post_id):
     # Uses the current user and time as author and published respectively
     request.data["author"] = user_id
     request.data["published"] = timezone.localtime(timezone.now())
+    request.data["id"] = user_id + "posts/" + post_id + "/comments/" + str(uuid.uuid4())
 
     # Serialize a new Comment object
     serializer = CommentSerializer(data = request.data)
-    print(request.data)
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
@@ -88,11 +91,11 @@ def add_comment(request, author_id, post_id):
     return response
 
 # Gets a single comment JSON object
-def get_comment(request, comment_id):
+def get_comment(request, author_id, post_id, comment_id):
     response = HttpResponse()
 
     # Find the comment with the given comment_id
-    comment = find_comment(comment_id)
+    comment = find_comment(comment_id, author_id, post_id)
 
     # Comment with provided id does not exist
     if not comment:
@@ -111,17 +114,17 @@ def get_comment(request, comment_id):
 
 # Adds a new comment to an existing post
 # Expects JSON request body with post and author attributes
-def update_comment(request, comment_id):
+def update_comment(request, author_id, post_id, comment_id):
     response = HttpResponse()
      # Check authorization
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
     user_id = payload['id']
 
     # Find the comment with the given comment_id
-    comment = find_comment(comment_id)
+    comment = find_comment(comment_id, author_id, post_id)
     if comment == None:
         response.status_code = 404
         return response
@@ -157,17 +160,17 @@ def update_comment(request, comment_id):
     return response
 
 # Deletes a comment using the provided id
-def delete_comment(request, comment_id):
+def delete_comment(request, author_id, post_id, comment_id):
     response = HttpResponse()
     # Check authorization
-    payload = get_payload(request)
+    payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
         response.content = "Error: Not Authenticated"
     user_id = payload['id']
 
     # Find the comment with the given comment_id
-    comment = find_comment(comment_id)
+    comment = find_comment(comment_id, author_id, post_id)
 
     # Comment with provided id does not exist
     if not comment:
@@ -185,9 +188,10 @@ def delete_comment(request, comment_id):
     return response
 
 # Returns the comment object if found, otherwise returns None
-def find_comment(id):
+def find_comment(id, author_id, post_id):
     # Find the comment with the given id
     try:
-        return Comment.objects.get(id=id)
+        return Comment.objects.get(id=env("LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id + "/comments/" + str(id))
     except ObjectDoesNotExist:
         return None
+

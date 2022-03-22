@@ -6,8 +6,10 @@ from api.models import Author, FollowRequest, User
 from datetime import datetime
 import copy, base64, os
 import uuid
+import environ
 
-
+env = environ.Env()
+environ.Env.read_env()
 
 # Mock Data
 
@@ -39,25 +41,6 @@ author2 = {
     "profileImage":"testingProfileImage2"
 }
 
-class FollowRequestTestCase(TestCase):
-    def setUp(self):
-        author_id = uuid.uuid4()
-        author_user = User.objects.create(id=author_id, **user1)
-        self.object = Author.objects.create(id=author_user)
-        
-        actor_id = uuid.uuid4()
-        actor_user = User.objects.create(id=actor_id, **user2)
-        self.actor = Author.objects.create(id=actor_user)
-
-        FollowRequest.objects.create(object=self.object,
-                                     actor=self.actor,
-                                     summary='blah')
-
-    def test_follow_request_default_values(self):
-        fr = FollowRequest.objects.get(object=self.object, actor=self.actor)
-        self.assertEqual(fr.summary, 'blah')
-        self.assertFalse(fr.accepted)
-
 
 class FollowersEndpointTestCase(APITestCase):
     @classmethod
@@ -77,13 +60,6 @@ class FollowersEndpointTestCase(APITestCase):
         user1["id"] = user1Id
         user2["id"] = user2Id
 
-        # Update authors
-        updateUrl1 = '/authors/' + author1["id"] + '/'
-        updateUrl2 = '/authors/' + author2["id"] + '/'
-        
-        cls.client.post(updateUrl1, author1, format='json')
-        cls.client.post(updateUrl2, author2, format='json')
-
     def setUp(self):
         self.object = Author.objects.get(id=author1["id"])
         self.actor = Author.objects.get(id=author2["id"])
@@ -94,28 +70,28 @@ class FollowersEndpointTestCase(APITestCase):
                                      object=self.object,
                                      accepted=True)
 
-
     def test_get_followers(self):
         """Test GET request for getting a list of followers."""
-        url = '/authors/' + str(self.object.id.id) + '/followers/'
+        url = self.object.id + "followers/"
+        url = url.replace(env("LOCAL_HOST"), "")
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         responseJson = response.json()
         self.assertEqual('followers', responseJson['type'])
-        self.assertEqual(str(self.actor.id.id), responseJson['items'][0]['id'])
+        self.assertEqual(self.actor.id, responseJson['items'][0]['id'])
         self.assertEqual(len(responseJson['items']), 1)
     
     def test_get_following(self):
         """Test GET request for getting a list of people you follow."""
-        url = '/authors/' + str(self.actor.id.id) + '/following/'
-        
+        url = self.actor.id + 'following/'
+        url = url.replace(env("LOCAL_HOST"), "")
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         responseJson = response.json()
         self.assertEqual('following', responseJson['type'])
-        self.assertEqual(str(self.object.id.id), responseJson['items'][0]['id'])
+        self.assertEqual(self.object.id, responseJson['items'][0]['id'])
         self.assertEqual(len(responseJson['items']), 1)
         
 
@@ -124,7 +100,8 @@ class FollowersEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = '/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
+        url = '/authors/' + self.object.id + 'followers/' + self.actor.id
+        url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -142,7 +119,8 @@ class FollowersEndpointTestCase(APITestCase):
                                      actor=self.object,
                                      object=self.actor)
 
-        url = '/authors/' + str(self.actor.id.id)  + '/followers/' + str(self.object.id.id) + '/'
+        url = '/authors/' + self.actor.id + 'followers/' + self.object.id
+        url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.put(url)
         fr = FollowRequest.objects.get(actor=self.object,
@@ -153,13 +131,15 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_follower(self):
         """Test GET request for checking if someone is a follower."""
-        url = '/authors/' + str(self.object.id.id) + '/followers/' + str(self.actor.id.id) + '/'
+        url = '/authors/' + self.object.id + 'followers/' + self.actor.id
+        url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # testing a non follower
-        url = '/authors/' + str(self.object.id.id) + '/followers/' + str(self.object.id.id) + '/'
+        url = '/authors/' + self.object.id + 'followers/' + self.object.id
+        url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
