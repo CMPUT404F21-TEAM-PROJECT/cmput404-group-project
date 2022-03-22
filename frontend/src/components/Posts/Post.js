@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from "react";
 import requests from "../../requests";
-import CommentDialogButton from "../Posts/CommentDialog";
+import CommentDialogButton from "./CommentDialog";
 import './Post.css'
+import EditPost from './EditPostDialog';
 
 import { Alert,
         Avatar,
@@ -17,7 +18,11 @@ import ReactMarkdown from 'react-markdown'
 import ThumbUp from '@mui/icons-material/ThumbUp'
 import Send from '@mui/icons-material/Send'
 import ShareIcon from '@mui/icons-material/Share';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { ClassNames } from "@emotion/react";
+import { Link } from 'react-router-dom';
+
 
 // assuming props contains all the post attributes
 export default function Post(props) {
@@ -130,6 +135,23 @@ export default function Post(props) {
         {withCredentials:true});
     };
 
+
+
+    const deletePost = async () => {
+      if (window.confirm("Do you really want to delete this post?")) {
+        // Send DELETE request to authors/{AUTHOR_ID}/posts/{POST_ID}
+        let authorID = props.post.author.id;
+        let postID = props.post.id;
+        let url = `authors/${authorID}/posts/${postID}/`;
+        let headers = {headers: {
+          Authorization: localStorage.getItem('access_token'),
+          accept: 'application/json',
+        }};
+        const response = await requests.delete(url, headers, {withCredentials: true});
+        window.location.reload();
+      }
+    }
+
     useEffect(() => {
       setLiked(props.likedByCurrent);
     }, [])
@@ -185,6 +207,20 @@ export default function Post(props) {
                   Share
               </Button>
             </span>
+            <div id="edit-section" hidden={props.post.author.id === props.currentUser.id ? false : true}> 
+              <EditPost 
+                current_author = {props.currentUser.id}
+                post = {props.post}/>
+            </div>
+            <div id="delete-section" hidden={props.post.author.id === props.currentUser.id ? false : true}>
+              <Button
+                variant="contained"
+                startIcon={<DeleteIcon/>}
+                onClick={deletePost}
+              >
+                Delete
+              </Button>
+            </div>
         {message.message && (
         <Alert severity={message.severity}>
           {message.message}

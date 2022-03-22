@@ -169,7 +169,11 @@ def update_post(request, authorId, id):
     # If given data is valid, save the updated object to the database
     if serializer.is_valid():
         serializer.save()
-        response.status_code = 200
+        # Return the created post
+        responseDict = serializer.data
+        responseDict['author'] = AuthorSerializer(Author.objects.get(id=responseDict['author'])).data
+        response = JsonResponse(responseDict)
+        response.status_code = 201
         return response
 
     # If the data is not valid, do not save the updated object to the database
