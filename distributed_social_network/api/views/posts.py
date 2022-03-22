@@ -24,15 +24,6 @@ def route_single_post(request, author_id, post_id):
     elif request.method == 'PUT':
         return create_post_with_id(request, post_id)
 
-
-
-def handle_options(request):
-    response = HttpResponse()
-    response.status_code = 200
-    return response
-
-
-
 # Routes the request for multiple posts
 @api_view(['POST', 'GET'])
 def route_multiple_posts(request, author_id):
