@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import requests from "../../requests";
 import CommentDialogButton from "./CommentDialog";
 import './Post.css'
+import EditPost from './EditPostDialog';
 
 import { Alert,
         Avatar,
@@ -207,19 +208,9 @@ export default function Post(props) {
               </Button>
             </span>
             <div id="edit-section" hidden={props.post.author.id === props.currentUser.id ? false : true}> 
-              <Link to={{
-                  pathname: "/edit_post",
-                  state: props.post
-                }}
-                style={{textDecoration: "none"}}
-              >
-                <Button
-                  variant="contained"
-                  startIcon={<EditIcon/>}
-                >
-                  Edit
-                </Button>
-              </Link>
+              <EditPost 
+                current_author = {props.currentUser.id}
+                post = {props.post}/>
             </div>
             <div id="delete-section" hidden={props.post.author.id === props.currentUser.id ? false : true}>
               <Button

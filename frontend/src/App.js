@@ -11,7 +11,6 @@ import FriendsPage from "./components/Followers/FriendsPage";
 import { BrowserRouter, BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import ProfileScreen from "./components/AccountDetails/profileScreen";
 import NewPost from "./components/Posts/NewPost.js"
-import EditPost from "./components/Posts/EditPost.js"
 
 function App() {
 
@@ -55,12 +54,6 @@ function App() {
           <div className="PublicPosts">
             <NavBar />
             <PublicPosts/>
-          </div>
-        </Route>
-        <Route exact path="/edit_post">
-          <div className="EditPost">
-            <NavBar />
-            <EditPost/>
           </div>
         </Route>
       </BrowserRouter>
