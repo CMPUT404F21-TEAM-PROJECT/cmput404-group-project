@@ -176,6 +176,7 @@ def add_post(request, author_id, inbox):
         if follower_response.code != 200: # TODO: verify expected response with other teams
             response.status_code = 400
             return response
+        senderId = sender.id
 
     # not a remote sender, check if author_id is following senderId
     elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
@@ -183,7 +184,7 @@ def add_post(request, author_id, inbox):
         return response
     
     # find the post
-    post = find_or_create_post(data["id"], sender.id)
+    post = find_or_create_post(data["id"], senderId)
     if post == None:
         response.status_code = 400
         return response

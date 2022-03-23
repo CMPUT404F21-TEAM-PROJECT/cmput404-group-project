@@ -47,7 +47,7 @@ def route_single_image_post(request, author_id, post_id):
 # Generates a new id for the post
 def create_post(request, author_id):   
     # Generate a new id
-    post_id = request.data["author"] + "posts/" + str(uuid.uuid4())
+    post_id = request.data["author"] + "posts/" + str(uuid.uuid4()) + "/"
     # If id already exists make a new one
     while get_post(request, author_id, post_id).status_code == 200:
         post_id = request.data["author"] + "posts/" + str(uuid.uuid4())
@@ -60,7 +60,7 @@ def create_post_with_id(request, id):
     if env("LOCAL_HOST") in id:
         request.data["id"] = id
     else:
-        request.data["id"] = request.data["author"] + "posts/" + id
+        request.data["id"] = request.data["author"] + "posts/" + id + "/"
     if not request.data['viewableBy']:
         request.data['viewableBy'] = ''
     response = HttpResponse()
@@ -446,7 +446,8 @@ def get_post_image(request, authorId, id):
 # Returns the post object if found, otherwise returns None
 def find_post(id, authorId):
     # Find the post with the given id
+    # print(env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id + "/")
     try:
-        return Post.objects.get(id=env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id)
+        return Post.objects.get(id=env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id + "/")
     except ObjectDoesNotExist:
         return None
