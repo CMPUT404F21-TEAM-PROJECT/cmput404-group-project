@@ -73,7 +73,7 @@ def add_comment(request, author_id, post_id):
     # Uses the current user and time as author and published respectively
     request.data["author"] = user_id
     request.data["published"] = timezone.localtime(timezone.now())
-    request.data["id"] = user_id + "posts/" + post_id + "/comments/" + str(uuid.uuid4())
+    request.data["id"] = user_id + "/posts/" + post_id + "/comments/" + str(uuid.uuid4())
 
     # Serialize a new Comment object
     serializer = CommentSerializer(data = request.data)

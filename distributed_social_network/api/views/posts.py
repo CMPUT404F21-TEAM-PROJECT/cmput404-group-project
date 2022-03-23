@@ -47,10 +47,10 @@ def route_single_image_post(request, author_id, post_id):
 # Generates a new id for the post
 def create_post(request, author_id):   
     # Generate a new id
-    post_id = request.data["author"] + "posts/" + str(uuid.uuid4()) + "/"
+    post_id = request.data["author"] + "/posts/" + str(uuid.uuid4())
     # If id already exists make a new one
     while get_post(request, author_id, post_id).status_code == 200:
-        post_id = request.data["author"] + "posts/" + str(uuid.uuid4())
+        post_id = request.data["author"] + "/posts/" + str(uuid.uuid4())
     return create_post_with_id(request, post_id)
 
 # Adds a new post to the database.
@@ -60,7 +60,7 @@ def create_post_with_id(request, id):
     if env("LOCAL_HOST") in id:
         request.data["id"] = id
     else:
-        request.data["id"] = request.data["author"] + "posts/" + id + "/"
+        request.data["id"] = request.data["author"] + "/posts/" + id
     if not request.data['viewableBy']:
         request.data['viewableBy'] = ''
     response = HttpResponse()
@@ -285,7 +285,7 @@ def get_public_posts(request):
 
 # Get all posts written by author_id given as an argument, that are viewable by the currently authenticated author
 def get_multiple_posts(request, author_id):
-    author_id = env("LOCAL_HOST") + "/authors/" + author_id + "/"
+    author_id = env("LOCAL_HOST") + "/authors/" + author_id
     # Get all public posts that are not unlisted
     publicPosts = Post.objects.filter(author__exact=author_id).filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
 
@@ -446,8 +446,8 @@ def get_post_image(request, authorId, id):
 # Returns the post object if found, otherwise returns None
 def find_post(id, authorId):
     # Find the post with the given id
-    # print(env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id + "/")
+    print(env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id)
     try:
-        return Post.objects.get(id=env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id + "/")
+        return Post.objects.get(id=env("LOCAL_HOST") + "/authors/" + authorId + "/posts/" + id)
     except ObjectDoesNotExist:
         return None

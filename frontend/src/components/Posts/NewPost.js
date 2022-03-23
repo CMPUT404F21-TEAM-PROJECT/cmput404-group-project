@@ -54,7 +54,7 @@ class NewPost extends Component {
   handleSubmit = async () => {
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
-      const url = this.state.author_id + "posts/";
+      const url = this.state.author_id + "/posts/";
       const response = await requests.post(url, {
         headers: {
           accept: "application/json",
@@ -82,7 +82,7 @@ class NewPost extends Component {
 
   sendToSelf = async (my_post) => {
     await requests.post(
-      `${this.state.author_id}inbox/`,
+      `${this.state.author_id}/inbox/`,
       my_post,
       {headers: {
         Authorization: localStorage.getItem('access_token'),
@@ -94,7 +94,7 @@ class NewPost extends Component {
   sendToFollowers = async (my_post) => {
     // Get Followers
     const response = await requests.get(
-      `${my_post.author.id}followers/`
+      `${my_post.author.id}/followers/`
     );
     const followerList = response.data.items;
 

@@ -72,7 +72,7 @@ def update_author(request, id):
         return response
 
     # Collect the request data
-    request.data["id"] = env("LOCAL_HOST") + "/authors/" + id + "/"
+    request.data["id"] = env("LOCAL_HOST") + "/authors/" + id
     serializer = AuthorSerializer(partial = True, instance = author, data=request.data)
 
     # If given data is valid, save the updated object to the database
@@ -128,7 +128,7 @@ def get_multiple_authors(request):
 def find_author(id):
     # if id is only a uuid and not full url assume it is from local
     if id[:7] != "http://":
-        id = env("LOCAL_HOST") + "/authors/" + id + "/"
+        id = env("LOCAL_HOST") + "/authors/" + id
     # Find the author with the given id
     try:
         return Author.objects.get(id=id)

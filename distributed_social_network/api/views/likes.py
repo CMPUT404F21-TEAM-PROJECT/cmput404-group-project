@@ -14,6 +14,8 @@ def get_post_likes(request, authorID, postID):
 
     # Find the post with the given id's
     post = find_post(postID, authorID)
+    print("post id", postID)
+    print("author id", authorID)
     if post is None:
         response.status_code = 404
         return response

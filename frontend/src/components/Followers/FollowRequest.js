@@ -23,8 +23,8 @@ export default function FollowRequest(props) {
         // send PUT request to author_id/followers/follower_id
         console.log('clicked accept');
         try {
-          var url = props.currentUserId + "followers/";
-          url = url + getUuidFromAuthorUrl(props.id);
+          var url = props.currentUserId + "/followers/";
+          url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.put(url,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
@@ -32,7 +32,8 @@ export default function FollowRequest(props) {
           }},
           {withCredentials: true});
           setMessage({message: "Accepted follow request.", severity: "success"});
-        } catch {
+        } catch (e) {
+          console.log(e)
           setMessage({message: "Failed to accept follow request.", severity: "error"});
         }   
     }
@@ -42,8 +43,8 @@ export default function FollowRequest(props) {
         // send DELETE request to author_id/followers/follower_id
         console.log('clicked reject')
         try {
-          var url = props.currentUserId + "followers/";
-          url = url + getUuidFromAuthorUrl(props.id);
+          var url = props.currentUserId + "/followers/";
+          url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.delete(url,
           {headers: {
             Authorization: localStorage.getItem('access_token'),
