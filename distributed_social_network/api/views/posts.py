@@ -138,7 +138,10 @@ def update_post(request, authorId, id):
     response = HttpResponse()
 
     # Use the given id
-    request.data["id"] = id
+    if env("LOCAL_HOST") in id:
+        request.data["id"] = id
+    else:
+        request.data["id"] = request.data["author"] + "/posts/" + id
 
     # Find the post with the given id
     post = find_post(id, authorId)

@@ -142,7 +142,7 @@ export default function Post(props) {
         // Send DELETE request to authors/{AUTHOR_ID}/posts/{POST_ID}
         // let authorID = props.post.author.id;
         let postID = props.post.id;
-        let url = `${postID}`;
+        let url = `${postID}/`;
         let headers = {headers: {
           Authorization: localStorage.getItem('access_token'),
           accept: 'application/json',
