@@ -52,7 +52,7 @@ class ProfileScreen extends React.Component {
         if (document.getElementById('profileImage-input').value){
             updatesDict["profileImage"] = document.getElementById('profileImage-input').value;
         }
-        const response = await requests.post(this.state.author.id, updatesDict, {WithCredentials: true})
+        const response = await requests.post(this.state.author.id + '/', updatesDict, {WithCredentials: true})
 
         // Keep values that were not updated
         const allKeys = Object.keys(this.state.author);

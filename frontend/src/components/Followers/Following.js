@@ -19,7 +19,7 @@ export default function Following(props) {
     const unfollow = async () => {
         // send DELETE request to
         try {
-          var url = props.id + "followers/";
+          var url = props.id + "/followers/";
           url = url + getUuidFromAuthorUrl(props.currentUserId);
           const response = await requests.delete(url,
           {headers: {

@@ -71,7 +71,7 @@ function EditPostDialog(props) {
   const handleSubmit = async () => {
     requests.defaults.headers["Authorization"] = jwt;
     try {
-      const url = "authors/" + props.current_author + "/posts/" + props.post.id + "/";
+      const url = props.post.id + "/";
       const response = await requests.post(url, {
         id: props.post.id,
         title: title,
@@ -98,7 +98,7 @@ function EditPostDialog(props) {
 
   const sendToSelf = async (my_post) => {
     await requests.post(
-      `authors/${props.current_author}/inbox/`,
+      `${props.current_author}/inbox/`,
       my_post,
       {
         headers: {
@@ -113,7 +113,7 @@ function EditPostDialog(props) {
   const sendToFollowers = async (my_post) => {
     // Get Followers
     const response = await requests.get(
-      `authors/${my_post.author.id}/followers/`
+      `${my_post.author.id}/followers/`
     );
     const followerList = response.data.items;
 
@@ -121,7 +121,7 @@ function EditPostDialog(props) {
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
       await requests.post(
-        `authors/${follower.id}/inbox/`,
+        `${follower.id}/inbox/`,
         my_post,
         {
           headers: {

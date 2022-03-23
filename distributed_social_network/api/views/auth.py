@@ -57,7 +57,7 @@ def get_user_id(request):
 @api_view(['POST'])
 def create_new_user(request):
     response = HttpResponse()
-    request.data['id'] = "http://" + env("LOCAL_HOST") + "/authors/" + str(uuid.uuid4()) + "/"
+    request.data['id'] = env("LOCAL_HOST") + "/authors/" + str(uuid.uuid4())
     serializer = UserSerializer(data = request.data)
     if serializer.is_valid():
         serializer.save()

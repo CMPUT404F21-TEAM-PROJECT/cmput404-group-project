@@ -30,7 +30,7 @@ export function EditComment(props) {
   const handleEdit = async () => {
         // send PUT request to authors/{authorId}/posts/{postId}/comments/{commentId} with new comment
         try {
-        const response = await requests.put(`authors/${props.post_author}/posts/${props.post_id}/comments/${props.comment_id}/`,
+        const response = await requests.put(`${props.comment_id}/`,
             {
             comment: comment
             },
@@ -92,7 +92,7 @@ export function AddCommentListItem(props) {
     const handleSend = async () => {
         // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
         try {
-            const response = await requests.post(`authors/${props.post_author}/posts/${props.post_id}/comments/`,
+            const response = await requests.post(`${props.post_id}/comments/`,
               {
               post_id: props.post_id,
               comment: comment,
@@ -108,7 +108,7 @@ export function AddCommentListItem(props) {
               {withCredentials: true});
             sendToSelf(response.data);
             // send to recipients inbox
-            const response_recipient = await requests.post(`authors/${props.post_author.id}/inbox/`,
+            const response_recipient = await requests.post(`${props.post_author.id}/inbox/`,
             response.data,
             {headers: {
               Authorization: localStorage.getItem('access_token'),
@@ -124,7 +124,7 @@ export function AddCommentListItem(props) {
   
     const sendToSelf = async (my_item) => {
       const response_self = await requests.post(
-        `authors/${props.current_author}/inbox/`,
+        `${props.current_author}/inbox/`,
         my_item,
         {headers: {
           Authorization: localStorage.getItem('access_token'),
