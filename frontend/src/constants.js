@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://deployservertest.herokuapp.com";
+export const BACKEND_URL = "http://deployservertest.herokuapp.com";
