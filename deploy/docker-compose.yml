@@ -23,6 +23,7 @@ services:
       DB_PASSWORD: password
       DB_PORT: 5432
       HOST_SERVER: localhost
+      LOCAL_HOST: localhost
     ports:
       - 8000:8000
     depends_on:
