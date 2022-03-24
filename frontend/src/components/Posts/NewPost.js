@@ -55,7 +55,9 @@ class NewPost extends Component {
   handleSubmit = async () => {
     requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
-      const url = `${this.state.addFollowerId}posts/`;
+      await this.getAuthorId()
+      const url = `${this.state.author_id}/posts/`;
+      console.log("TEST URL: " + url);
       const response = await requests.post(url, {
         headers: {
           accept: "application/json",
@@ -82,7 +84,7 @@ class NewPost extends Component {
   };
 
   sendToSelf = async (my_post) => {
-    const url = `${this.state.author_id}inbox/` 
+    const url = `${this.state.author_id}/inbox/` 
     await requests.post(
       url,
       my_post,
@@ -95,7 +97,7 @@ class NewPost extends Component {
 
   sendToFollowers = async (my_post) => {
     // Get Followers
-    const url = `${my_post.author.id}followers/`
+    const url = `${my_post.author.id}/followers/`
     const response = await requests.get(
       url
     );
@@ -104,7 +106,7 @@ class NewPost extends Component {
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
-      const url = `${follower.id}inbox/`
+      const url = `${follower.id}/inbox/`
       await requests.post(
         url,
         my_post,

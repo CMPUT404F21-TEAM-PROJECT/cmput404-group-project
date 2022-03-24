@@ -29,7 +29,7 @@ class PublicPosts extends React.Component {
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
           if (item.type === 'post') {
-            const url = `${item.author.id}posts/${item.id}/likes/`
+            const url = `${item.author.id}/posts/${item.id}/likes/`
             const like_response = await requests.get(url);
 
             //const like_response = await requests.get(`${item.id}/likes/`);
