@@ -51,8 +51,9 @@ class FriendsPage extends React.Component {
         try {
             const data = {
                 type: 'follow',
-                summary: `${this.state.currentUser.id} wants to follow ${this.state.addFollowerId}`,
-                object: `${this.state.addFollowerId}`
+                summary: `${this.state.currentUser.displayName} wants to follow ${this.state.addFollowerId}`,
+                object: `${this.state.addFollowerId}`,
+                actor: `${this.state.currentUser.id}`,
             }
             const url = `${this.state.addFollowerId}/inbox/`;
             const response = await requests.post(url,
