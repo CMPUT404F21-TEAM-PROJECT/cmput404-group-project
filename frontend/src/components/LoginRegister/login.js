@@ -10,7 +10,7 @@ import "../../styles/login-register.css";
 import requests from "../../requests";
 import ProfileScreen from "../AccountDetails/profileScreen";
 import {useHstory, Redirect, NavLink } from "react-router-dom";
-import { BACKEND_PORT, BACKEND_URL } from "../../constants";
+import { BACKEND_URL } from "../../constants";
   
 class Login extends Component {
     state = {
@@ -37,7 +37,7 @@ class Login extends Component {
     handleLogin = async () => {
         if (this.validateLogin()) {
             try {
-                const response = await requests.post("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/login/", {
+                const response = await requests.post(BACKEND_URL + "/login/", {
                     username: this.state.username,
                     password: this.state.password
                 }, {WithCredentials: true});
@@ -82,7 +82,6 @@ class Login extends Component {
             <TextField
                 className="text-input"
                 size="small"
-                type="text"
                 label="Password"
                 type="password"
                 value={this.state.password}

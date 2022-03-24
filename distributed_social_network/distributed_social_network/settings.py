@@ -31,8 +31,10 @@ SECRET_KEY = 'django-insecure-@s#e=vn8ng-#+zz$h@gbw8njfzzt9*2ce8_bx78o(^dk8x(tzr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
-CSRF_TRUSTED_ORIGINS = ["{}{}".format("https://", env("HOST_SERVER"))]
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [env("HOST_SERVER"), "http://frontend404.herokuapp.com", "http://tik-tak-toe-cmput404.herokuapp.com", "http://localhost:8000", "http://127.0.0.1:8000"]
+# CSRF_TRUSTED_ORIGINS = [env("HOST_SERVER")]
 
 AUTH_USER_MODEL = 'api.User'
 
@@ -41,7 +43,8 @@ AUTH_USER_MODEL = 'api.User'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    "DEFAULT_AUTHENTICATION_CLASSES": []
 }
 
 INSTALLED_APPS = [
@@ -68,7 +71,10 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://frontend404.herokuapp.com",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'distributed_social_network.urls'

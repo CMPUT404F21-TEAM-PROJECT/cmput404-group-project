@@ -6,7 +6,7 @@ import LikeNotification from "./LikeNotification";
 import CommentNotification from "./CommentNotification";
 import Post from "../Posts/Post";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { BACKEND_PORT, BACKEND_URL } from "../../constants";
+import { BACKEND_URL } from "../../constants";
   
 class Inbox extends React.Component {
   constructor(props){
@@ -24,7 +24,7 @@ class Inbox extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get("http://" + BACKEND_URL + ":" + BACKEND_PORT + "get-user/", {headers: {
+          const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
           }});
@@ -38,7 +38,7 @@ class Inbox extends React.Component {
             profileImage: response.data.profileImage ? response.data.profileImage : ''
           }});
 
-          const response_inbox = await requests.get(`authors/${this.state.currentUser.id}/inbox/`,
+          const response_inbox = await requests.get(`${this.state.currentUser.id}/inbox/`,
             {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',
@@ -49,7 +49,7 @@ class Inbox extends React.Component {
           // get list of likes for each post
           const inboxPromises = response_inbox.data.items.map(async (item) => {
             if (item.type === 'post') {
-              const response = await requests.get(`authors/${item.author.id}/posts/${item.id}/likes/`);
+              const response = await requests.get(`${item.id}/likes/`);
               item.likes = response.data.items;
               item.likedByCurrent = false;
               // check if current viewer liked the post
@@ -71,7 +71,7 @@ class Inbox extends React.Component {
 
   clearInbox = async () => {
     try {
-      await requests.delete(`authors/${this.state.currentUser.id}/inbox/`,
+      await requests.delete(`${this.state.currentUser.id}/inbox/`,
             {headers: {
               Authorization: localStorage.getItem('access_token'),
               accept: 'application/json',

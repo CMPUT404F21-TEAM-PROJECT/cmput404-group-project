@@ -12,10 +12,11 @@ from django.db.models import Q
 def get_post_likes(request, authorID, postID):
     response = HttpResponse()
 
-    # Find the author and post with the given id's
-    author = find_author(authorID)
-    post = find_post(postID)
-    if author is None or post is None:
+    # Find the post with the given id's
+    post = find_post(postID, authorID)
+    print("post id", postID)
+    print("author id", authorID)
+    if post is None:
         response.status_code = 404
         return response
 
@@ -41,7 +42,7 @@ def get_comment_likes(request, authorID, postID, commentID):
 
     # Find the author, post, and comment with the given id's
     author = find_author(authorID)
-    post = find_post(postID)
+    post = find_post(postID, authorID)
     comment = find_comment(commentID)
     if author is None or post is None or comment is None:
         #TODO fix issue with comment = None
@@ -93,14 +94,5 @@ def get_author_likes(request, authorID):
 def find_comment(id):
     try:
         return Comment.objects.get(id=id)
-    except ObjectDoesNotExist:
-        return None
-
-
-# Returns the author object if found, otherwise returns None
-def find_author(id):
-    # Find the author with the given id
-    try:
-        return Author.objects.get(id=id)
     except ObjectDoesNotExist:
         return None

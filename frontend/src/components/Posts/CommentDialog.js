@@ -24,7 +24,7 @@ export default function CommentDialogButton(props) {
 
   const getComments = async () => {
     try {
-      const response = await requests.get(`authors/${props.author_id}/posts/${props.post_id}/comments/`,
+      const response = await requests.get(`${props.post_id}/comments/`,
       {headers: {
       Authorization: localStorage.getItem('access_token'),
       accept: 'application/json',
@@ -97,7 +97,7 @@ function CommentDialog(props) {
     if (window.confirm("Do you really want to delete this comment?")) {
     try {
       var comment_id = props.comment_id[index]
-      const response = await requests.delete(`authors/${props.author_id}/posts/${props.post_id}/comments/${comment_id}/`,
+      const response = await requests.delete(`${comment_id}/`,
       {headers: {
       Authorization: localStorage.getItem('access_token'),
       accept: 'application/json',

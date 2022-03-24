@@ -8,7 +8,7 @@ import {
 import "../../styles/login-register.css";
 import requests from "../../requests";
 import { NavLink } from "react-router-dom";
-import { BACKEND_PORT, BACKEND_URL } from "../../constants";
+import { BACKEND_URL } from "../../constants";
   
 class Register extends Component {
     state = {
@@ -45,7 +45,7 @@ class Register extends Component {
     handleRegister = async () => {
         if(this.validateRegister()) {
             try {
-                const response = await requests.post("http://" + BACKEND_URL + ":" + BACKEND_PORT + "/register/", {
+                const response = await requests.post(BACKEND_URL + "/register/", {
                     username: this.state.username,
                     password: this.state.password
                 });
@@ -92,7 +92,6 @@ class Register extends Component {
             <TextField
                 className="text-input"
                 size="small"
-                type="text"
                 type="password"
                 label="Password"
                 value={this.state.password}
@@ -105,7 +104,6 @@ class Register extends Component {
             <TextField
                 className="text-input"
                 size="small"
-                type="text"
                 type="password"
                 label="Confirm Password"
                 value={this.state.confirm_password}
