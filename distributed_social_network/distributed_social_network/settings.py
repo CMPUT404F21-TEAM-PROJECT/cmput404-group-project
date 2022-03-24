@@ -33,7 +33,7 @@ DEBUG = True
 
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ["{}{}".format("http://", env("HOST_SERVER"))]
+CSRF_TRUSTED_ORIGINS = ["{}{}".format("http://", env("HOST_SERVER")), "{}{}".format("https://", env("HOST_SERVER"))]
 # CSRF_TRUSTED_ORIGINS = [env("HOST_SERVER")]
 
 AUTH_USER_MODEL = 'api.User'
