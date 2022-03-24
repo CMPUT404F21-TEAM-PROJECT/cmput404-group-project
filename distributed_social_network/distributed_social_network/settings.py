@@ -31,7 +31,8 @@ SECRET_KEY = 'django-insecure-@s#e=vn8ng-#+zz$h@gbw8njfzzt9*2ce8_bx78o(^dk8x(tzr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
+ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ["{}{}".format("https://", env("HOST_SERVER"))]
 
 AUTH_USER_MODEL = 'api.User'
