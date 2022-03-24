@@ -8,6 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import './CommentDialog.css';
 import requests from '../../requests';
 import EditIcon from '@mui/icons-material/Edit';
+import getAuthHeaderForNode from '../../util';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
@@ -30,15 +31,12 @@ export function EditComment(props) {
   const handleEdit = async () => {
         // send PUT request to authors/{authorId}/posts/{postId}/comments/{commentId} with new comment
         try {
-        const response = await requests.put(`${props.comment_id}/`,
+          const url = `${props.comment_id}/`;
+          const response = await requests.put(url,
             {
             comment: comment
             },
-            {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-            }
-            },
+            getAuthHeaderForNode(url),
             {withCredentials: true});
     } catch(e) {
         console.log(e)
@@ -92,7 +90,8 @@ export function AddCommentListItem(props) {
     const handleSend = async () => {
         // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
         try {
-            const response = await requests.post(`${props.post_id}/comments/`,
+            const url = `${props.post_id}/comments/`;
+            const response = await requests.post(url,
               {
               post_id: props.post_id,
               comment: comment,
@@ -100,21 +99,14 @@ export function AddCommentListItem(props) {
               author: props.current_author,
               type: "comment"
               },
-              {headers: {
-                  Authorization: localStorage.getItem('access_token'),
-                  accept: 'application/json',
-                }
-              },
+              getAuthHeaderForNode(url),
               {withCredentials: true});
             sendToSelf(response.data);
             // send to recipients inbox
-            const response_recipient = await requests.post(`${props.post_author.id}/inbox/`,
+            const recipient_url = `${props.post_author.id}/inbox/`;
+            const response_recipient = await requests.post(recipient_url,
             response.data,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-            }
-            },
+            getAuthHeaderForNode(recipient_url),
           {withCredentials: true})
         } catch(e) {
           console.log(e)
@@ -123,13 +115,11 @@ export function AddCommentListItem(props) {
     }
   
     const sendToSelf = async (my_item) => {
+      const url = `${props.current_author}/inbox/`;
       const response_self = await requests.post(
-        `${props.current_author}/inbox/`,
+        url,
         my_item,
-        {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }},
+        getAuthHeaderForNode(url),
         {withCredentials:true});
     };
   

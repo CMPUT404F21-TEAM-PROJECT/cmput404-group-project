@@ -22,6 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ClassNames } from "@emotion/react";
 import { Link } from 'react-router-dom';
+import { getAuthHeaderForNode } from "../../util";
 
 
 // assuming props contains all the post attributes
@@ -47,12 +48,10 @@ export default function Post(props) {
           }
           // prevents sending a like twice when liking your own post
           if (props.currentUser.id != props.post.author.id){
-            const response = await requests.post(`${props.post.author.id}/inbox/`,
+            const url = `${props.post.author.id}/inbox/`;
+            const response = await requests.post(url,
               data,
-              {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-              }},
+              getAuthHeaderForNode(url),
               {withCredentials: true});
           }
           
@@ -77,9 +76,6 @@ export default function Post(props) {
         } else {
           const url = props.currentUser.id + "/posts/";
           const response = await requests.post(url, {
-          headers: {
-            accept: "application/json",
-          },
           title: props.post.title,
           author: props.currentUser.id,
           contentType: props.post.contentType,
@@ -89,7 +85,7 @@ export default function Post(props) {
           unlisted: props.post.unlisted,
           categories: props.post.categories,
           viewableBy: '',
-        });
+        }, getAuthHeaderForNode(url));
 
         response.data.type = 'post'
         sendToSelf(response.data)
@@ -112,26 +108,22 @@ export default function Post(props) {
       // For each follower: send post to inbox
       for (let index = 0; index < followerList.length; ++index) {
         const follower = followerList[index];
+        const url = `${follower.id}/inbox/`;
         await requests.post(
-          `${follower.id}/inbox/`,
+          url,
           my_post,
-          {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-          }},
+          getAuthHeaderForNode(url),
           {withCredentials:true});
       }
     };
   
     // send a like or comment notification to your own inbox
     const sendToSelf = async (my_item) => {
+      const url = `${props.currentUser.id}/inbox/`;
       const response_self = await requests.post(
-        `${props.currentUser.id}/inbox/`,
+        url,
         my_item,
-        {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }},
+        getAuthHeaderForNode(url),
         {withCredentials:true});
     };
 
@@ -143,11 +135,7 @@ export default function Post(props) {
         // let authorID = props.post.author.id;
         let postID = props.post.id;
         let url = `${postID}/`;
-        let headers = {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }};
-        const response = await requests.delete(url, headers, {withCredentials: true});
+        const response = await requests.delete(url);
         window.location.reload();
       }
     }

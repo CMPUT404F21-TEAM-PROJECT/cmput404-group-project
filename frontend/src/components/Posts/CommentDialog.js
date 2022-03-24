@@ -14,6 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import './CommentDialog.css';
 import {EditComment, AddCommentListItem} from './AddComment';
 import requests from '../../requests';
+import getAuthHeaderForNode from '../../util';
 import { usePreviousProps } from '@mui/utils';
 
 export default function CommentDialogButton(props) {
@@ -24,11 +25,9 @@ export default function CommentDialogButton(props) {
 
   const getComments = async () => {
     try {
-      const response = await requests.get(`${props.post_id}/comments/`,
-      {headers: {
-      Authorization: localStorage.getItem('access_token'),
-      accept: 'application/json',
-      }},
+      const url = `${props.post_id}/comments/`;
+      const response = await requests.get(url,
+      getAuthHeaderForNode(url),
       {withCredentials:true});
       console.log(response.data.items);
       var ids = [];
@@ -97,11 +96,9 @@ function CommentDialog(props) {
     if (window.confirm("Do you really want to delete this comment?")) {
     try {
       var comment_id = props.comment_id[index]
-      const response = await requests.delete(`${comment_id}/`,
-      {headers: {
-      Authorization: localStorage.getItem('access_token'),
-      accept: 'application/json',
-      }},
+      const url = `${comment_id}/`;
+      const response = await requests.delete(url,
+      getAuthHeaderForNode(url),
       {withCredentials:true});
     }
     catch(error) {
