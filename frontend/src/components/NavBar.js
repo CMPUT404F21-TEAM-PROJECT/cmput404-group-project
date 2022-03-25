@@ -19,8 +19,6 @@ import {useLocation} from 'react-router-dom';
 import "./NavBar.css"
 import { BACKEND_URL } from "../constants";
 import requests from '../requests';
-import { BACKEND_URL } from "../constants";
-
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post', 'Public Posts'];
 const settings = ['Profile Settings', 'Logout'];

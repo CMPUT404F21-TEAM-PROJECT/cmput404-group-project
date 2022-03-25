@@ -56,12 +56,13 @@ class FriendsPage extends React.Component {
                 actor: `${this.state.currentUser.id}`,
             }
             // adapter for tik-tak-toe, remove when they fix their implementation
-            if ("http://tik-tak-toe-cmput404.herokuapp.com" in this.state.addFollowerId) {
+            if (this.state.addFollowerId.includes("http://tik-tak-toe-cmput404.herokuapp.com")) {
                 // Create remote Followers object
                 var follower_url = this.state.addFollowerId + "/followers/" + getUuidFromAuthorUrl(this.state.currentUser.id) + "/";
                 const response = await requests.put(follower_url,
-                getAuthHeaderForNode(follower_url),
-                {withCredentials: true});
+                    {},
+                    getAuthHeaderForNode(follower_url),
+                    {withCredentials: true});
 
                 // Post follow to remote inbox
                 data = {

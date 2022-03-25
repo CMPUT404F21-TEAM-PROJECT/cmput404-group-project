@@ -42,7 +42,6 @@ class Login extends Component {
                     password: this.state.password
                 }, {WithCredentials: true});
                 localStorage.setItem('access_token', response.data);
-                requests.defaults.headers['Authorization'] = localStorage.getItem('access_token');
                 this.setState({successful_login: true})
             }
             catch {

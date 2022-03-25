@@ -24,10 +24,7 @@ class Inbox extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-          }});
+          const response = await requests.get(BACKEND_URL + "/get-user/");
 
           this.setState({ currentUser: {
             id: response.data.id ? response.data.id : '',
@@ -38,12 +35,7 @@ class Inbox extends React.Component {
             profileImage: response.data.profileImage ? response.data.profileImage : ''
           }});
 
-          const response_inbox = await requests.get(`${this.state.currentUser.id}/inbox/`,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-              }},
-              {withCredentials:true})
+          const response_inbox = await requests.get(`${this.state.currentUser.id}/inbox/`, {withCredentials:true})
 
 
           // get list of likes for each post
@@ -71,12 +63,7 @@ class Inbox extends React.Component {
 
   clearInbox = async () => {
     try {
-      await requests.delete(`${this.state.currentUser.id}/inbox/`,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-              }},
-              {withCredentials:true})
+      await requests.delete(`${this.state.currentUser.id}/inbox/`, {withCredentials:true})
       this.setState({inboxList: []})
     } catch(error) {
         console.log(error)

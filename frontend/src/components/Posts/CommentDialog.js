@@ -30,8 +30,9 @@ export default function CommentDialogButton(props) {
     try {
       const url = `${props.post_id}/comments/`;
       const response = await requests.get(url,
-      getAuthHeaderForNode(url),
-      {withCredentials:true});
+        {},
+        getAuthHeaderForNode(url),
+        {withCredentials:true});
       var ids = [];
       var commenter_ids = [];
       var comment_ids = [];
@@ -115,8 +116,9 @@ function CommentDialog(props) {
       var comment_id = props.comment_id[index]
       const url = `${comment_id}/`;
       const response = await requests.delete(url,
-      getAuthHeaderForNode(url),
-      {withCredentials:true});
+        {},
+        getAuthHeaderForNode(url),
+        {withCredentials:true});
     }
     catch(error) {
       console.log(error);
