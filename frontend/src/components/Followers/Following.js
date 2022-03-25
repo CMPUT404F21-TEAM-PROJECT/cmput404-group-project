@@ -22,7 +22,8 @@ export default function Following(props) {
           var url = props.id + "/followers/";
           url = url + getUuidFromAuthorUrl(props.currentUserId);
           const response = await requests.delete(url,
-          getAuthHeaderForNode(url),
+            {},
+            getAuthHeaderForNode(url),
             {withCredentials: true});
           setMessage({message: "Unfollowed.", severity: "success"});
         } catch {

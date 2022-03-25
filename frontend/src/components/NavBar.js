@@ -20,7 +20,6 @@ import "./NavBar.css"
 import { BACKEND_URL } from "../constants";
 import requests from '../requests';
 
-
 const pages = ['Home', 'Friends', 'My Profile', 'Post', 'Public Posts'];
 const settings = ['Profile Settings', 'Logout'];
 const links = {"Home": "./inbox", "Friends": "./friends", "My Profile": "./profile", "Post": "./post", "Public Posts": "./public_posts"}

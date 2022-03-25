@@ -26,8 +26,9 @@ export default function FollowRequest(props) {
           var url = props.currentUserId + "/followers/";
           url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.put(url,
-          getAuthHeaderForNode(url),
-          {withCredentials: true});
+            {},
+            getAuthHeaderForNode(url),
+            {withCredentials: true});
           setMessage({message: "Accepted follow request.", severity: "success"});
         } catch (e) {
           console.log(e)
@@ -43,8 +44,9 @@ export default function FollowRequest(props) {
           var url = props.currentUserId + "/followers/";
           url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.delete(url,
-          getAuthHeaderForNode(url),
-          {withCredentials: true});
+            {},
+            getAuthHeaderForNode(url),
+            {withCredentials: true});
           setMessage({message: "Rejected follow request.", severity: "success"});
         } catch (e) {
           console.log(e)
