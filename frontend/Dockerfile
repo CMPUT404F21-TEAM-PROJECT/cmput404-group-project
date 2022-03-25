@@ -15,8 +15,8 @@ RUN yarn install --production
 COPY . .
 
 # Set Environment Variable
-# ARG REACT_APP_BACKEND_URL
-# ENV REACT_APP_BACKEND_URL = $REACT_APP_BACKEND_URL
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL = $REACT_APP_BACKEND_URL
 
 # Create production build of React App
 RUN yarn build

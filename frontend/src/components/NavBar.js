@@ -17,8 +17,8 @@ import MenuItem from '@mui/material/MenuItem';
 import {Link, useHistory} from "react-router-dom";
 import {useLocation} from 'react-router-dom';
 import "./NavBar.css"
+import { BACKEND_URL } from "../constants";
 import requests from '../requests';
-
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post', 'Public Posts'];
 const settings = ['Profile Settings', 'Logout'];
@@ -30,27 +30,23 @@ const NavBar = () => {
   const currentPath = "." + useLocation()["pathname"];
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [profileImage, setProfileImage] = React.useState('')
+
+  React.useEffect(async () => {
+    const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
+      Authorization: localStorage.getItem('access_token'),
+      accept: 'application/json',
+    }});
+    setProfileImage(response.data.profileImage)
+  }, []);
   
   React.useState(function checkAuthenticated() {
-    // TODO check and simplify this to for expired accessToken
+    // TODO check and simplify this for expired accessToken
     const accessToken = localStorage.getItem("access_token");
     if (!accessToken) {
         history.push("/");
         history.go(0);
     }
-    // const response = requests.get('get-user/', {headers: {
-    //   accept: 'application/json',
-    // }}).then(data => {
-    //   if (data.status != 200) {
-    //     history.push("/");
-    //   }
-    // }
-    // );
-    // if (!accessToken || status_code != 200) {
-    //   console.log(status_code);
-    //   console.log("HERE");
-    //   history.push("/");
-    // }
   });
 
   const handleOpenNavMenu = (event) => {
@@ -67,9 +63,7 @@ const NavBar = () => {
   const logout = async () => {
     // send POST request to /logout
     try {
-      const response = await requests.post('logout/', {headers: {
-        accept: 'application/json',
-      }});
+      const response = await requests.post(BACKEND_URL + '/logout/');
     } 
     catch(error) {
       console.log(error);
@@ -181,11 +175,11 @@ const NavBar = () => {
               </Link>
             ))}
           </Box>
-
+          
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="user" src="" />
+                <Avatar alt="user" src= {profileImage} />
               </IconButton>
             </Tooltip>
             <Menu

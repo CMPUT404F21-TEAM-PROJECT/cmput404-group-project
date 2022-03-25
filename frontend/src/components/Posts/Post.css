@@ -1,23 +1,34 @@
-li.MuiListItem-root {
-    display: inline-block;
-    text-align: center;
-}
-
-#comment-like-section {
-    display: inline-block;
-}
-
-#comment-section {
-    display: block;
-}
-
 #comment-button {
-    background-color: rgb(174, 206, 243);
-    margin-top: 0.5em;
+  background-color: rgb(174, 206, 243);
+  margin-top: 0.5em;
+}
+
+.avatar {
+  display: flex;
+}
+
+.avatar .MuiListItemAvatar-root {
+  margin-top: 0.5em;
 }
 
 #like-button {
-    background-color: rgb(174, 206, 243);
-    margin-top: 1em;
-    margin-bottom: 1.5em;
+  background-color: rgb(174, 206, 243);
+}
+
+.post {
+  list-style: none;
+  outline: 1px solid #dfe6e9;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  padding: 1em;
+}
+
+#comment-section {
+  display: flex;
+}
+
+#comment-like-section {
+  margin-top: 1em;
+  display: flex;
+  justify-content: space-between;
 }

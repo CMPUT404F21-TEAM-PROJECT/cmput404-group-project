@@ -4,6 +4,8 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_URL=http://backend-404.herokuapp.com
     ports:
       - 80:80
   server:

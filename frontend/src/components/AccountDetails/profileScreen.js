@@ -21,10 +21,7 @@ class ProfileScreen extends React.Component {
 
     getAuthorDetails = async () => {
         // Get the author details
-        const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-          }});
+        const response = await requests.get(BACKEND_URL + "/get-user/");
         this.setState({author: {
             id: response.data.id ? response.data.id : '',
             url: response.data.url ? response.data.url : '',

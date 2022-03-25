@@ -171,11 +171,11 @@ def add_post(request, author_id, inbox):
             return response
         
         # check if authord_id is following senderId
-        author = find_author(author_id)
-        follower_response = requests.get('{sender.id}/followers/{author.id}')
-        if follower_response.code != 200: # TODO: verify expected response with other teams
-            response.status_code = 400
-            return response
+        # author = find_author(author_id)
+        # follower_response = requests.get(f'{sender.id}/followers/{author.id}')
+        # if follower_response.code != 200: # TODO: verify expected response with other teams
+        #     response.status_code = 400
+        #     return response
         senderId = sender.id
 
     # not a remote sender, check if author_id is following senderId
@@ -215,11 +215,11 @@ def add_like(request, author_id, inbox):
             return response
         
         # check if authord_id is following senderId
-        author = find_author(author_id)
-        follower_response = requests.get('{sender.id}/followers/{author.id}')
-        if follower_response.code != 200: # TODO: verify expected response with other teams
-            response.status_code = 400
-            return response
+        # author = find_author(author_id)
+        # follower_response = requests.get(f'{sender.id}/followers/{author.id}')
+        # if follower_response.code != 200: # TODO: verify expected response with other teams
+        #     response.status_code = 400
+        #     return response
 
     # not a remote sender, check if author_id is following senderId
     elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
@@ -261,11 +261,12 @@ def add_comment(request, author_id, inbox):
             return response
         
         # check if authord_id is following senderId
-        author = find_author(author_id)
-        follower_response = requests.get('{sender.id}/followers/{author.id}')
-        if follower_response.code != 200: # TODO: verify expected response with other teams
-            response.status_code = 400
-            return response
+        
+        #author = find_author(author_id)
+        #follower_response = requests.get(f'{sender.id}/followers/{author.id}')
+        #if follower_response.code != 200: # TODO: verify expected response with other teams
+        #    response.status_code = 400
+        #    return response
         
     # not a remote sender, check if author_id is following senderId
     elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
@@ -287,17 +288,19 @@ def add_comment(request, author_id, inbox):
 # Returns None if unable to create author
 # This will be used to create local copies of remote authors
 def find_or_create_author(id):
-    if "http://" not in id:
+    if ("http://" not in id) and ("https://" not in id):
         id = "http://tik-tak-toe-cmput404.herokuapp.com/authors/" + id
-
-    author = Author.objects.get(id=id)
-    if not author:
+    
+    try:
+        author = Author.objects.get(id=id)
+    except ObjectDoesNotExist:
         # request to get author details from remote server
-        response = requests.get(id)
+        response = requests.get(id, auth=('Team4', 'abcd1234'))
         if response.status_code != 200:
             return None
 
         response_data = response.json()
+        response_data.pop("type")
         # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
         #       otherwise do not create the author and return None
         serializer = AuthorSerializer(data = response_data)
@@ -318,11 +321,12 @@ def find_or_create_comment(id):
         return Comment.objects.get(id=id)
     except ObjectDoesNotExist:
         # request to get comment details from remote server
-        response = requests.get(id)
+        response = requests.get(id, auth=('Team4', 'abcd1234'))
         if response.status_code != 200:
             return None
 
         response_data = response.json()
+        response_data.pop("type")
         # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
         #       otherwise do not create the author and return None
         serializer = CommentSerializer(data = response_data)
@@ -338,16 +342,17 @@ def find_or_create_comment(id):
 # This will be used to create local copies of remote posts
 def find_or_create_post(id, authorId):
     try:
-        if "http://" not in id:
+        if ("http://" not in id) and ("https://" not in id):
             id = authorId + "/posts/" + id
         return Post.objects.get(id=id)
     except ObjectDoesNotExist:
         # request to get post details from remote server
-        response = requests.get(id)
+        response = requests.get(id, auth=('Team4', 'abcd1234'))
         if response.status_code != 200:
             return None
 
         response_data = response.json()
+        response_data.pop("type")
         # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
         #       otherwise do not create the author and return None
         serializer = PostSerializer(data = response_data)

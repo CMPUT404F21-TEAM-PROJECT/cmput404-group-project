@@ -8,9 +8,12 @@ import DialogTitle from '@mui/material/DialogTitle';
 import './CommentDialog.css';
 import requests from '../../requests';
 import EditIcon from '@mui/icons-material/Edit';
+import getAuthHeaderForNode from '../../util';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import SendIcon from '@mui/icons-material/Send';
 import Avatar from '@mui/material/Avatar';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -30,15 +33,12 @@ export function EditComment(props) {
   const handleEdit = async () => {
         // send PUT request to authors/{authorId}/posts/{postId}/comments/{commentId} with new comment
         try {
-        const response = await requests.put(`${props.comment_id}/`,
+          const url = `${props.comment_id}/`;
+          const response = await requests.put(url,
             {
             comment: comment
             },
-            {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-            }
-            },
+            getAuthHeaderForNode(url),
             {withCredentials: true});
     } catch(e) {
         console.log(e)
@@ -48,7 +48,7 @@ export function EditComment(props) {
 
   return (
     <div>
-      <Button variant="contained" onClick={handleClickOpen} endIcon={<EditIcon />}>
+      <Button variant="contained" onClick={handleClickOpen} startIcon={<EditIcon />}>
         Edit
       </Button>
       <Dialog open={open} minWidth="800px" maxWidth="800px" hideBackdrop={true} onClose={handleClose}>
@@ -68,8 +68,8 @@ export function EditComment(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleEdit}>Update</Button>
+          <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleEdit} startIcon={<CheckCircleOutlineIcon />}>Update</Button>
         </DialogActions>
       </Dialog>
     </div>
@@ -92,7 +92,8 @@ export function AddCommentListItem(props) {
     const handleSend = async () => {
         // send POST request to authors/{authorId}/posts/{postId}/comments/ with a comment
         try {
-            const response = await requests.post(`${props.post_id}/comments/`,
+            const url = `${props.post_id}/comments/`;
+            const response = await requests.post(url,
               {
               post_id: props.post_id,
               comment: comment,
@@ -100,21 +101,14 @@ export function AddCommentListItem(props) {
               author: props.current_author,
               type: "comment"
               },
-              {headers: {
-                  Authorization: localStorage.getItem('access_token'),
-                  accept: 'application/json',
-                }
-              },
+              getAuthHeaderForNode(url),
               {withCredentials: true});
             sendToSelf(response.data);
             // send to recipients inbox
-            const response_recipient = await requests.post(`${props.post_author.id}/inbox/`,
+            const recipient_url = `${props.post_author.id}/inbox/`;
+            const response_recipient = await requests.post(recipient_url,
             response.data,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-            }
-            },
+            getAuthHeaderForNode(recipient_url),
           {withCredentials: true})
         } catch(e) {
           console.log(e)
@@ -123,13 +117,11 @@ export function AddCommentListItem(props) {
     }
   
     const sendToSelf = async (my_item) => {
+      const url = `${props.current_author}/inbox/`;
       const response_self = await requests.post(
-        `${props.current_author}/inbox/`,
+        url,
         my_item,
-        {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }},
+        getAuthHeaderForNode(url),
         {withCredentials:true});
     };
   
@@ -161,8 +153,8 @@ export function AddCommentListItem(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSend}>Send</Button>
+          <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleSend} startIcon={<SendIcon />}>Send</Button>
         </DialogActions>
       </Dialog>
       </div>

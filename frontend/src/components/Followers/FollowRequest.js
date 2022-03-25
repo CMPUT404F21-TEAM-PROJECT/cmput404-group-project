@@ -11,7 +11,7 @@ import { Alert,
         } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear'
 import CheckIcon from '@mui/icons-material/Check'
-import getUuidFromAuthorUrl from "../../util"
+import getUuidFromAuthorUrl, { getAuthHeaderForNode } from "../../util"
 
 // assuming props contains all the author attributes of the person who
 // sent the follow request, and the id of the current user
@@ -26,11 +26,9 @@ export default function FollowRequest(props) {
           var url = props.currentUserId + "/followers/";
           url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.put(url,
-          {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-          }},
-          {withCredentials: true});
+            {},
+            getAuthHeaderForNode(url),
+            {withCredentials: true});
           setMessage({message: "Accepted follow request.", severity: "success"});
         } catch (e) {
           console.log(e)
@@ -46,13 +44,12 @@ export default function FollowRequest(props) {
           var url = props.currentUserId + "/followers/";
           url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.delete(url,
-          {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-          }},
-          {withCredentials: true});
+            {},
+            getAuthHeaderForNode(url),
+            {withCredentials: true});
           setMessage({message: "Rejected follow request.", severity: "success"});
-        } catch {
+        } catch (e) {
+          console.log(e)
           setMessage({message: "Failed to reject follow request.", severity: "error"});
         }   
     }

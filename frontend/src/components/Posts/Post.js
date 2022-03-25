@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import requests from "../../requests";
 import CommentDialogButton from "./CommentDialog";
 import './Post.css'
+import {utcToLocal} from "../../date"
 import EditPost from './EditPostDialog';
 
 import { Alert,
@@ -22,6 +23,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ClassNames } from "@emotion/react";
 import { Link } from 'react-router-dom';
+import { getAuthHeaderForNode } from "../../util";
 
 
 // assuming props contains all the post attributes
@@ -29,12 +31,6 @@ export default function Post(props) {
   const [message, setMessage] = useState({});
     const [commentText, setCommentText] = useState("")
     const [liked, setLiked] = useState(false)
-
-    const styles = theme => ({
-        listItemText:{
-          fontSize: '1',
-        }
-      });
 
     const like = async () => {
         // send POST request to authors/{authorId}/inbox/ with a like
@@ -47,12 +43,10 @@ export default function Post(props) {
           }
           // prevents sending a like twice when liking your own post
           if (props.currentUser.id != props.post.author.id){
-            const response = await requests.post(`${props.post.author.id}/inbox/`,
+            const url = `${props.post.author.id}/inbox/`;
+            const response = await requests.post(url,
               data,
-              {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-              }},
+              getAuthHeaderForNode(url),
               {withCredentials: true});
           }
           
@@ -77,9 +71,6 @@ export default function Post(props) {
         } else {
           const url = props.currentUser.id + "/posts/";
           const response = await requests.post(url, {
-          headers: {
-            accept: "application/json",
-          },
           title: props.post.title,
           author: props.currentUser.id,
           contentType: props.post.contentType,
@@ -89,7 +80,7 @@ export default function Post(props) {
           unlisted: props.post.unlisted,
           categories: props.post.categories,
           viewableBy: '',
-        });
+        }, getAuthHeaderForNode(url));
 
         response.data.type = 'post'
         sendToSelf(response.data)
@@ -112,26 +103,22 @@ export default function Post(props) {
       // For each follower: send post to inbox
       for (let index = 0; index < followerList.length; ++index) {
         const follower = followerList[index];
+        const url = `${follower.id}/inbox/`;
         await requests.post(
-          `${follower.id}/inbox/`,
+          url,
           my_post,
-          {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-          }},
+          getAuthHeaderForNode(url),
           {withCredentials:true});
       }
     };
   
     // send a like or comment notification to your own inbox
     const sendToSelf = async (my_item) => {
+      const url = `${props.currentUser.id}/inbox/`;
       const response_self = await requests.post(
-        `${props.currentUser.id}/inbox/`,
+        url,
         my_item,
-        {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }},
+        getAuthHeaderForNode(url),
         {withCredentials:true});
     };
 
@@ -143,11 +130,7 @@ export default function Post(props) {
         // let authorID = props.post.author.id;
         let postID = props.post.id;
         let url = `${postID}/`;
-        let headers = {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }};
-        const response = await requests.delete(url, headers, {withCredentials: true});
+        const response = await requests.delete(url);
         window.location.reload();
       }
     }
@@ -157,16 +140,22 @@ export default function Post(props) {
     }, [])
 
     return (
-      <ListItem>
+      <ListItem class="post">
         <ListItemText
           id="title"
           primaryTypographyProps={{fontSize: '30px'}}
           primary={props.post.title}
         />
-        <ListItemText
-          id="author"
-          primary={"By: " + props.post.author.displayName}
-        />
+        <div class="avatar">
+          <ListItemAvatar>
+            <Avatar alt="" src={`${props.post.author.profileImage}`} />
+          </ListItemAvatar>
+          <ListItemText
+            id="author"
+            primary={props.post.author.displayName}
+            secondary={utcToLocal(props.post.published)}
+          />
+        </div>
         {props.post.contentType == "text/markdown" && <ReactMarkdown>
           {props.post.content}
           </ReactMarkdown>}
@@ -180,6 +169,7 @@ export default function Post(props) {
           id="description"
           primary={props.post.description}
         />
+        <hr/>
         <div id="comment-like-section">
         {liked ? (<Button
                     disabled
@@ -192,7 +182,6 @@ export default function Post(props) {
               onClick={like}>
                   Like
               </Button>)}
-            
             <span id="comment-section">
                 <CommentDialogButton
                 current_author = {props.currentUser.id}
@@ -202,6 +191,7 @@ export default function Post(props) {
             <span id="share-section">
               <Button
                 variant="contained"
+                color="success"
                 startIcon={<ShareIcon />}
                 onClick={share}>
                   Share
@@ -215,6 +205,7 @@ export default function Post(props) {
             <div id="delete-section" hidden={props.post.author.id === props.currentUser.id ? false : true}>
               <Button
                 variant="contained"
+                color="error"
                 startIcon={<DeleteIcon/>}
                 onClick={deletePost}
               >

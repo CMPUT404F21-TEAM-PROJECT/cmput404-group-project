@@ -3,6 +3,7 @@ import requests from "../../requests";
 import { Grid } from "@mui/material";
 import Post from "./Post";
 import { BACKEND_URL } from "../../constants";
+import { getAuthHeaderForNode } from "../../util";
   
 class PublicPosts extends React.Component {
   constructor(props){
@@ -20,23 +21,26 @@ class PublicPosts extends React.Component {
   getAllPublicPosts = async () => {
     try {
         // Get all the public post details
-        const response = await requests.get(BACKEND_URL + `/public-posts/`, {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }});
+        const response = await requests.get(BACKEND_URL + `/public-posts/`);
         
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
-          if (item.type === 'post') {
-            const like_response = await requests.get(`${item.id}/likes/`);
-            item.likes = like_response.data.items;
-            item.likedByCurrent = false;
-            // check if current viewer liked the post
-            item.likes.forEach((like) => {
-              if (like.author === this.state.currentUser.id) {
-                item.likedByCurrent = true;
-              }
-            })
+          try{
+            if (item.type === 'post') {
+              const url = `${item.id}/likes/`;
+              const like_response = await requests.get(url,
+                getAuthHeaderForNode(url));
+              item.likes = like_response.data.items;
+              item.likedByCurrent = false;
+              // check if current viewer liked the post
+              item.likes.forEach((like) => {
+                if (like.author === this.state.currentUser.id) {
+                  item.likedByCurrent = true;
+                }
+              })
+            }
+          } catch (e) {
+            console.log(e);
           }
           return item;
         })
@@ -51,10 +55,7 @@ class PublicPosts extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-          }});
+          const response = await requests.get(BACKEND_URL + "/get-user/");
           this.setState({ currentUser: {
               id: response.data.id ? response.data.id : '',
               url: response.data.url ? response.data.url : '',
@@ -94,7 +95,7 @@ class PublicPosts extends React.Component {
           <div className="PublicPosts">
             <Grid container p={2}
             justifyContent="center"
-            alignItem="center"
+            alignitem="center"
             direction="column">
             </Grid>
           <Grid container spacing={2} justifyContent="center" alignItem="center">

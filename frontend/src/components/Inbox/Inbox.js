@@ -7,6 +7,7 @@ import CommentNotification from "./CommentNotification";
 import Post from "../Posts/Post";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { BACKEND_URL } from "../../constants";
+import { getAuthHeaderForNode } from "../../util";
   
 class Inbox extends React.Component {
   constructor(props){
@@ -24,10 +25,7 @@ class Inbox extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-          }});
+          const response = await requests.get(BACKEND_URL + "/get-user/");
 
           this.setState({ currentUser: {
             id: response.data.id ? response.data.id : '',
@@ -38,26 +36,26 @@ class Inbox extends React.Component {
             profileImage: response.data.profileImage ? response.data.profileImage : ''
           }});
 
-          const response_inbox = await requests.get(`${this.state.currentUser.id}/inbox/`,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-              }},
-              {withCredentials:true})
+          const response_inbox = await requests.get(`${this.state.currentUser.id}/inbox/`, {withCredentials:true})
 
 
           // get list of likes for each post
           const inboxPromises = response_inbox.data.items.map(async (item) => {
-            if (item.type === 'post') {
-              const response = await requests.get(`${item.id}/likes/`);
-              item.likes = response.data.items;
-              item.likedByCurrent = false;
-              // check if current viewer liked the post
-              item.likes.forEach((like) => {
-                if (like.author === this.state.currentUser.id) {
-                  item.likedByCurrent = true;
-                }
-              })
+            try {
+              if (item.type === 'post') {
+                const url = `${item.id}/likes/`;
+                const response = await requests.get(url, getAuthHeaderForNode());
+                item.likes = response.data.items;
+                item.likedByCurrent = false;
+                // check if current viewer liked the post
+                item.likes.forEach((like) => {
+                  if (like.author === this.state.currentUser.id) {
+                    item.likedByCurrent = true;
+                  }
+                })
+              }
+            } catch(e) {
+              console.log(e);
             }
             return item;
           })
@@ -71,12 +69,7 @@ class Inbox extends React.Component {
 
   clearInbox = async () => {
     try {
-      await requests.delete(`${this.state.currentUser.id}/inbox/`,
-            {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-              }},
-              {withCredentials:true})
+      await requests.delete(`${this.state.currentUser.id}/inbox/`, {withCredentials:true})
       this.setState({inboxList: []})
     } catch(error) {
         console.log(error)
@@ -138,7 +131,7 @@ class Inbox extends React.Component {
           <div className="inbox">
             <Grid container p={2}
             justifyContent="center"
-            alignItem="center"
+            alignitem="center"
             direction="column">
               <Button 
               variant="outlined"
