@@ -3,6 +3,7 @@ import requests from "../../requests";
 import { Grid } from "@mui/material";
 import Post from "./Post";
 import { BACKEND_URL } from "../../constants";
+import { getAuthHeaderForNode } from "../../util";
   
 class PublicPosts extends React.Component {
   constructor(props){
@@ -25,7 +26,10 @@ class PublicPosts extends React.Component {
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
           if (item.type === 'post') {
-            const like_response = await requests.get(`${item.id}/likes/`);
+            const url = `${item.id}/likes/`;
+            const like_response = await requests.get(url,
+            {},
+            getAuthHeaderForNode(url));
             item.likes = like_response.data.items;
             item.likedByCurrent = false;
             // check if current viewer liked the post
