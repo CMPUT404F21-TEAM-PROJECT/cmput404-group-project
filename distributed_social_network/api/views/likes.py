@@ -5,6 +5,7 @@ from ..models import Author, Like, Post, Comment
 from ..serializers import  LikeSerializer
 from ..views import find_post
 from django.db.models import Q
+from authors import find_author
 
 
 # Gets all the likes on an author's post
