@@ -5,6 +5,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Follower from "./Follower";
 import Following from "./Following";
 import { BACKEND_URL } from "../../constants";
+import { getAuthHeaderForNode } from "../../util";
 
 class FriendsPage extends React.Component {
     constructor(props){
@@ -25,10 +26,7 @@ class FriendsPage extends React.Component {
     initializeDetails = async () => {
         try {
             // Get the author details
-            const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-            }});
+            const response = await requests.get(BACKEND_URL + "/get-user/");
             this.setState({ currentUser: {
                 id: response.data.id ? response.data.id : '',
                 url: response.data.url ? response.data.url : '',
@@ -53,18 +51,18 @@ class FriendsPage extends React.Component {
         try {
             const data = {
                 type: 'follow',
-                summary: `${this.state.currentUser.id} wants to follow ${this.state.addFollowerId}`,
-                object: `${this.state.addFollowerId}`
+                summary: `${this.state.currentUser.displayName} wants to follow ${this.state.addFollowerId}`,
+                object: `${this.state.addFollowerId}`,
+                actor: `${this.state.currentUser.id}`,
             }
-            const response = await requests.post(`${this.state.addFollowerId}/inbox/`,
+            const url = `${this.state.addFollowerId}/inbox/`;
+            const response = await requests.post(url,
                 data,
-                {headers: {
-                Authorization: localStorage.getItem('access_token'),
-                accept: 'application/json',
-                }},
-                {withCredentials:true})
+                getAuthHeaderForNode(url),
+                {withCredentials:true});
             this.setState({addFollowerResult: {message:"Sent Follow Request", severity:'success'}});
-        } catch(error) {
+        } catch (e) {
+            console.log(e)
             this.setState({addFollowerResult: {message:"Failed to send Follow Request", severity:'error'}});
         }
     }

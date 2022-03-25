@@ -20,10 +20,7 @@ class PublicPosts extends React.Component {
   getAllPublicPosts = async () => {
     try {
         // Get all the public post details
-        const response = await requests.get(BACKEND_URL + `/public-posts/`, {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }});
+        const response = await requests.get(BACKEND_URL + `/public-posts/`);
         
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
@@ -51,10 +48,7 @@ class PublicPosts extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
-              Authorization: localStorage.getItem('access_token'),
-              accept: 'application/json',
-          }});
+          const response = await requests.get(BACKEND_URL + "/get-user/");
           this.setState({ currentUser: {
               id: response.data.id ? response.data.id : '',
               url: response.data.url ? response.data.url : '',

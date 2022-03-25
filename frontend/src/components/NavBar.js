@@ -19,6 +19,7 @@ import {useLocation} from 'react-router-dom';
 import "./NavBar.css"
 import { BACKEND_URL } from "../constants";
 import requests from '../requests';
+import { BACKEND_URL } from "../constants";
 
 
 const pages = ['Home', 'Friends', 'My Profile', 'Post', 'Public Posts'];
@@ -64,9 +65,7 @@ const NavBar = () => {
   const logout = async () => {
     // send POST request to /logout
     try {
-      const response = await requests.post('logout/', {headers: {
-        accept: 'application/json',
-      }});
+      const response = await requests.post(BACKEND_URL + '/logout/');
     } 
     catch(error) {
       console.log(error);

@@ -10,7 +10,7 @@ import { Alert,
         ListItemSecondaryAction,
         } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear'
-import getUuidFromAuthorUrl from "../../util"
+import getUuidFromAuthorUrl, { getAuthHeaderForNode } from "../../util"
 
 // assuming props contains all the author attributes of the follower, and the id of the current user
 export default function Following(props) {
@@ -22,10 +22,7 @@ export default function Following(props) {
           var url = props.id + "/followers/";
           url = url + getUuidFromAuthorUrl(props.currentUserId);
           const response = await requests.delete(url,
-          {headers: {
-            Authorization: localStorage.getItem('access_token'),
-            accept: 'application/json',
-            }},
+          getAuthHeaderForNode(url),
             {withCredentials: true});
           setMessage({message: "Unfollowed.", severity: "success"});
         } catch {
