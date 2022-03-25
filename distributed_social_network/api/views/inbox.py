@@ -287,7 +287,7 @@ def add_comment(request, author_id, inbox):
 # Returns None if unable to create author
 # This will be used to create local copies of remote authors
 def find_or_create_author(id):
-    if "http://" not in id:
+    if ("http://" not in id) and ("https://" not in id):
         id = "http://tik-tak-toe-cmput404.herokuapp.com/authors/" + id
     
     try:
@@ -339,7 +339,7 @@ def find_or_create_comment(id):
 # This will be used to create local copies of remote posts
 def find_or_create_post(id, authorId):
     try:
-        if "http://" not in id:
+        if ("http://" not in id) and ("https://" not in id):
             id = authorId + "/posts/" + id
         return Post.objects.get(id=id)
     except ObjectDoesNotExist:
