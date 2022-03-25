@@ -289,9 +289,10 @@ def add_comment(request, author_id, inbox):
 def find_or_create_author(id):
     if "http://" not in id:
         id = "http://tik-tak-toe-cmput404.herokuapp.com/authors/" + id
-
-    author = Author.objects.get(id=id)
-    if not author:
+    
+    try:
+        author = Author.objects.get(id=id)
+    except ObjectDoesNotExist:
         # request to get author details from remote server
         response = requests.get(id)
         if response.status_code != 200:
