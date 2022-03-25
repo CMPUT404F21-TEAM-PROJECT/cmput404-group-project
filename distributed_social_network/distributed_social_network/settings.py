@@ -74,7 +74,9 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://frontend404.herokuapp.com",
     "http://127.0.0.1",
+    "http://127.0.0.1:3000",
     "http://localhost",
+    "http://localhost:3000",
     "http://tik-tak-toe-cmput404.herokuapp.com",
     "http://cmput-404-w22-group-10-backend.herokuapp.com" # This is probably not their frontend url
 ]
