@@ -7,6 +7,7 @@ import CommentNotification from "./CommentNotification";
 import Post from "../Posts/Post";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { BACKEND_URL } from "../../constants";
+import { getAuthHeaderForNode } from "../../util";
   
 class Inbox extends React.Component {
   constructor(props){
@@ -40,16 +41,21 @@ class Inbox extends React.Component {
 
           // get list of likes for each post
           const inboxPromises = response_inbox.data.items.map(async (item) => {
-            if (item.type === 'post') {
-              const response = await requests.get(`${item.id}/likes/`);
-              item.likes = response.data.items;
-              item.likedByCurrent = false;
-              // check if current viewer liked the post
-              item.likes.forEach((like) => {
-                if (like.author === this.state.currentUser.id) {
-                  item.likedByCurrent = true;
-                }
-              })
+            try {
+              if (item.type === 'post') {
+                const url = `${item.id}/likes/`;
+                const response = await requests.get(url, getAuthHeaderForNode());
+                item.likes = response.data.items;
+                item.likedByCurrent = false;
+                // check if current viewer liked the post
+                item.likes.forEach((like) => {
+                  if (like.author === this.state.currentUser.id) {
+                    item.likedByCurrent = true;
+                  }
+                })
+              }
+            } catch(e) {
+              console.log(e);
             }
             return item;
           })
