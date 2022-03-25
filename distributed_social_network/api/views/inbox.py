@@ -172,7 +172,7 @@ def add_post(request, author_id, inbox):
         
         # check if authord_id is following senderId
         author = find_author(author_id)
-        follower_response = requests.get('{sender.id}/followers/{author.id}')
+        follower_response = requests.get(f'{sender.id}/followers/{author.id}')
         if follower_response.code != 200: # TODO: verify expected response with other teams
             response.status_code = 400
             return response
@@ -216,7 +216,7 @@ def add_like(request, author_id, inbox):
         
         # check if authord_id is following senderId
         author = find_author(author_id)
-        follower_response = requests.get('{sender.id}/followers/{author.id}')
+        follower_response = requests.get(f'{sender.id}/followers/{author.id}')
         if follower_response.code != 200: # TODO: verify expected response with other teams
             response.status_code = 400
             return response
@@ -262,7 +262,7 @@ def add_comment(request, author_id, inbox):
         
         # check if authord_id is following senderId
         author = find_author(author_id)
-        follower_response = requests.get('{sender.id}/followers/{author.id}')
+        follower_response = requests.get(f'{sender.id}/followers/{author.id}')
         if follower_response.code != 200: # TODO: verify expected response with other teams
             response.status_code = 400
             return response
