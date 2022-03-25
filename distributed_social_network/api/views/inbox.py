@@ -171,11 +171,11 @@ def add_post(request, author_id, inbox):
             return response
         
         # check if authord_id is following senderId
-        author = find_author(author_id)
-        follower_response = requests.get(f'{sender.id}/followers/{author.id}')
-        if follower_response.code != 200: # TODO: verify expected response with other teams
-            response.status_code = 400
-            return response
+        # author = find_author(author_id)
+        # follower_response = requests.get(f'{sender.id}/followers/{author.id}')
+        # if follower_response.code != 200: # TODO: verify expected response with other teams
+        #     response.status_code = 400
+        #     return response
         senderId = sender.id
 
     # not a remote sender, check if author_id is following senderId
@@ -215,11 +215,11 @@ def add_like(request, author_id, inbox):
             return response
         
         # check if authord_id is following senderId
-        author = find_author(author_id)
-        follower_response = requests.get(f'{sender.id}/followers/{author.id}')
-        if follower_response.code != 200: # TODO: verify expected response with other teams
-            response.status_code = 400
-            return response
+        # author = find_author(author_id)
+        # follower_response = requests.get(f'{sender.id}/followers/{author.id}')
+        # if follower_response.code != 200: # TODO: verify expected response with other teams
+        #     response.status_code = 400
+        #     return response
 
     # not a remote sender, check if author_id is following senderId
     elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
@@ -261,11 +261,12 @@ def add_comment(request, author_id, inbox):
             return response
         
         # check if authord_id is following senderId
-        author = find_author(author_id)
-        follower_response = requests.get(f'{sender.id}/followers/{author.id}')
-        if follower_response.code != 200: # TODO: verify expected response with other teams
-            response.status_code = 400
-            return response
+        
+        #author = find_author(author_id)
+        #follower_response = requests.get(f'{sender.id}/followers/{author.id}')
+        #if follower_response.code != 200: # TODO: verify expected response with other teams
+        #    response.status_code = 400
+        #    return response
         
     # not a remote sender, check if author_id is following senderId
     elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
