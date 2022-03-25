@@ -94,7 +94,7 @@ class PublicPosts extends React.Component {
           <div className="PublicPosts">
             <Grid container p={2}
             justifyContent="center"
-            alignItem="center"
+            alignitem="center"
             direction="column">
             </Grid>
           <Grid container spacing={2} justifyContent="center" alignItem="center">

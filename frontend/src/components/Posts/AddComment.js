@@ -11,6 +11,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import SendIcon from '@mui/icons-material/Send';
 import Avatar from '@mui/material/Avatar';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -48,7 +50,7 @@ export function EditComment(props) {
 
   return (
     <div>
-      <Button variant="contained" onClick={handleClickOpen} endIcon={<EditIcon />}>
+      <Button variant="contained" onClick={handleClickOpen} startIcon={<EditIcon />}>
         Edit
       </Button>
       <Dialog open={open} minWidth="800px" maxWidth="800px" hideBackdrop={true} onClose={handleClose}>
@@ -68,8 +70,8 @@ export function EditComment(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleEdit}>Update</Button>
+          <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleEdit} startIcon={<CheckCircleOutlineIcon />}>Update</Button>
         </DialogActions>
       </Dialog>
     </div>
@@ -161,8 +163,8 @@ export function AddCommentListItem(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSend}>Send</Button>
+          <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleSend} startIcon={<SendIcon />}>Send</Button>
         </DialogActions>
       </Dialog>
       </div>

@@ -8,19 +8,21 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import PersonIcon from '@mui/icons-material/Person';
-import { blue } from '@mui/material/colors';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import DeleteIcon from '@mui/icons-material/Delete'
 import './CommentDialog.css';
 import {EditComment, AddCommentListItem} from './AddComment';
 import requests from '../../requests';
-import { usePreviousProps } from '@mui/utils';
+import {utcToLocal} from "../../date"
 
 export default function CommentDialogButton(props) {
   const [open, setOpen] = React.useState(false);
   const [comments, setComments] = React.useState(0);
   const [commenters, setCommenters] = React.useState(0);
+  const [authors, setAuthors] = React.useState(0);
+  const [author_avatars, setAuthorAvatars] = React.useState(0);
   const [ids, setCommentIds] = React.useState(0); 
+  const [date, setDate] = React.useState(0); 
 
   const getComments = async () => {
     try {
@@ -30,18 +32,26 @@ export default function CommentDialogButton(props) {
       accept: 'application/json',
       }},
       {withCredentials:true});
-      console.log(response.data.items);
       var ids = [];
       var commenter_ids = [];
       var comment_ids = [];
-      response.data.items.forEach((comment) =>  {
+      var author_names = [];
+      var author_avatars = [];
+      var comment_dates = []
+      response.data.items.forEach(async (comment) =>  {
         ids.push(comment.comment);
-        commenter_ids.push(comment.author);
+        commenter_ids.push(comment.author.id);
         comment_ids.push(comment.id);
+        author_names.push(comment.author.displayName);
+        author_avatars.push(comment.author.profileImage);
+        comment_dates.push(comment.published)
       });
       setComments(ids);
       setCommenters(commenter_ids);
       setCommentIds(comment_ids);
+      setAuthors(author_names)
+      setAuthorAvatars(author_avatars)
+      setDate(comment_dates)
     }
     catch(error) {
       console.log(error);
@@ -63,7 +73,7 @@ const handleClickOpen = async () => {
 
   return (
     <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
+      <Button variant="contained" onClick={handleClickOpen} startIcon={<ChatBubbleOutlineIcon />}>
         View Comments
       </Button>
       <CommentDialog
@@ -75,6 +85,9 @@ const handleClickOpen = async () => {
         comments = {comments}
         commenters = {commenters}
         comment_id = {ids}
+        authors = {authors}
+        author_avatars = {author_avatars}
+        comment_dates = {date}
       />
     </div>
   );
@@ -83,7 +96,10 @@ const handleClickOpen = async () => {
 function CommentDialog(props) {
 
   var authors = props.commenters ? props.commenters : [];
+  var author_names = props.authors ? props.authors : [];
   var comments = props.comments ? props.comments : [];
+  var comment_dates = props.comment_dates ? props.comment_dates : [];
+  var author_avatars = props.author_avatars ? props.author_avatars : [];
   const { onClose, selectedValue, open } = props;
   const [commentText, setCommentText] = React.useState("")
 
@@ -117,11 +133,9 @@ function CommentDialog(props) {
         {authors.map((author, index) => (
           <ListItem button key={author}>
             <ListItemAvatar>
-              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
-                <PersonIcon />
-              </Avatar>
+              <Avatar src={`${author_avatars[index]}`}/>
             </ListItemAvatar>
-            <ListItemText primary={`${author}: ${comments[index]}`} />
+            <ListItemText primary={`${author_names[index]}: ${comments[index]}`} secondary = {utcToLocal(comment_dates[index])} />
             {author === props.current_author ? 
             <EditComment
               current_author = {props.current_author}
