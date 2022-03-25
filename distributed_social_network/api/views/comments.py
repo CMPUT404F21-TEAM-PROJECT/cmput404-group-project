@@ -1,12 +1,14 @@
 from importlib_metadata import re
-import jwt, uuid, environ
+import jwt
+import uuid
+import environ
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
 from rest_framework.pagination import PageNumberPagination
-from ..models import Comment, Post
-from ..serializers import CommentSerializer
+from ..models import Comment, Author
+from ..serializers import CommentSerializer, AuthorSerializer
 from ..views import find_post
 from .auth import get_payload
 
@@ -15,6 +17,8 @@ environ.Env.read_env()
 
 # Routes the request for multiple comment
 # Expects JSON request body with post and author attributes
+
+
 @api_view(['GET', 'POST'])
 def route_multiple_comments(request, post_id, author_id):
     if request.method == 'GET':
@@ -23,6 +27,8 @@ def route_multiple_comments(request, post_id, author_id):
         return add_comment(request, author_id, post_id)
 
 # Routes the request for a single comment
+
+
 @api_view(['GET', 'PUT', 'DELETE'])
 def route_single_comment(request, post_id, author_id, comment_id):
     if request.method == 'GET':
@@ -33,6 +39,8 @@ def route_single_comment(request, post_id, author_id, comment_id):
         return delete_comment(request, author_id, post_id, comment_id)
 
 # Gets all comments for a particular post
+
+
 def get_comments(request, post_id, author_id):
     response = HttpResponse()
     # Checks that the provided post_id exists within the database
@@ -47,12 +55,15 @@ def get_comments(request, post_id, author_id):
     paginator.page_size_query_param = 'size'
 
     # Get all comments, ordered by the latest published dates paginated
-    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=env("LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id).order_by('-published'), request)
+    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=env(
+        "LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id).order_by('-published'), request)
 
     # Create the JSON response dictionary
     serializer = CommentSerializer(comments, many=True)
     items = serializer.data
-    responseDict = {'type' : 'comments', 'items' : items}
+    for comment in items:
+        comment['author'] = AuthorSerializer(Author.objects.get(id=comment['author'])).data
+    responseDict = {'type': 'comments', 'items': items}
 
     # Return the response
     response = JsonResponse(responseDict)
@@ -61,9 +72,11 @@ def get_comments(request, post_id, author_id):
 
 # Adds a new comment to an existing post
 # Expects JSON request body with post and author attributes
+
+
 def add_comment(request, author_id, post_id):
     response = HttpResponse()
-    
+
     # Check authorization
     payload = get_payload(request, False)
     if not payload:
@@ -73,10 +86,11 @@ def add_comment(request, author_id, post_id):
     # Uses the current user and time as author and published respectively
     request.data["author"] = user_id
     request.data["published"] = timezone.localtime(timezone.now())
-    request.data["id"] = user_id + "/posts/" + post_id + "/comments/" + str(uuid.uuid4())
+    request.data["id"] = user_id + "/posts/" + \
+        post_id + "/comments/" + str(uuid.uuid4())
 
     # Serialize a new Comment object
-    serializer = CommentSerializer(data = request.data)
+    serializer = CommentSerializer(data=request.data)
 
     # If given data is valid, save the object to the database
     if serializer.is_valid():
@@ -85,12 +99,14 @@ def add_comment(request, author_id, post_id):
         response = JsonResponse(responseDict)
         response.status_code = 201
         return response
-    
+
     response.status_code = 400
     response.content = request.data
     return response
 
 # Gets a single comment JSON object
+
+
 def get_comment(request, author_id, post_id, comment_id):
     response = HttpResponse()
 
@@ -114,9 +130,11 @@ def get_comment(request, author_id, post_id, comment_id):
 
 # Adds a new comment to an existing post
 # Expects JSON request body with post and author attributes
+
+
 def update_comment(request, author_id, post_id, comment_id):
     response = HttpResponse()
-     # Check authorization
+    # Check authorization
     payload = get_payload(request, False)
     if not payload:
         response.status_code = 401
@@ -132,7 +150,7 @@ def update_comment(request, author_id, post_id, comment_id):
         response.status_code = 401
         response.content = "Error: Comment was not created by this author"
         return response
-    
+
     # Don't allow the primary key (id) to be changed, if no request_id is provided, use the comment_id
     request_id = request.data.get("id")
     if request_id and str(request_id) != str(comment_id):
@@ -144,7 +162,8 @@ def update_comment(request, author_id, post_id, comment_id):
     request.data["published"] = timezone.localtime(timezone.now())
 
     # Collect the request data
-    serializer = CommentSerializer(partial = True, instance = comment, data=request.data)
+    serializer = CommentSerializer(
+        partial=True, instance=comment, data=request.data)
 
     # If given data is valid, save the updated object to the database
     if serializer.is_valid():
@@ -156,10 +175,12 @@ def update_comment(request, author_id, post_id, comment_id):
     # If the data is not valid, do not save the updated object to the database
     response.status_code = 400
     response.content = "Error: Issue occurred during serialization"
-    
+
     return response
 
 # Deletes a comment using the provided id
+
+
 def delete_comment(request, author_id, post_id, comment_id):
     response = HttpResponse()
     # Check authorization
@@ -188,10 +209,11 @@ def delete_comment(request, author_id, post_id, comment_id):
     return response
 
 # Returns the comment object if found, otherwise returns None
+
+
 def find_comment(id, author_id, post_id):
     # Find the comment with the given id
     try:
         return Comment.objects.get(id=env("LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id + "/comments/" + str(id))
     except ObjectDoesNotExist:
         return None
-

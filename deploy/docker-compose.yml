@@ -22,7 +22,7 @@ services:
       DB_HOST: db
       DB_PASSWORD: password
       DB_PORT: 5432
-      HOST_SERVER: localhost
+      HOST_SERVER: http://127.0.0.1:8000
       LOCAL_HOST: http://127.0.0.1:8000
     ports:
       - 8000:8000

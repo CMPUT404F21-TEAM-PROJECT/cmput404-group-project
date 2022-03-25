@@ -138,7 +138,7 @@ class Inbox extends React.Component {
           <div className="inbox">
             <Grid container p={2}
             justifyContent="center"
-            alignItem="center"
+            alignitem="center"
             direction="column">
               <Button 
               variant="outlined"

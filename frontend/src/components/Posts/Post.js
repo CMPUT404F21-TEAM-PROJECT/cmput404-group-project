@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import requests from "../../requests";
 import CommentDialogButton from "./CommentDialog";
 import './Post.css'
+import {utcToLocal} from "../../date"
 import EditPost from './EditPostDialog';
 
 import { Alert,
@@ -30,12 +31,6 @@ export default function Post(props) {
   const [message, setMessage] = useState({});
     const [commentText, setCommentText] = useState("")
     const [liked, setLiked] = useState(false)
-
-    const styles = theme => ({
-        listItemText:{
-          fontSize: '1',
-        }
-      });
 
     const like = async () => {
         // send POST request to authors/{authorId}/inbox/ with a like
@@ -145,16 +140,22 @@ export default function Post(props) {
     }, [])
 
     return (
-      <ListItem>
+      <ListItem class="post">
         <ListItemText
           id="title"
           primaryTypographyProps={{fontSize: '30px'}}
           primary={props.post.title}
         />
-        <ListItemText
-          id="author"
-          primary={"By: " + props.post.author.displayName}
-        />
+        <div class="avatar">
+          <ListItemAvatar>
+            <Avatar alt="" src={`${props.post.author.profileImage}`} />
+          </ListItemAvatar>
+          <ListItemText
+            id="author"
+            primary={props.post.author.displayName}
+            secondary={utcToLocal(props.post.published)}
+          />
+        </div>
         {props.post.contentType == "text/markdown" && <ReactMarkdown>
           {props.post.content}
           </ReactMarkdown>}
@@ -168,6 +169,7 @@ export default function Post(props) {
           id="description"
           primary={props.post.description}
         />
+        <hr/>
         <div id="comment-like-section">
         {liked ? (<Button
                     disabled
@@ -180,7 +182,6 @@ export default function Post(props) {
               onClick={like}>
                   Like
               </Button>)}
-            
             <span id="comment-section">
                 <CommentDialogButton
                 current_author = {props.currentUser.id}
@@ -190,6 +191,7 @@ export default function Post(props) {
             <span id="share-section">
               <Button
                 variant="contained"
+                color="success"
                 startIcon={<ShareIcon />}
                 onClick={share}>
                   Share
@@ -203,6 +205,7 @@ export default function Post(props) {
             <div id="delete-section" hidden={props.post.author.id === props.currentUser.id ? false : true}>
               <Button
                 variant="contained"
+                color="error"
                 startIcon={<DeleteIcon/>}
                 onClick={deletePost}
               >
