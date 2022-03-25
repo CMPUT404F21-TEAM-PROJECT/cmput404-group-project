@@ -12,6 +12,7 @@ import requests from "../../requests";
 import { Redirect } from "react-router-dom";
 import FileBase64 from "react-file-base64";
 import { BACKEND_URL } from "../../constants";
+import { getAuthHeaderForNode } from "../../util";
 // TODO: Add form validation
 //import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
@@ -40,25 +41,16 @@ class NewPost extends Component {
   };
 
   getAuthorId = async () => {
-    const response = await requests.get(BACKEND_URL + "/get-user/", {
-      headers: {
-        Authorization: this.state.jwt,
-        accept: "application/json",
-      },
-    });
+    const response = await requests.get(BACKEND_URL + "/get-user/");
     this.setState({
       author_id: response.data.id ? response.data.id : "",
     });
   };
 
   handleSubmit = async () => {
-    requests.defaults.headers["Authorization"] = this.state.jwt;
     try {
       const url = this.state.author_id + "/posts/";
       const response = await requests.post(url, {
-        headers: {
-          accept: "application/json",
-        },
         title: this.state.title,
         author: this.state.author_id,
         contentType: this.state.content_type,
@@ -68,7 +60,8 @@ class NewPost extends Component {
         unlisted: this.state.unlisted,
         categories: this.state.categories,
         viewableBy: this.state.viewableBy,
-      });
+      },
+      getAuthHeaderForNode(url));
       this.setState({ successful_post: true });
       response.data.type = 'post'
       if (!response.data.unlisted) {
@@ -81,13 +74,11 @@ class NewPost extends Component {
   };
 
   sendToSelf = async (my_post) => {
+    const url = `${this.state.author_id}/inbox/`;
     await requests.post(
-      `${this.state.author_id}/inbox/`,
+      url,
       my_post,
-      {headers: {
-        Authorization: localStorage.getItem('access_token'),
-        accept: 'application/json',
-      }},
+      getAuthHeaderForNode(url),
       {withCredentials:true});
   };
 
@@ -101,13 +92,11 @@ class NewPost extends Component {
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
+      const url = `${follower.id}/inbox/`;
       await requests.post(
-        `${follower.id}/inbox/`,
+        url,
         my_post,
-        {headers: {
-          Authorization: localStorage.getItem('access_token'),
-          accept: 'application/json',
-        }},
+        getAuthHeaderForNode(url),
         {withCredentials:true});
     }
   };

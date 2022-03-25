@@ -17,6 +17,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import "./CommentDialog.css";
 import { EditComment, AddCommentListItem } from "./AddComment";
 import { usePreviousProps } from "@mui/utils";
+import { getAuthHeaderForNode } from "../../util";
 
 export default function EditPost(props) {
   const [open, setOpen] = React.useState(false);
@@ -69,7 +70,6 @@ function EditPostDialog(props) {
   };
 
   const handleSubmit = async () => {
-    requests.defaults.headers["Authorization"] = jwt;
     try {
       const url = props.post.id + "/";
       const response = await requests.post(url, {
@@ -83,7 +83,7 @@ function EditPostDialog(props) {
         unlisted: unlisted,
         categories: categories,
         viewableBy: viewable_by,
-      });
+      }, getAuthHeaderForNode(url));
       setSuccessfulPost(true);
       response.data.type = "post";
       if (!response.data.unlisted) {
@@ -97,15 +97,11 @@ function EditPostDialog(props) {
   };
 
   const sendToSelf = async (my_post) => {
+    const url = `${props.current_author}/inbox/`;
     await requests.post(
-      `${props.current_author}/inbox/`,
+      url,
       my_post,
-      {
-        headers: {
-          Authorization: jwt,
-          accept: "application/json",
-        },
-      },
+      getAuthHeaderForNode(url),
       { withCredentials: true }
     );
   };
@@ -120,15 +116,11 @@ function EditPostDialog(props) {
     // For each follower: send post to inbox
     for (let index = 0; index < followerList.length; ++index) {
       const follower = followerList[index];
+      const url = `${follower.id}/inbox/`;
       await requests.post(
-        `${follower.id}/inbox/`,
+        url,
         my_post,
-        {
-          headers: {
-            Authorization: jwt,
-            accept: "application/json",
-          },
-        },
+        getAuthHeaderForNode(url),
         { withCredentials: true }
       );
     }
