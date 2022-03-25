@@ -17,6 +17,8 @@ class AuthorManager(models.Manager):
 #         # save all changes to the database then return an updated queryset
         localHost = env("LOCAL_HOST")
         for author in queryset:
+            if not "http://" in author.id: 
+                continue
             if not (localHost in author.id):
                 response = requests.get(author.id)
                 if response.status_code == 200 or response.status_code == 201 or response.status_code == 204 or response.status_code == 304:
