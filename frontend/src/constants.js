@@ -1,2 +1,5 @@
+// // FOR PRODUCTION
+export const BACKEND_URL = "http://backend-404.herokuapp.com";
 
-export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL ? process.env.REACT_APP_BACKEND_URL : "http://127.0.0.1:8000";
+// UNCOMMENT FOR LOCAL DEVELOPMENT
+// export const BACKEND_URL = "http://127.0.0.1:8000";
