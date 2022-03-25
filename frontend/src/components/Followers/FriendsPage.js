@@ -5,7 +5,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Follower from "./Follower";
 import Following from "./Following";
 import { BACKEND_URL } from "../../constants";
-import { getAuthHeaderForNode } from "../../util";
+import getUuidFromAuthorUrl, { getAuthHeaderForNode } from "../../util";
 
 class FriendsPage extends React.Component {
     constructor(props){
@@ -49,11 +49,25 @@ class FriendsPage extends React.Component {
 
     sendFollowRequest = async () => {
         try {
-            const data = {
+            var data = {
                 type: 'follow',
                 summary: `${this.state.currentUser.displayName} wants to follow ${this.state.addFollowerId}`,
                 object: `${this.state.addFollowerId}`,
                 actor: `${this.state.currentUser.id}`,
+            }
+            // adapter for tik-tak-toe, remove when they fix their implementation
+            if ("http://tik-tak-toe-cmput404.herokuapp.com" in this.state.addFollowerId) {
+                // Create remote Followers object
+                var follower_url = this.state.addFollowerId + "/followers/" + getUuidFromAuthorUrl(this.state.currentUser.id) + "/";
+                const response = await requests.put(follower_url,
+                getAuthHeaderForNode(follower_url),
+                {withCredentials: true});
+
+                // Post follow to remote inbox
+                data = {
+                    type: "follow",
+                    id: follower_url
+                }
             }
             const url = `${this.state.addFollowerId}/inbox/`;
             const response = await requests.post(url,
