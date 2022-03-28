@@ -29,7 +29,7 @@ class PublicPosts extends React.Component {
             if (item.type === 'post') {
               const url = `${item.id}/likes/`;
               const like_response = await requests.get(url,
-                getAuthHeaderForNode(url));
+                getAuthHeaderForNode(url), {timeout:5});
               item.likes = like_response.data.items;
               item.likedByCurrent = false;
               // check if current viewer liked the post
