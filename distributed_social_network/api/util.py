@@ -11,18 +11,19 @@ def getAuthHeaderForNode(id):
 
     # dictionary to hold username:password for remote nodes
     nodeAuthDict = {
-        'tik-tak-toe-cmput404.herokuapp.com':'admin:tX7^iS8a5Ky$^S',
-        'cmput-404-w22-group-10-backend.herokuapp.com':'Team4:abcd1234',
+        'tik-tak-toe-cmput404.herokuapp.com': ('admin','tX7^iS8a5Ky$^S'),
+        'cmput-404-w22-group-10-backend.herokuapp.com': ('Team4','abcd1234'),
     }
 
     # extract node from url
     url_obj = urlparse(id)
-    auth_header = {}
-    encodedAuth = base64.b64encode(nodeAuthDict[url_obj.hostname].encode('ascii'))
+    return nodeAuthDict.get(url_obj.hostname, ('',''))
+    # auth_header = {}
+    # encodedAuth = base64.b64encode(nodeAuthDict[url_obj.hostname].encode('ascii'))
 
-    auth_header = {"headers": {
-        "Authorization": "Basic " + str(encodedAuth.decode('ascii')),
-        "accept": 'application/json',
-    }}
+    # auth_header = {"headers": {
+    #     "Authorization": "Basic " + str(encodedAuth.decode('ascii')),
+    #     "accept": 'application/json',
+    # }}
 
-    return auth_header
+    # return auth_header
