@@ -159,7 +159,7 @@ def add_post(request, author_id, inbox):
     # remote sender
     if senderId == 'foreign':
         senderId = data.get('author', senderId)
-        if senderId != 'foreign' and senderId.get('id', None) != None:
+        if senderId != 'foreign' and type(senderId) != type("") and senderId.get('id', None) != None:
             senderId = senderId.get('id')
         # didn't include author field in request
         if senderId == 'foreign':
