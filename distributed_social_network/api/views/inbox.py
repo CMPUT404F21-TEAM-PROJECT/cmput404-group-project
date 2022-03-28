@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 import environ
 import requests
+from ..util import getAuthHeaderForNode
 
 env = environ.Env()
 environ.Env.read_env()
@@ -159,6 +160,8 @@ def add_post(request, author_id, inbox):
     # remote sender
     if senderId == 'foreign':
         senderId = data.get('author', senderId)
+        if senderId != 'foreign' and senderId.get('id', None) != None:
+            senderId = senderId.get('id')
         # didn't include author field in request
         if senderId == 'foreign':
             response.status_code = 400
@@ -295,7 +298,7 @@ def find_or_create_author(id):
         author = Author.objects.get(id=id)
     except ObjectDoesNotExist:
         # request to get author details from remote server
-        response = requests.get(id, auth=('Team4', 'abcd1234'))
+        response = requests.get(id, auth=getAuthHeaderForNode(id))
         if response.status_code != 200:
             return None
 
@@ -321,7 +324,7 @@ def find_or_create_comment(id):
         return Comment.objects.get(id=id)
     except ObjectDoesNotExist:
         # request to get comment details from remote server
-        response = requests.get(id, auth=('Team4', 'abcd1234'))
+        response = requests.get(id, auth=getAuthHeaderForNode(id))
         if response.status_code != 200:
             return None
 
@@ -347,12 +350,19 @@ def find_or_create_post(id, authorId):
         return Post.objects.get(id=id)
     except ObjectDoesNotExist:
         # request to get post details from remote server
-        response = requests.get(id, auth=('Team4', 'abcd1234'))
+        response = requests.get(id, auth=getAuthHeaderForNode(id))
         if response.status_code != 200:
             return None
 
         response_data = response.json()
+        # clean input
         response_data.pop("type")
+        if response_data.get('source', None) == '':
+            response_data.pop('source')
+        if response_data.get('origin', None) == '':
+            response_data.pop('origin')
+
+        response_data['viewableBy'] = ''
         # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
         #       otherwise do not create the author and return None
         serializer = PostSerializer(data = response_data)
