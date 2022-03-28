@@ -355,7 +355,13 @@ def find_or_create_post(id, authorId):
             return None
 
         response_data = response.json()
+        # clean input
         response_data.pop("type")
+        if response_data.get('source', None) == '':
+            response_data.pop('source')
+        if response_data.get('origin', None) == '':
+            response_data.pop('origin')
+
         response_data['viewableBy'] = ''
         # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
         #       otherwise do not create the author and return None
