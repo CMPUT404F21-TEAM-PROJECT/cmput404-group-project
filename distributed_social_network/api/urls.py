@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from django.contrib import admin
 from . import views
 
@@ -15,7 +15,7 @@ urlpatterns = [
   path('authors/<str:author_id>/posts/<str:post_id>/image/', views.route_single_image_post, name='Single Image Post'),
   path('authors/<str:author_id>/followers/', views.route_multiple_followers, name='Get Followers'),
   path('authors/<str:author_id>/following/', views.route_multiple_following, name='Get Following'),
-  path('authors/<str:author_id>/followers/<str:follower_id>/', views.route_single_follower, name='Manage Follower'),
+  re_path(r'^authors\/(?P<author_id>[\w+-]+)\/followers\/(?P<follower_id>[^+]+)\/', views.route_single_follower, name='Manage Follower'),
   path('authors/<str:authorID>/posts/<str:postID>/likes/', views.get_post_likes, name="Get Post Like"),
   path('authors/<str:authorID>/posts/<str:postID>/comments/<str:commentID>/likes/', views.get_comment_likes, name="Get Comment Likes"),
   path('authors/<str:authorID>/liked/', views.get_author_likes, name="Get Author's Likes"),

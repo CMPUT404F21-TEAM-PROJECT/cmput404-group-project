@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import jwt
 from ..models import Inbox, Author, Post, Comment
 from ..serializers import InboxSerializer, FollowRequestSerializer, PostSerializer, LikeSerializer, AuthorSerializer, CommentSerializer
-from ..views import get_follower, find_post, find_author, find_comment
+from ..views import check_follower, find_post, find_author, find_comment
 from .auth import get_payload
 
 from rest_framework.decorators import api_view
@@ -182,7 +182,7 @@ def add_post(request, author_id, inbox):
         senderId = sender.id
 
     # not a remote sender, check if author_id is following senderId
-    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
+    elif not check_follower(senderId, author_id) and author_id != senderId:
         response.status_code = 401
         return response
     
@@ -225,7 +225,7 @@ def add_like(request, author_id, inbox):
         #     return response
 
     # not a remote sender, check if author_id is following senderId
-    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
+    elif not check_follower(senderId, author_id) and author_id != senderId:
         response.status_code = 401
         return response
 
@@ -272,7 +272,7 @@ def add_comment(request, author_id, inbox):
         #    return response
         
     # not a remote sender, check if author_id is following senderId
-    elif get_follower(senderId, author_id).status_code != 200 and author_id != senderId:
+    elif not check_follower(senderId, author_id) and author_id != senderId:
         response.status_code = 401
         return response
 
