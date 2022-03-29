@@ -1,13 +1,16 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
+
+from api.util import getAuthHeaderForNode
 from ..serializers import PostSerializer, AuthorSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 import base64, jwt, uuid, environ
 from .auth import get_payload
-from ..models import FollowRequest, Post, Author
+from ..models import FollowRequest, Post, Author, Node
 from django.db.models import Q
 from itertools import chain
+import requests
 
 env = environ.Env()
 environ.Env.read_env()
@@ -267,6 +270,32 @@ def get_public_posts(request):
     # Get all public posts that are not unlisted
     publicPosts = Post.objects.filter(visibility__exact="PUBLIC").filter(unlisted__exact=False).filter(viewableBy__exact='')
 
+    # Get all public posts from foreign nodes
+    nodes = Node.objects.all()
+
+    # loop over each node
+    foreignPublicPosts = []
+    for node in nodes:
+        auth = getAuthHeaderForNode(node.baseUrl)
+        response = requests.get(node.baseUrl + "/authors/", auth=auth)
+        authors = response.json().get("items")
+
+        # loop over each author
+        for author in authors:
+            authorId = author['id']
+            
+            # convert to url if needed
+            if "http://" not in authorId and "https://" not in authorId:
+                authorId = node.baseUrl + "/authors/" + authorId
+
+            # get all posts by that author
+            try:
+                response = requests.get(authorId + "/posts/", auth=auth, timeout=1)
+                posts = response.json().get('items')
+                foreignPublicPosts = foreignPublicPosts + posts
+            except:
+                print("Get request failed at " + authorId + "/posts/")
+
     # Initialize paginator
     paginator = PageNumberPagination()
     paginator.page_query_param = 'page'
@@ -279,6 +308,8 @@ def get_public_posts(request):
     items = serializer.data
     for post in items:
         post['author'] = AuthorSerializer(Author.objects.get(id=post['author'])).data
+
+    items = items + foreignPublicPosts
     responseDict = {'type' : 'posts', 'items' : items}
 
     # Return the response
