@@ -73,7 +73,6 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://frontend404.herokuapp.com",
-    "http://frontend404.herokuapp.com/",
     "http://127.0.0.1",
     "http://127.0.0.1:3000",
     "http://localhost",
