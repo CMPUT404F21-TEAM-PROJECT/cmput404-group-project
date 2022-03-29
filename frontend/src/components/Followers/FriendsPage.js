@@ -5,7 +5,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Follower from "./Follower";
 import Following from "./Following";
 import { BACKEND_URL } from "../../constants";
-import prepareAuthorId, { getAuthHeaderForNode } from "../../util";
+import getUuidFromAuthorUrl, { getAuthHeaderForNode } from "../../util";
 
 class FriendsPage extends React.Component {
     constructor(props){
@@ -58,7 +58,7 @@ class FriendsPage extends React.Component {
             // adapter for tik-tak-toe, remove when they fix their implementation
             if (this.state.addFollowerId.includes("http://tik-tak-toe-cmput404.herokuapp.com")) {
                 // Create remote Followers object
-                var follower_url = this.state.addFollowerId + "/followers/" + prepareAuthorId(this.state.currentUser.id) + "/";
+                var follower_url = this.state.addFollowerId + "/followers/" + getUuidFromAuthorUrl(this.state.currentUser.id) + "/";
                 const response = await requests.put(follower_url,
                     {},
                     getAuthHeaderForNode(follower_url),
