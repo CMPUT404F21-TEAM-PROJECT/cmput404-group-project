@@ -36,7 +36,7 @@ const NavBar = () => {
     const response = await requests.get(BACKEND_URL + "/get-user/", {headers: {
       Authorization: localStorage.getItem('access_token'),
       accept: 'application/json',
-    }}, {timeout:2});
+    }}, {timeout:500});
     setProfileImage(response.data.profileImage)
   }, []);
   
