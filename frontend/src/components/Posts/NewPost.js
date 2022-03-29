@@ -41,7 +41,7 @@ class NewPost extends Component {
   };
 
   getAuthorId = async () => {
-    const response = await requests.get(BACKEND_URL + "/get-user/", {timeout:2});
+    const response = await requests.get(BACKEND_URL + "/get-user/", {timeout:500});
     this.setState({
       author_id: response.data.id ? response.data.id : "",
     });

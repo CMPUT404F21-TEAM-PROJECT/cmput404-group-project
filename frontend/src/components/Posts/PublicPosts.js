@@ -55,7 +55,7 @@ class PublicPosts extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get(BACKEND_URL + "/get-user/", {timeout:2});
+          const response = await requests.get(BACKEND_URL + "/get-user/", {timeout:500});
           this.setState({ currentUser: {
               id: response.data.id ? response.data.id : '',
               url: response.data.url ? response.data.url : '',
