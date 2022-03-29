@@ -21,7 +21,7 @@ class PublicPosts extends React.Component {
   getAllPublicPosts = async () => {
     try {
         // Get all the public post details
-        const response = await requests.get(BACKEND_URL + `/public-posts/`);
+        const response = await requests.get(BACKEND_URL + `/public-posts/`, {timeout:60});
         
         // get list of likes for each post
         const postPromises = response.data.items.map(async (item) => {
