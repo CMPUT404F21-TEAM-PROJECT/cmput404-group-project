@@ -7,6 +7,7 @@ import {
   FormControl,
   FormGroup,
   Grid,
+  Typography
 } from "@mui/material";
 import requests from "../../requests";
 import { Redirect } from "react-router-dom";
@@ -110,8 +111,10 @@ class NewPost extends Component {
           disabled
           style={{ width: "35em" }}
         >
-          <h1>New Post</h1>
+          <Typography fontWeight="bold" fontSize="2em" textAlign="center" paddingTop="20px" paddingBottom="40px">New Post</Typography>
           <FormGroup>
+            <span>Post Details</span>
+            <br></br>
             <TextField
               className="text-input"
               size="small"
