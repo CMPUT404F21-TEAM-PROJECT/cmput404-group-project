@@ -16,7 +16,7 @@ environ.Env.read_env()
 def route_single_follower(request, author_id, follower_id):
     author_id = env("LOCAL_HOST") + "/authors/" + author_id
     # if follower_id is a local uuid, transform to full id
-    if follower_id[:7] != "http://":
+    if "http://" not in follower_id and "https://" not in follower_id:
         follower_id = env("LOCAL_HOST") + "/authors/" + follower_id
 
     if request.method == 'DELETE':
@@ -95,7 +95,8 @@ def get_follower(author_id, follower_id):
     try:
         fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
     except ObjectDoesNotExist:
-        response.status_code = 404
+        response = JsonResponse({'message':f'{follower_id} is not a follower of {author_id}'})
+        response.status_code = 200
         return response
 
     if fr.accepted:
@@ -107,7 +108,8 @@ def get_follower(author_id, follower_id):
         response.status_code = 200
         return response
     else:
-        response.status_code = 404
+        response = JsonResponse({'message':f'{follower_id} is not a follower of {author_id}'})
+        response.status_code = 200
         return response
 
 # Get a list of author author_id's followers
@@ -143,3 +145,15 @@ def get_following(author_id):
     response = JsonResponse(responseDict)
     response.status_code = 200
     return response
+
+def check_follower(author_id, follower_id):
+
+    try:
+        fr = FollowRequest.objects.get(actor=follower_id, object=author_id)
+    except ObjectDoesNotExist:
+        return False
+
+    if fr.accepted:
+       return True
+    else:
+        return False

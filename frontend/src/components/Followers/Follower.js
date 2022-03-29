@@ -20,7 +20,7 @@ export default function Follower(props) {
         // send DELETE request to author_id/followers/follower_id
         try {
           var url = props.currentUserId + "/followers/";
-          url = url + getUuidFromAuthorUrl(props.id);
+          url = url + getUuidFromAuthorUrl(props.id) + "/";
           const response = await requests.delete(url,
             {},
             getAuthHeaderForNode(url),
