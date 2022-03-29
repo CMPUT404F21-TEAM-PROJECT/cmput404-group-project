@@ -25,7 +25,7 @@ class Inbox extends React.Component {
   initializeDetails = async () => {
       try {
           // Get the author details
-          const response = await requests.get(BACKEND_URL + "/get-user/");
+          const response = await requests.get(BACKEND_URL + "/get-user/", {timeout:2});
 
           this.setState({ currentUser: {
             id: response.data.id ? response.data.id : '',
