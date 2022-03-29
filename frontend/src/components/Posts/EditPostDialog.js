@@ -128,8 +128,8 @@ function EditPostDialog(props) {
 
   return (
     <Dialog onClose={handleClose} maxWidth="800px" open={open}>
-      <DialogTitle className="edit-post-dialog">Edit Post</DialogTitle>
-      <Grid container justifyContent="center">
+      <DialogTitle fontWeight="bold" fontSize="1.5em" textAlign = "center" className="edit-post-dialog">Edit Post</DialogTitle>
+      <Grid container justifyContent="center" padding="20px">
         <FormControl
           component="fieldset"
           variant="filled"
@@ -137,6 +137,8 @@ function EditPostDialog(props) {
           style={{ width: "35em" }}
         >
           <FormGroup>
+            <span>Post Details</span>
+            <br></br>
             <TextField
               className="text-input"
               size="small"
