@@ -111,7 +111,7 @@ class NewPost extends Component {
           disabled
           style={{ width: "35em" }}
         >
-          <Typography fontWeight="bold" fontSize="2em" textAlign="center" paddingTop="20px" paddingBottom="40px">New Post</Typography>
+          <Typography fontWeight="bold" fontSize="2em" textAlign="center" paddingTop="20px" paddingBottom="35px">New Post</Typography>
           <FormGroup>
             <span>Post Details</span>
             <br></br>

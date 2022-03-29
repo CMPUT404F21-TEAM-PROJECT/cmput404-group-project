@@ -94,13 +94,13 @@ class PublicPosts extends React.Component {
       return (
           <div className="PublicPosts">
             <Grid container p={2}
-            justifyContent="center"
-            alignitem="center"
-            direction="column">
+              justifyContent="center"
+              alignitem="center"
+              direction="column">
             </Grid>
-          <Grid container spacing={2} justifyContent="center" alignItem="center">
-            {this.state.allPosts.length ? this.renderPostList() : <h2>No Public Posts Available</h2>}
-          </Grid>
+            <Grid container spacing={2} justifyContent="center" alignItem="center">
+              {this.state.allPosts.length ? this.renderPostList() : <h2>No Public Posts Available</h2>}
+            </Grid>
           </div>
       )
   }
