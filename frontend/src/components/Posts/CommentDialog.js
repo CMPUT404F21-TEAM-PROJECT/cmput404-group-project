@@ -30,7 +30,6 @@ export default function CommentDialogButton(props) {
     try {
       const url = `${props.post_id}/comments/`;
       const response = await requests.get(url,
-        {},
         getAuthHeaderForNode(url),
         {withCredentials:true});
       var ids = [];
