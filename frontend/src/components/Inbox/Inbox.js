@@ -129,11 +129,16 @@ class Inbox extends React.Component {
   render(){
       return (
           <div className="inbox">
-            <Grid container p={2}
+            <Grid container 
+            pt={2}
+            pb={4}
+            pl={"16.75%"}
+            pr={"16.75%"}
             justifyContent="center"
             alignitem="center"
-            direction="column">
-              <Button 
+            direction="column"
+            >
+              <Button item
               variant="outlined"
               startIcon={<DeleteIcon />}
               onClick={this.clearInbox}>
