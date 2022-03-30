@@ -88,11 +88,14 @@ class ProfileScreen extends React.Component {
                     <Table sx={{ minWidth: 200 }} aria-label="simple table">
                         <TableBody>
                         {rows.map((row) => (
-                            <TableRow
+                            <TableRow 
                             key={row.field}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                             >
-                            <TableCell component="th" scope="row">
+                            <TableCell width="100px" component="th" scope="row"
+                                sx={{fontWeight: "bold"}}
+                            >
+            
                                 {row.field}
                             </TableCell>
                             <TableCell align="left">{row.value}</TableCell>
