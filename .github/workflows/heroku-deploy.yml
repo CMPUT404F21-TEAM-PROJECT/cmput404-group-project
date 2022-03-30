@@ -13,7 +13,7 @@ jobs:
         id: heroku
         uses: snithyanantham/docker-compose-multiple-apps-heroku-deploy@v1.0
         with:
-          email: ${{ secrets.GROUP_EMAIL }}
-          api_key: ${{ secrets.GROUP_API_KEY }}
+          email: ${{ secrets.GROUP_EMAIL2 }}
+          api_key: ${{ secrets.GROUP_API_KEY2 }}
           docker_compose_file: "./deploy/docker-compose.heroku.yml"
           heroku_apps: '[{"imagename":"deploy_server","appname":"backend-404-2","apptype":"web"}]'
