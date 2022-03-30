@@ -1,6 +1,7 @@
 div.ProfileScreen {
     margin: 1em 1em 1em 1em;
     text-align: center;
+    padding-bottom: 30px;
 }
 
 #my-profile {

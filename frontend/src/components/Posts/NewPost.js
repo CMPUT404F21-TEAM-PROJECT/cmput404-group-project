@@ -104,7 +104,7 @@ class NewPost extends Component {
 
   render() {
     return (
-      <Grid container justifyContent="center">
+      <Grid container pb={"30px"} justifyContent="center">
         <FormControl
           component="fieldset"
           variant="filled"
