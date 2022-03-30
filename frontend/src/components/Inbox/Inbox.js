@@ -140,7 +140,7 @@ class Inbox extends React.Component {
                 Clear inbox
               </Button>
             </Grid>
-          <Grid container spacing={2} justifyContent="center" alignItem="center">
+          <Grid container spacing={2} paddingBottom="30px" justifyContent="center" alignItem="center">
             {this.state.inboxList.length ? this.renderInboxItems() : <h2>Inbox is empty</h2>}
           </Grid>
           </div>

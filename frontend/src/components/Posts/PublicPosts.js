@@ -98,7 +98,7 @@ class PublicPosts extends React.Component {
               alignitem="center"
               direction="column">
             </Grid>
-            <Grid container spacing={2} justifyContent="center" alignItem="center">
+            <Grid container spacing={2} paddingBottom="30px" justifyContent="center" alignItem="center">
               {this.state.allPosts.length ? this.renderPostList() : <h2>No Public Posts Available</h2>}
             </Grid>
           </div>
