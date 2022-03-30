@@ -2,7 +2,7 @@ name: Heroku Deploy CICD
 
 on:
   push:
-    branches: [main]
+    branches: [backendDeploy]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,4 +16,4 @@ jobs:
           email: ${{ secrets.GROUP_EMAIL }}
           api_key: ${{ secrets.GROUP_API_KEY }}
           docker_compose_file: "./deploy/docker-compose.heroku.yml"
-          heroku_apps: '[{"imagename":"deploy_frontend","appname":"frontend404","apptype":"web"}, {"imagename":"deploy_server","appname":"backend-404","apptype":"web"}]'
+          heroku_apps: '[{"imagename":"deploy_server","appname":"backend-404-2","apptype":"web"}]'
