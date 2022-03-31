@@ -81,6 +81,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://bingbing10.herokuapp.com"
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'distributed_social_network.urls'
 
