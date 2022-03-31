@@ -71,7 +71,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
-CORS_ALLOWED_ORIGINS = [
+'''CORS_ALLOWED_ORIGINS = [
     "http://frontend404.herokuapp.com",
     "http://127.0.0.1",
     "http://127.0.0.1:3000",
@@ -79,9 +79,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://tik-tak-toe-cmput404.herokuapp.com",
     "https://bingbing10.herokuapp.com"
-]
+]'''
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'distributed_social_network.urls'
 
