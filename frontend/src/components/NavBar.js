@@ -87,11 +87,6 @@ const NavBar = () => {
   };
 
 
-  /* todo
-    -move nav bar options to left
-
-  */
-
   return (
     <AppBar position="static" >
       <Container maxWidth="100%" >
@@ -168,7 +163,13 @@ const NavBar = () => {
                 <Button 
                   key={page}
                   onClick={handleCloseNavMenu}
-                  sx={links[page] === currentPath ? {my: 2, color: "white", display: 'block', fontWeight: "bold"} : {my: 2, color: "rgba(255, 255, 255, 0.5)", display: 'block'}}
+                  sx={links[page] === currentPath ? 
+                    {my: 2, color: "white", display: 'block', fontWeight: "bold"} : 
+                  {my: 2, color: "rgba(255, 255, 255, 0.5)", display: 'block', 
+                    ':hover': {
+                      opacity: 0.40,
+                      transitionDuration: 0.2
+                  }}}
                 >
                   {page}
                 </Button>

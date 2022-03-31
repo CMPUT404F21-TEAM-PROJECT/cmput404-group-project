@@ -88,11 +88,14 @@ class ProfileScreen extends React.Component {
                     <Table sx={{ minWidth: 200 }} aria-label="simple table">
                         <TableBody>
                         {rows.map((row) => (
-                            <TableRow
+                            <TableRow 
                             key={row.field}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                             >
-                            <TableCell component="th" scope="row">
+                            <TableCell width="100px" component="th" scope="row"
+                                sx={{fontWeight: "bold"}}
+                            >
+            
                                 {row.field}
                             </TableCell>
                             <TableCell align="left">{row.value}</TableCell>
@@ -104,11 +107,11 @@ class ProfileScreen extends React.Component {
                 </span>
                 <h1>Edit Profile</h1>
                 <div id='inputs'>
-                    <TextField id="url-input" label="New Url" variant="filled" defaultValue=""/>
-                    <TextField id="host-input" label="New Host" variant="filled" defaultValue=""/>
-                    <TextField id="displayName-input" label="New Display Name" variant="filled" defaultValue=""/>
-                    <TextField id="github-input" label="New GitHub" variant="filled" defaultValue=""/>
-                    <TextField id="profileImage-input" label="New ProfileImage" variant="filled" defaultValue=""/>
+                    <TextField fullWidth="true" id="url-input" label="New Url" variant="filled" defaultValue=""/>
+                    <TextField fullWidth="true" id="host-input" label="New Host" variant="filled" defaultValue=""/>
+                    <TextField fullWidth="true" id="displayName-input" label="New Display Name" variant="filled" defaultValue=""/>
+                    <TextField fullWidth="true" id="github-input" label="New GitHub" variant="filled" defaultValue=""/>
+                    <TextField fullWidth="true" id="profileImage-input" label="New ProfileImage" variant="filled" defaultValue=""/>
                 </div>
                 <Button onClick={this.saveChangesPressed} variant="contained">Save Changes</Button>
                 {this.state.showSuccess && <Alert severity="success">

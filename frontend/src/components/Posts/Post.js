@@ -178,6 +178,8 @@ export default function Post(props) {
                     </Button>)  
             : (<Button 
               id="like-button"
+              variant="contained"
+              color="success"
               startIcon={<ThumbUp />}
               onClick={like}>
                   Like
@@ -191,7 +193,6 @@ export default function Post(props) {
             <span id="share-section">
               <Button
                 variant="contained"
-                color="success"
                 startIcon={<ShareIcon />}
                 onClick={share}>
                   Share

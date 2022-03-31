@@ -7,6 +7,7 @@ import {
   FormControl,
   FormGroup,
   Grid,
+  Typography
 } from "@mui/material";
 import requests from "../../requests";
 import { Redirect } from "react-router-dom";
@@ -103,15 +104,17 @@ class NewPost extends Component {
 
   render() {
     return (
-      <Grid container justifyContent="center">
+      <Grid container pb={"30px"} justifyContent="center">
         <FormControl
           component="fieldset"
           variant="filled"
           disabled
           style={{ width: "35em" }}
         >
-          <h1>New Post</h1>
+          <Typography fontWeight="bold" fontSize="2em" textAlign="center" paddingTop="20px" paddingBottom="35px">New Post</Typography>
           <FormGroup>
+            <span>Post Details</span>
+            <br></br>
             <TextField
               className="text-input"
               size="small"
