@@ -71,16 +71,17 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware'
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
     "http://frontend404.herokuapp.com",
-    "http://127.0.0.1",
+    "http://127.0.0.1:8000",
     "http://127.0.0.1:3000",
-    "http://localhost",
+    "http://localhost:8000",
     "http://localhost:3000",
     "http://tik-tak-toe-cmput404.herokuapp.com",
     "https://bingbing10.herokuapp.com"
 ]
-CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'distributed_social_network.urls'
 
