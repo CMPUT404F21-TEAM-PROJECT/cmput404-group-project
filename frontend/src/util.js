@@ -20,7 +20,8 @@ export function getAuthHeaderForNode(url){
     // dictionary to hold username:password for remote nodes
     const nodeAuthDict = {
         'http://tik-tak-toe-cmput404.herokuapp.com':'admin:tX7^iS8a5Ky$^S',
-        'http://cmput-404-w22-group-10-backend.herokuapp.com':'Team4:abcd1234',
+        'https://cmput-404-w22-group-10-backend.herokuapp.com':'Team4:abcd1234',
+        'http://backend-404-2.herokuapp.com':'copy:wxyz1234',
     }
     
     // extract node from url
