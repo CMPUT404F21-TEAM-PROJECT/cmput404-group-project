@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@s#e=vn8ng-#+zz$h@gbw8njfzzt9*2ce8_bx78o(^dk8x(tzr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1', env("HOST_SERVER")]
 ALLOWED_HOSTS = ['*']
@@ -71,7 +71,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
-'''CORS_ALLOWED_ORIGINS = [
+CORS_ALLOWED_ORIGINS = [
     "http://frontend404.herokuapp.com",
     "http://127.0.0.1",
     "http://127.0.0.1:3000",
@@ -79,10 +79,8 @@ MIDDLEWARE = [
     "http://localhost:3000",
     "http://tik-tak-toe-cmput404.herokuapp.com",
     "https://bingbing10.herokuapp.com"
-]'''
+]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'distributed_social_network.urls'
 
