@@ -107,16 +107,19 @@ WSGI_APPLICATION = 'distributed_social_network.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': env("DB_NAME"),
+#         'USER': env("DB_USER"),
+#         'PASSWORD': env("DB_PASSWORD"),
+#         'HOST': env("DB_HOST"),
+#         'PORT': env("DB_PORT"),
+#     }
+# }
 DATABASES = {
-    "deploy": dj_database_url.config(default=env("DATABASE_URL"), conn_max_age=600),
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env("DB_NAME"),
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASSWORD"),
-        'HOST': env("DB_HOST"),
-        'PORT': env("DB_PORT"),
-    }
+    # This should work for the deployed server even if they change the database_url, uncomment top for local development
+    'default': dj_database_url.config(default=env("DATABASE_URL"), conn_max_age=600),
 }
 
 
