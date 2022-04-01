@@ -277,12 +277,15 @@ def get_public_posts(request):
     foreignPublicPosts = []
     for node in nodes:
         auth = getAuthHeaderForNode(node.baseUrl)
+        postCount = 0
         try:
             response = requests.get(node.baseUrl + "/authors/", auth=auth, timeout=3)
             authors = response.json().get("items")
 
             # loop over each author
             for author in authors:
+                if postCount > 3:
+                    break
                 authorId = author['id']
                 
                 # convert to url if needed
@@ -293,10 +296,13 @@ def get_public_posts(request):
                 try:
                     response = requests.get(authorId + "/posts/", auth=auth, timeout=0.3)
                     posts = response.json().get('items')
+                    postCount += len(posts)
                     foreignPublicPosts = foreignPublicPosts + posts
-                except:
+                except Exception as e:
+                    print(e)
                     print("Get request failed at " + authorId + "/posts/")
-        except:
+        except Exception as e:
+            print(e)
             print("Get request failed at " + node.baseUrl + "/authors/")
 
     # Initialize paginator
