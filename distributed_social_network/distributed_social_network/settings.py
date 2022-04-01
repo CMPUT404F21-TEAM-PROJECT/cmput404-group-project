@@ -120,7 +120,9 @@ WSGI_APPLICATION = 'distributed_social_network.wsgi.application'
 # }
 DATABASES = {
     # This should work for the deployed server even if they change the database_url, uncomment top for local development
-    'default': dj_database_url.config(default=env("DATABASE_URL"), conn_max_age=600),
+    # max age is explicitly set to 0 to close connection when they are 
+    # finished to prevent us from reaching the max connections
+    'default': dj_database_url.config(default=env("DATABASE_URL"), conn_max_age=0),
 }
 
 
