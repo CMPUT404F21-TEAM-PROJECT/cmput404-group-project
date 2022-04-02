@@ -72,7 +72,7 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_followers(self):
         """Test GET request for getting a list of followers."""
-        url = self.object.id + "followers/"
+        url = self.object.id + "/followers/"
         url = url.replace(env("LOCAL_HOST"), "")
 
         response = self.client.get(url)
@@ -84,7 +84,7 @@ class FollowersEndpointTestCase(APITestCase):
     
     def test_get_following(self):
         """Test GET request for getting a list of people you follow."""
-        url = self.actor.id + 'following/'
+        url = self.actor.id + '/following/'
         url = url.replace(env("LOCAL_HOST"), "")
 
         response = self.client.get(url)
@@ -100,7 +100,7 @@ class FollowersEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = '/authors/' + self.object.id + 'followers/' + self.actor.id
+        url = '/authors/' + self.object.id + '/followers/' + self.actor.id + "/"
         url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.delete(url)
@@ -119,7 +119,7 @@ class FollowersEndpointTestCase(APITestCase):
                                      actor=self.object,
                                      object=self.actor)
 
-        url = '/authors/' + self.actor.id + 'followers/' + self.object.id
+        url = '/authors/' + self.actor.id + '/followers/' + self.object.id + "/"
         url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.put(url)
@@ -131,15 +131,16 @@ class FollowersEndpointTestCase(APITestCase):
 
     def test_get_follower(self):
         """Test GET request for checking if someone is a follower."""
-        url = '/authors/' + self.object.id + 'followers/' + self.actor.id
+        url = '/authors/' + self.object.id + '/followers/' + self.actor.id + "/"
         url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # testing a non follower
-        url = '/authors/' + self.object.id + 'followers/' + self.object.id
+        url = '/authors/' + self.object.id + '/followers/' + self.object.id + "/"
         url = url.replace(env("LOCAL_HOST")+"/authors/", "")
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.json().get('message', None), None)

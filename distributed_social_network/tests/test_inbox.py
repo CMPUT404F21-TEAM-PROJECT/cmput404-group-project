@@ -123,7 +123,7 @@ class InboxEndpointTestCase(APITestCase):
 
         # get inbox and populate with a post
         self.inbox = Inbox.objects.get(author=self.author.id)
-        postUrl = author2["id"].replace(env("LOCAL_HOST"), "") + "posts/" + post1['id'] + "/"
+        postUrl = author2["id"].replace(env("LOCAL_HOST"), "") + "/posts/" + post1['id'] + "/"
         response = self.client.put(postUrl, post1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # post1["id"] = response.json()["id"]
@@ -137,7 +137,7 @@ class InboxEndpointTestCase(APITestCase):
                                      accepted=True)
         
         # make another post that will be added to the inbox in a test
-        postUrl = author2["id"].replace(env("LOCAL_HOST"), "") + "posts/" + post2['id'] + "/"
+        postUrl = author2["id"].replace(env("LOCAL_HOST"), "") + "/posts/" + post2['id'] + "/"
         response = self.client.put(postUrl, post2, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -154,7 +154,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
         
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -173,7 +173,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -190,11 +190,11 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user2, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
 
         local_post = post2.copy()
         local_post['type'] = 'post'
-        local_post['id'] = author2["id"] + "posts/" + post2['id']
+        local_post['id'] = author2["id"] + "/posts/" + post2['id']
 
         response = self.client.post(url, local_post, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -207,7 +207,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user2, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
 
         response = self.client.post(url, follow_request, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -225,7 +225,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = author2["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
+        url = author2["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
 
         local_comment = commentPost1.copy()
         local_comment['type'] = 'comment'
@@ -247,7 +247,7 @@ class InboxEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        url = author1["id"].replace(env("LOCAL_HOST"), "") + 'inbox/'
+        url = author1["id"].replace(env("LOCAL_HOST"), "") + '/inbox/'
         # postLike1['object'] = "http://{0}:{1}/authors/{2}/posts/{3}".format(HOST, PORT, author2, post1['id'])
         postLike1['object'] = post1['id']
         response = self.client.post(url, postLike1, format="json") 
@@ -261,15 +261,3 @@ class InboxEndpointTestCase(APITestCase):
         self.assertEqual(savedLike.author, self.author) 
         self.assertEqual(savedLike.object, postLike1["object"])
 
-    # TODO: implement for part 2
-    # def test_add_remote_post(self):
-    #     """Test POST request for sending a remote post to an inbox."""
-    #     pass
-
-    # def test_add_remote_follow(self):
-    #     """Test POST request for sending a follow request from a remote author to an inbox."""
-    #     pass
-
-    # def test_add_remote_like(self):
-    #     """Test POST request for sending a like for a remote post/comment to an inbox."""
-    #     pass
