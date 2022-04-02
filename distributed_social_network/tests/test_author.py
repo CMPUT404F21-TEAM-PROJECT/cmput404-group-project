@@ -81,7 +81,7 @@ class AuthorEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        updateUrl = author1["id"].replace(env("LOCAL_HOST"), "")
+        updateUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "/"
 
         # Update the author
         author1Updated = copy.deepcopy(author2)
@@ -101,7 +101,7 @@ class AuthorEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        getUrl = author1["id"].replace(env("LOCAL_HOST"), "")
+        getUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "/"
 
         # Get the author
         response = self.client.get(getUrl)

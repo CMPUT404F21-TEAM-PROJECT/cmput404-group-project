@@ -96,7 +96,7 @@ class CommentEndpointTestCase(APITestCase):
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + 'posts/'
+        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(response.json()["id"] + "/", textPostPlain, format='json')
@@ -119,7 +119,7 @@ class CommentEndpointTestCase(APITestCase):
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + 'posts/'
+        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(response.json()["id"] + "/", textPostPlain, format='json')
@@ -151,7 +151,7 @@ class CommentEndpointTestCase(APITestCase):
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + 'posts/'
+        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(response.json()["id"] + "/", textPostPlain, format='json')
@@ -186,7 +186,7 @@ class CommentEndpointTestCase(APITestCase):
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + 'posts/'
+        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
@@ -234,7 +234,7 @@ class CommentEndpointTestCase(APITestCase):
         access_token = valid_response.data
         jwt_id = jwt.decode(access_token['jwt'], key='secret', algorithms=['HS256'])["id"]
         # Create a new post using the jwt_id
-        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + 'posts/'
+        postsUrl = jwt_id.replace(env("LOCAL_HOST"), "") + '/posts/'
         response = self.client.post(postsUrl, textPostPlain, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(postsUrl, textPostPlain, format='json')
