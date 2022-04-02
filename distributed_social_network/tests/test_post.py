@@ -169,7 +169,7 @@ class PostEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        postUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "posts/" + textPostPlain['id'] + "/"
+        postUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "/posts/" + textPostPlain['id'] + "/"
 
         # Add a text post
         response = self.client.put(postUrl, textPostPlain, format='json')
@@ -181,7 +181,7 @@ class PostEndpointTestCase(APITestCase):
 
         # Check for correct attributes
         responseJson = response.json()
-        self.assertEqual(responseJson["id"], author1["id"] + "posts/" + textPostPlain["id"])
+        self.assertEqual(responseJson["id"], author1["id"] + "/posts/" + textPostPlain["id"])
         self.assertEqual(responseJson["title"], textPostPlain["title"])
         self.assertEqual(responseJson["contentType"], textPostPlain["contentType"])
         self.assertEqual(responseJson["content"], textPostPlain["content"])
@@ -204,7 +204,7 @@ class PostEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        postsUrl = author1["id"] + 'posts/'
+        postsUrl = author1["id"] + '/posts/'
 
         # Add 2 text posts
         response = self.client.post(postsUrl, textPostPlain, format='json')
@@ -239,8 +239,8 @@ class PostEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
         
-        addPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "posts/" + imagePostJpeg['id'] + "/"
-        getPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + 'posts/' + imagePostJpeg["id"] + '/image/'
+        addPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "/posts/" + imagePostJpeg['id'] + "/"
+        getPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + '/posts/' + imagePostJpeg["id"] + '/image/'
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostJpeg, format='json', )
@@ -258,8 +258,8 @@ class PostEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        addPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "posts/" + imagePostPng['id'] + "/"
-        getPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + 'posts/' + imagePostPng["id"] + '/image/'
+        addPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "/posts/" + imagePostPng['id'] + "/"
+        getPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + '/posts/' + imagePostPng["id"] + '/image/'
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostPng, format='json')
@@ -277,8 +277,8 @@ class PostEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        addPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "posts/" + imagePostBase64['id'] + "/"
-        getPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + 'posts/' + imagePostBase64["id"] + '/image/'
+        addPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + "/posts/" + imagePostBase64['id'] + "/"
+        getPostUrl = author1["id"].replace(env("LOCAL_HOST"), "") + '/posts/' + imagePostBase64["id"] + '/image/'
 
         # Add an image post
         response = self.client.put(addPostUrl, imagePostBase64, format='json')
@@ -301,7 +301,7 @@ class PostEndpointTestCase(APITestCase):
         loginUrl = "/login/"
         self.client.post(loginUrl, user1, format='json')
 
-        postsUrl = author1["id"] + 'posts/'
+        postsUrl = author1["id"] + '/posts/'
         publicPostsUrl = '/public-posts/'
 
         # Add 2 text posts
