@@ -15,6 +15,7 @@ class Inbox extends React.Component {
     this.state = {
         currentUser: {},
         inboxList: [],
+        notificationList: []
     }
 }
 
@@ -61,7 +62,8 @@ class Inbox extends React.Component {
           })
           // wait for promises then set inbox list
           const inboxList = await Promise.all(inboxPromises)
-          this.setState({inboxList: inboxList})
+          this.setState({inboxList: inboxList.filter(msg => msg.type === 'post')})
+          this.setState({notificationList: inboxList.filter(msg => msg.type !== 'post')})
       } catch(error) {
           console.log(error)
       }
@@ -71,14 +73,14 @@ class Inbox extends React.Component {
     try {
       await requests.delete(`${this.state.currentUser.id}/inbox/`, {withCredentials:true})
       this.setState({inboxList: []})
+      this.setState({notificationList: []})
     } catch(error) {
         console.log(error)
     }
   }
 
-  renderInboxItems() {
-    return this.state.inboxList.map((item) => {
-        if (item.type === 'post') {
+  renderPostItems() {
+    return this.state.inboxList.sort((a,b) => (a.published < b.published ? 1 : -1)).map((item) => {
           return (
             <Grid item xs={8}>
               <Post
@@ -90,41 +92,46 @@ class Inbox extends React.Component {
               />
             </Grid>
           );
-        } else if (item.type === 'Follow') {
-          return (
-            <Grid item xs={8}>
-            <FollowRequest
-                displayName={item.actor.displayName}
-                profileImage={item.actor.profileImage}
-                currentUserId={this.state.currentUser.id}
-                id={item.actor.id}
-                accepted={item.accepted}
-            />
-            </Grid>
-          );
-        } else if (item.type === 'Like') {
-          return (
-            <Grid item xs={8}>
-            <LikeNotification
-              summary={item.summary}
-              profileImage={item.author.profileImage}
-              object={item.object}
-            />
-            </Grid>
-          );
-        } else if (item.type === 'comment') {
-          return (
-          <Grid item xs={8}>
-            <CommentNotification
-              profileImage={item.author.profileImage}
-              displayName={item.author.displayName}
-              owned={item.author.id === this.state.currentUser.id}
-              id={item.id}
-            />
-            </Grid>);
-        }
     });
   }
+
+  renderNotificationItems() {
+    return this.state.notificationList.map((item) => {
+     if (item.type === 'Follow') {
+      return (
+        <Grid item xs={8}>
+        <FollowRequest
+            displayName={item.actor.displayName}
+            profileImage={item.actor.profileImage}
+            currentUserId={this.state.currentUser.id}
+            id={item.actor.id}
+            accepted={item.accepted}
+        />
+        </Grid>
+      );
+    } else if (item.type === 'Like') {
+      return (
+        <Grid item xs={8}>
+        <LikeNotification
+          summary={item.summary}
+          profileImage={item.author.profileImage}
+          object={item.object}
+        />
+        </Grid>
+      );
+    } else if (item.type === 'comment') {
+      return (
+      <Grid item xs={8}>
+        <CommentNotification
+          profileImage={item.author.profileImage}
+          displayName={item.author.displayName}
+          owned={item.author.id === this.state.currentUser.id}
+          id={item.id}
+        />
+        </Grid>);
+      }; 
+  });
+};
 
   render(){
       return (
@@ -146,7 +153,7 @@ class Inbox extends React.Component {
               </Button>
             </Grid>
           <Grid container spacing={2} paddingBottom="30px" justifyContent="center" alignItem="center">
-            {this.state.inboxList.length ? this.renderInboxItems() : <h2>Inbox is empty</h2>}
+            {this.state.inboxList.length || this.state.notificationList.length ? [this.renderPostItems(), this.renderNotificationItems()] : <h2>Inbox is empty</h2>}
           </Grid>
           </div>
       )
