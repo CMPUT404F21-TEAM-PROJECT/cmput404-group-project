@@ -1,20 +1,9 @@
-const webdriver = require('selenium-webdriver'),
-    By = webdriver.By,
-    until = webdriver.until;
+const {Builder, By, Key, util} = require("selenium-webdriver");
+async function example() {
+  let driver = await new Builder().forBrowser("firefox").build();
+  await driver.get("http://frontend404.herokuapp.com");
+  await driver.findElement(By.name("q")).sendKeys("Selenium", Key.RETURN);
+  driver.close();
+}
 
-const driver = new webdriver.Builder()
-    .forBrowser('firefox')
-    .build();
-driver.get('http://www.google.com').then(function(){
-driver.findElement(webdriver.By.name('q')).sendKeys('webdriver\n').then(function(){
-    driver.getTitle().then(function(title) {
-      console.log(title)
-      if(title === 'webdriver - Google Search') {
-         console.log('Test passed');
-      } else {
-         console.log('Test failed');
-      }
-     driver.quit();
-    });
-  });
-});
+example();
