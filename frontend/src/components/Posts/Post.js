@@ -219,6 +219,10 @@ export default function Post(props) {
         </Alert>
         )}
         </div>
+        <ListItemText
+          id="post-id"
+          secondary={<p>Post Id: <a href={props.post.id}>{props.post.id}</a></p>}
+        />
       </ListItem>
     );
 }
