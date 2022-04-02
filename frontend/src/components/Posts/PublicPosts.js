@@ -73,7 +73,7 @@ class PublicPosts extends React.Component {
   }
 
   renderPostList() {
-    return this.state.allPosts.map((item) => {
+    return this.state.allPosts.sort((a,b) => (a.published < b.published ? 1 : -1)).map((item) => {
         if (item.type === 'post') {
           return (
             <Grid item xs={8}>
