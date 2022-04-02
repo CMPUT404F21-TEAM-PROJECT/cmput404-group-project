@@ -165,10 +165,13 @@ export default function Post(props) {
         {(props.post.contentType == "application/base64" || props.post.contentType == "image/png;base64" || props.post.contentType == "image/jpeg;base64") && <ImageListItem
           children={<img src={props.post.content}></img>}
         />}
-        <ListItemText
+        {props.post.contentType == "text/markdown" && <ReactMarkdown>
+          {props.post.description}
+          </ReactMarkdown>}
+        {props.post.contentType != "text/markdown" && <ListItemText
           id="description"
           primary={props.post.description}
-        />
+        />}
         <hr/>
         <div id="comment-like-section">
         {liked ? (<Button
