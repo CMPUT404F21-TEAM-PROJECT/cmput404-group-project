@@ -22,6 +22,7 @@ export function getAuthHeaderForNode(url){
         'http://tik-tak-toe-cmput404.herokuapp.com':'admin:tX7^iS8a5Ky$^S',
         'https://cmput-404-w22-group-10-backend.herokuapp.com':'Team4:abcd1234',
         'http://backend-404-2.herokuapp.com':'copy:wxyz1234',
+        'http://project-socialdistribution.herokuapp.com':'team4:cmput404'
     }
     
     // extract node from url
