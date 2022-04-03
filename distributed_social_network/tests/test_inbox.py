@@ -160,7 +160,7 @@ class InboxEndpointTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         responseJson = response.json()
         self.assertEqual(self.author.id, responseJson['author'])
-        self.assertEqual(len(responseJson['items']), 1)
+        self.assertEqual(responseJson['count'], 1)
 
     def test_get_paginated_inbox(self):
         """Test GET request for getting a paginated inbox."""

@@ -400,7 +400,7 @@ def get_multiple_posts(request, author_id):
     items = serializer.data
     for post in items:
         post['author'] = AuthorSerializer(Author.objects.get(id=post['author'])).data
-    responseDict = {'type' : 'posts', 'items' : items}
+    responseDict = {'type' : 'posts', 'items' : items, 'count': len(list(chain(publicPosts)))}
 
     # Return the response
     response = JsonResponse(responseDict)

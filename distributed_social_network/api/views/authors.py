@@ -112,12 +112,13 @@ def get_multiple_authors(request):
     paginator.page_size_query_param = 'size'
 
     # Get all authors, paginated
-    authors = paginator.paginate_queryset(Author.objects.all(), request)
+    authors_queryset = Author.objects.all()
+    authors = paginator.paginate_queryset(authors_queryset, request)
 
     # Create the JSON response dictionary
     serializer = AuthorSerializer(authors, many=True)
     items = serializer.data
-    responseDict = {'type' : 'authors', 'items' : items}
+    responseDict = {'type' : 'authors', 'items' : items, 'count': authors_queryset.count()}
 
     # Return the response
     response = JsonResponse(responseDict)
