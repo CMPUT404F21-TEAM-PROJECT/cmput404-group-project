@@ -88,6 +88,7 @@ def get_inbox(request, author_id, inbox):
     data.pop('follow_requests')
     data.pop('comments')
     data['items'] = paginated_items 
+    data['count'] = len(paginated_items)
 
     response = JsonResponse(data)
     response.status_code = 200

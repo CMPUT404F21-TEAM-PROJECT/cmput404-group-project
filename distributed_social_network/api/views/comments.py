@@ -55,15 +55,16 @@ def get_comments(request, post_id, author_id):
     paginator.page_size_query_param = 'size'
 
     # Get all comments, ordered by the latest published dates paginated
-    comments = paginator.paginate_queryset(Comment.objects.all().filter(post_id=env(
-        "LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id).order_by('-published'), request)
+    comments_queryset = Comment.objects.all().filter(post_id=env(
+        "LOCAL_HOST") + "/authors/" + author_id + "/posts/" + post_id).order_by('-published')
+    comments = paginator.paginate_queryset(comments_queryset, request)
 
     # Create the JSON response dictionary
     serializer = CommentSerializer(comments, many=True)
     items = serializer.data
     for comment in items:
         comment['author'] = AuthorSerializer(Author.objects.get(id=comment['author'])).data
-    responseDict = {'type': 'comments', 'items': items}
+    responseDict = {'type': 'comments', 'items': items, 'count': comments_queryset.count()}
 
     # Return the response
     response = JsonResponse(responseDict)
