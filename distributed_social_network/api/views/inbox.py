@@ -292,11 +292,13 @@ def add_comment(request, author_id, inbox):
 # Returns None if unable to create author
 # This will be used to create local copies of remote authors
 def find_or_create_author(id):
+    id = id.strip('/')
     if ("http://" not in id) and ("https://" not in id):
         id = "http://tik-tak-toe-cmput404.herokuapp.com/authors/" + id
     
     try:
         author = Author.objects.get(id=id)
+        return author
     except ObjectDoesNotExist:
         # request to get author details from remote server
         response = requests.get(id, auth=getAuthHeaderForNode(id))
@@ -313,14 +315,14 @@ def find_or_create_author(id):
         if serializer.is_valid():
             return serializer.save()
         else:
+            print(serializer.errors)
             return None
-    else:
-        return author
 
 # Returns the comment object if found, otherwise creates the comment
 # Returns None if unable to create comment
 # This will be used to create local copies of remote comments
 def find_or_create_comment(id):
+    id = id.strip('/')
     try:
         return Comment.objects.get(id=id)
     except ObjectDoesNotExist:
@@ -345,6 +347,8 @@ def find_or_create_comment(id):
 # Returns None if unable to create post
 # This will be used to create local copies of remote posts
 def find_or_create_post(id, authorId):
+    id = id.strip('/')
+    authorId = authorId.strip('/')
     try:
         if ("http://" not in id) and ("https://" not in id):
             id = authorId + "/posts/" + id
@@ -362,6 +366,8 @@ def find_or_create_post(id, authorId):
             response_data.pop('source')
         if response_data.get('origin', None) == '':
             response_data.pop('origin')
+        response_data['author'] = authorId
+        comments = response_data.pop('comments', [])
 
         response_data['viewableBy'] = ''
         # TODO: Add some validation to make sure response_data['host'] is in our list of accepted nodes
@@ -370,6 +376,16 @@ def find_or_create_post(id, authorId):
 
         # If given data is valid, save the object to the database
         if serializer.is_valid():
-            return serializer.save()
+            new_post = serializer.save()
+            for comment in comments:
+                comment['author'] = comment['author'] if (type(comment['author']) == str) else comment['author'].get('id', '')
+                comment_serializer = CommentSerializer(data = comment)
+                if comment_serializer.is_valid():
+                    comment_serializer.save()
+                else:
+                    print(comment_serializer.errors)
+
+            return new_post
         else:
+            print(serializer.errors)
             return None
