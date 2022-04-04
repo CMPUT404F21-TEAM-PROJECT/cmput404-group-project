@@ -79,7 +79,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://localhost:3000",
     "http://tik-tak-toe-cmput404.herokuapp.com",
-    "https://bingbing10.herokuapp.com"
+    "https://bingbing10.herokuapp.com",
+    "http://bingbing10.herokuapp.com"
 ]
 
 CSRF_TRUSTED_ORIGINS = [env("HOST_SERVER"), "http://frontend404.herokuapp.com", "http://tik-tak-toe-cmput404.herokuapp.com", "http://localhost:8000", "http://127.0.0.1:8000"]
